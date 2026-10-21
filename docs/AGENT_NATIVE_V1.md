@@ -18,20 +18,26 @@ Never require the end user to memorize commands. Ask only for an essential ambig
 |---|---|
 | Public Yahoo chart endpoint | Dated real historical daily observations, classified UNOFFICIAL_BEST_EFFORT_DELAYED. Not licensed exchange live streaming; timeliness/adjustments unverified. |
 | Approved local CSV | Dated historical price series with source hash. Unverified if no original source opened. Explicit SYNTHETIC_FIXTURE input stays fictional. |
+| FYERS v3 (eligible FYERS clients, API data features advertised free) | Read-only authenticated quote snapshots and daily OHLCV; per-user app authentication required, token expires daily; not WebSocket streaming inside Fundtex yet. Official: https://fyers.in/api-docs/v3/api/market-data/quotes/ |
 | Zerodha Kite Connect | Read-only authenticated REST LTP snapshot when a permitted account and token are configured; not tick-by-tick streaming. Documentation: https://kite.trade/docs/connect/v3/market-quotes/ |
 | DhanHQ v2 | Read-only authenticated LTP snapshot using a user-verified security ID and permitted token. Docs: https://dhanhq.co/docs/v2/market-quote/ |
 | RBI/SEBI RSS | Official announcement metadata only; agent must actually open dated original notices to verify what changed. |
 | Exchange/issuer financials | Original NSE/BSE/issuer published financial statements; NOT retrieved/verified merely by running a chart command. |
+
+Use --source fyers with a permitted FYERS account to fetch actual historical OHLCV for candlestick charts. Use --quote fyers for a separate latest REST quote snapshot.
 
 --quote auto only uses a broker previously configured through authorized local environment. Without one, it reports NO_CONFIGURED_BROKER; it does not fabricate a live price. Explicit --quote kite or dhan is strict and fails closed on missing/invalid auth. A broker snapshot shows retrieval UTC and original trade timestamp only if the source supplies it; a quote retrieved at night can contain the exchange's LAST previous trade.
 
 ## Credential handling
 
 Never paste broker credentials, OAuth secrets, account statements or client records into the chat or public source repo. The authorized local environment may supply:
+- FUNDTEX_FYERS_APP_ID and FUNDTEX_FYERS_ACCESS_TOKEN (FYERS app-auth token; renew per their daily expiration policy)
 - FUNDTEX_KITE_API_KEY and FUNDTEX_KITE_ACCESS_TOKEN
 - FUNDTEX_DHAN_CLIENT_ID, FUNDTEX_DHAN_ACCESS_TOKEN and FUNDTEX_DHAN_SYMBOL_MAP (verified exact ticker → numerical security ID JSON).
 
 Use fundtex broker-status to check if configuration is present, not to print tokens. Broker tokens can expire or lack entitlements. Provider display and redistribution rights govern lawful usage. Production OAuth renewal, exchange-grade tick feeds and commercial redistribution agreements are NOT bundled.
+
+**No-subscription paths:** FYERS publicly states its eligible client data APIs are free; Angel One SmartAPI also advertises free live/history APIs, though a working authorized account is still needed. Zerodha Personal Free does NOT include market data (Connect is ₹500/month); Dhan Data API is ₹499+tax/month. Unofficial GitHub NSE wrapper repositories can break and are NOT substitutes for licensed exchange permission. Sources: https://support.fyers.in/portal/en/kb/articles/does-fyers-charge-any-subscription-fees-for-trading-api ; https://smartapi.angelbroking.com/faq ; https://support.zerodha.com/category/trading-and-markets/general-kite/kite-api/articles/historical-data-and-live-market-data-payment-plan ; https://dhan.co/support/platforms/dhanhq-api/how-to-access-dhan-api/
 
 ## What the one-command research workflow produces
 

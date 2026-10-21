@@ -51,15 +51,17 @@ No agent can obtain real NSE quotations just by reading a skill file. Its runtim
 
 ## v1.0 Agent-Native Research — No dashboard or scripts for the end user
 
-**Ask your Claude Code/Codex/Gemini agent to analyze an Indian company.** The new fundtex-auto-analyst skill detects permitted tools and automatically executes real-source research and a ZIP/visual analyst pack. Latest real historical daily charting uses best-effort unofficial Yahoo data, visibly timestamped; a properly authenticated Zerodha Kite Connect or DhanHQ account can add a separate read-only current LTP snapshot. Never invent current quotes when access is unavailable. An agent must independently open primary NSE/BSE/issuer documents for verified fundamentals. The user should NOT have to hunt for CLI commands or a standalone dashboard.
+**Ask your Claude Code/Codex/Gemini agent to analyze an Indian company.** The new fundtex-auto-analyst skill detects permitted tools and automatically executes real-source research and a ZIP/visual analyst pack. Latest real historical daily charting uses best-effort unofficial Yahoo data, visibly timestamped; a properly authenticated FYERS (free to eligible clients), Zerodha Kite Connect or DhanHQ account can add a separate read-only current LTP snapshot. With a FYERS client account Fundtex can additionally fetch actual authorized OHLCV daily candles (source fyers), not merely snapshots. Never invent current quotes when access is unavailable. An agent must independently open primary NSE/BSE/issuer documents for verified fundamentals. The user should NOT have to hunt for CLI commands or a standalone dashboard.
 
 For terminal-enabled agents, the internal one-shot interface is:
 
 ```bash
 fundtex research --symbol INFY.NS --source public --quote auto --out /new/approved/INFY-analyst-pack
+# Already have authorized free FYERS market-data API access?
+fundtex research --symbol INFY.NS --source fyers --quote fyers --out /new/approved/INFY-fyers-report
 ```
 
-The command automatically outputs a new report folder and ZIP with HTML/SVG chart, dated price CSV, retrospective indicators, source receipt, skeptic research plan, memo, automatic PNG raster where Pillow exists, and optional professionally rendered XLSX/PDF/browser PNG when vetted dependencies exist. Live broker LTP snapshots require user-controlled tokens and are never mixed into historical charts. Existing users can approve backup-first upgrades with `bash install.sh --upgrade` (not automatic overwrites). [Read the complete v1.0 source/authorization contract](docs/AGENT_NATIVE_V1.md).
+The command automatically outputs a new report folder and ZIP with HTML/SVG chart, dated price CSV, retrospective indicators, source receipt, skeptic research plan, memo, automatic PNG raster where Pillow exists, and optional professionally rendered XLSX/PDF/browser PNG when vetted dependencies exist. Live broker LTP snapshots require user-controlled tokens and are never mixed into historical charts. Existing users can approve backup-first upgrades with `bash install.sh --upgrade` (not automatic overwrites). [Read the complete v1.0 source/authorization contract](docs/AGENT_NATIVE_V1.md). **FYERS** officially offers eligible client quotes, OHLC history and WebSocket live data at no API subscription charge; the Fundtex implementation supports REST snapshots and daily candles, NOT tick streaming. **Angel One** also advertises free SmartAPI market data; an Angel connector is not in this release. **Zerodha Personal Free has NO data**, and Dhan Data API costs ₹499+tax/month. Open-source nsepython/jugaad-data use NSE website interfaces; they are not a substitute for licensed exchange entitlements. Details and provider links in docs/AGENT_NATIVE_V1.md.
 
 ## Analyst Studio v0.9 — visual, interactive and exportable research
 

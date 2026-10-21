@@ -9,6 +9,13 @@
 - Added direct PNG historical chart rendering through Pillow if Chromium screenshot isn't available (not represented as a browser screenshot). Optional institutional XLSX/PDF packages still require approved installation.
 - Full v1.0 suite: 79/79 local tests passed with million-draw numerical gate; isolated 87-skill installation, safe skips and backup-first upgrades passed. A real INFY.NS public Yahoo three-month historical request produced a 12-file research pack plus ZIP, dated 21 October 2026. Broker authenticated access remains unverified without user credentials.
 
+## v1.0 — 22 October 2026
+- Switched primary UX to natural-language agent orchestration. New one-shot `fundtex research` command generates source-ledgered dated Indian market chart, CSV, HTML, memo and ZIP, with separate optional credential-authorized broker LTP snapshot.
+- Verified actual public Yahoo historical INFY.NS response (64 dated observations as-of 21 October 2026), labelled UNOFFICIAL_BEST_EFFORT_DELAYED. A live broker quote needs user credentials; no exchange license embedded.
+- Added official FYERS v3 REST read-only quote and historical OHLCV adapters. FYERS advertises free API data access to eligible clients; individual login is required and tokens expire daily. Fully mocked protocol tests reject malformed OHLCV, invalid symbols and unsafe endpoints; real FYERS account integration remains untested until authorized.
+- Added two agent-native skills, docs, backup-first explicit installer `--upgrade`, structured source evidence, automatic research-pack receipt and financial-data safeguards. No dashboard dependency.
+- Additional full-suite test evidence in docs/VALIDATION.md. Private plugin remains isolated.
+
 ## v0.9 — 21 October 2026
 - Delivered interactive self-contained research chart HTML/SVG; honest close-only line versus validated OHLC candlestick distinction; date/price validation, SMA20/50, EMA12/26, RSI14 and retrospective cross annotations.
 - Added browser-side drawn levels and SVG/PNG/downloadable-notes export, optional Playwright screenshot and loopback-only local CSV refresh viewer (not a licensed real-time exchange feed).

@@ -1,8 +1,16 @@
-# Fundtex Validation Ledger — 21 October 2026
+# Fundtex Validation Ledger — 22 October 2026
 
 Environment: MacBook Pro, macOS, Python 3.11, isolated QA clone. No broker credentials, production trading or private institutional portfolios accessed.
 
-## v1.0 — latest verified engineering and real public market-data acceptance
+## v1.0 final free-data adapter and agent-native release gate — 22 October 2026
+
+**84/84 full Python regression tests passed**, including the million-seeded-Gaussian-draw numerical suite (3.98 s for the draw itself) and 29-skill isolated agent installer/upgrade contracts. Additional FYERS official v3 REST API schema tests cover current LTP quote, dated OHLCV candle parsing, fail-closed missing authentication, wrong instrument, invalid candle bounds and no unsafe endpoint redirects. All FYERS tests used MOCK DATA and NO real client token; the provider connector is ready for a user-authorized free-tier account but a real FYERS quote was not claimed.
+
+The **actual live-network one-shot CLI** `fundtex research --symbol INFY.NS --source public --quote off --out NEW_FOLDER` successfully generated a 12-file ZIP (**65,744 bytes**) with genuine best-effort Yahoo historical observations, a dated historical chart, source-hashed CSVs, source evidence ledger, PNG chart, research memo and agent mission. The latest observation returned in THIS final test was **19 October 2026** (2 calendar days old at retrieval), so the script **accurately reported its age and UNOFFICIAL_BEST_EFFORT_DELAYED status**, not a current real-time exchange tick. The 20 October NSE equities holiday is independently listed on the official NSE calendar; 21 October was a trading day, therefore data freshness must be checked rather than assumed. Browser screenshot, XLSX and PDF were unconfigured on the test Mac and **correctly listed as omitted**; previous separate portable v0.9 QA demonstrated those outputs with optional renderers installed. No user brokerage accounts or secrets were accessed. Re-testing at other times can return different latest as-of dates.
+
+Publisher guidance: FYERS support says its APIs, including market data and historical, are no-extra-fee for eligible FYERS clients; its individual app access token is short-lived and the official API supports OHLC/quotes. Angel One SmartAPI also advertises a free data option; it is researched but NOT implemented in this release. Zerodha Personal API does NOT grant market data without its paid Connect subscription. DhanHQ data subscriptions are paid. Official NSE redistribution rights are NOT bypassed by free wrapper libraries. See docs/AGENT_NATIVE_V1.md and licensing links therein. Authenticated market-data snapshots are not continuously streamed.
+
+## v1.0 — earlier verified engineering and real public market-data acceptance
 
 **79/79 local Python regression checks passed** on 21 October 2026 after removing the obsolete dashboard-only prototype/test. The suite included a million seeded Gaussian draws in **5.07 seconds**. These are numerical tests, not trading returns or externally validated prediction performance.
 

@@ -1,6 +1,6 @@
 ---
 name: fundtex-india-live-data
-description: Fetch and verify Indian equity public historical OHLC/adjusted closes from an unofficial documented provider, and read authenticated, authorized broker LTP snapshots from Zerodha Kite Connect or DhanHQ. Separate data freshness, source licensing, verification status, ticker identity and real-time streaming limitations.
+description: Fetch and verify Indian equity public historical OHLC/adjusted closes from an unofficial documented provider, and read authenticated, authorized broker LTP snapshots from FYERS, Zerodha Kite Connect or DhanHQ. Separate data freshness, source licensing, verification status, ticker identity and real-time streaming limitations.
 ---
 
 # India Data Desk — Live Quote Snapshots and Historical Evidence
@@ -9,7 +9,8 @@ description: Fetch and verify Indian equity public historical OHLC/adjusted clos
 
 - fundtex research --symbol INFY.NS --source public --out /new/research-folder retrieves dated Yahoo chart history in best-effort mode. Classify UNOFFICIAL_BEST_EFFORT_DELAYED and record original observation date; do not assert exchange data entitlements, original issuer evidence or guaranteed intraday latency.
 - fundtex broker-status displays only configuration presence (no key material).
-- fundtex quote --symbol INFY.NS --provider kite or --provider dhan reads official authenticated LTP REST **snapshots**, not streaming; no order placement endpoints are present.
+- For FREE eligible FYERS-client authenticated daily candles, use fundtex research --symbol INFY.NS --source fyers --quote auto --out /new/report-dir. This preserves actual OHLCV candles for the chart. FYERS personal developer app access must have permissions and current token; no access is bundled.
+- fundtex quote --symbol INFY.NS --provider fyers, --provider kite or --provider dhan reads official authenticated LTP REST **snapshots**, not streaming; no order placement endpoints are present.
 - Provider accounts, access tokens and contractual usage rights must be supplied/configured by the authorized analyst through their local system. NEVER request the user paste passwords or tokens into chat. Use only approved local environment/secret handling.
 - DhanHQ instrument ID must correspond to an approved exchange symbol in FUNDTEX_DHAN_SYMBOL_MAP; no invented ID fallback. Kite uses NSE:TRADINGSYMBOL or BSE:TRADINGSYMBOL.
 - If no credential or source fails, report NO_AUTHENTICATED_PROVIDER or a clear source error; no fake price.

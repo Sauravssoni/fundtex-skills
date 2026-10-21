@@ -16,7 +16,7 @@ description: Use when a user asks Claude, Codex, Gemini CLI or another agent to 
 
 ## Single user request → automatic analyst output
 
-For current India historical evidence, prefer the **best-effort public feed** when suitable and rights permit. One agent-side command (never ask user to memorize it):
+For current India historical evidence, prefer authenticated **FYERS** daily OHLCV where the user already has a permitted FYERS developer app; otherwise use the **best-effort public historical feed** when rights permit. FYERS documents free quotes, historical data and WebSocket access for eligible FYERS clients (authentication and account needed). See docs/AGENT_NATIVE_V1.md. One agent-side command (never ask user to memorize it):
 
     fundtex research --symbol INFY.NS --source public --quote auto --out /approved/new/fundtex-INFYN-20261021
 
@@ -26,7 +26,7 @@ For a permitted customer CSV use --source csv --csv /approved/input.csv. An actu
 
 ## Real-time prices require a real provider
 
-- If an authorized Kite Connect or DhanHQ integration is configured, --quote auto retrieves a read-only LTP snapshot without exposing credentials. Market streaming is NOT implemented by this skill or CLI.
+- If authorized FYERS, Kite Connect or DhanHQ credentials are configured, --quote auto retrieves a read-only LTP snapshot without exposing credentials. Market streaming is NOT implemented by this skill or CLI.
 - If no broker connected, explicitly label quote status NO_CONFIGURED_BROKER and keep the public historical chart separate.
 - If the user explicitly requests a broker and it fails, fail closed. Do not silently return a public quote and claim it is authenticated.
 - Distinguish observation date, retrieval UTC, authenticated quote timestamp if published, potential delay and any exchange market-data rights.

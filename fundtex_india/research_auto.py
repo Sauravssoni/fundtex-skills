@@ -15,7 +15,8 @@ import tempfile
 import zipfile
 
 from .broker_quotes import availability as broker_status, quote as broker_quote
-from .market import csv_prices, validate_symbol, yahoo_prices
+from .market import validate_symbol, yahoo_prices
+from .chart_studio import prices as audited_csv_prices
 from .mission import mission
 from .pack_studio import build_pack
 
@@ -23,7 +24,8 @@ def _history(symbol,*,source,csv_file=None,period="1y",public_fetch=None):
     sym=validate_symbol(symbol)
     if source=="csv":
         if not csv_file:raise ValueError("Approved --csv required for local historical data")
-        raw=csv_prices(csv_file,sym)
+        raw=audited_csv_prices(csv_file,sym)
+        raw["source"]="csv:"+Path(csv_file).name
         with open(csv_file,newline="",encoding="utf-8-sig") as handle:
             reader=csv.DictReader(handle)
             is_synthetic=any((r.get("source")=="SYNTHETIC_FIXTURE" or r.get("data_quality")=="SYNTHETIC_FIXTURE")
@@ -31,22 +33,27 @@ def _history(symbol,*,source,csv_file=None,period="1y",public_fetch=None):
                              for r in reader)
         q="SYNTHETIC_FIXTURE" if is_synthetic else "USER_SUPPLIED_UNVERIFIED"
         return raw,raw["rows"],q,"Approved user CSV (FICTIONAL demo)" if is_synthetic else "Approved user CSV (authenticity unverified)"
+    if source=="fyers":
+        if csv_file:raise ValueError("--csv may only be supplied with --source csv")
+        from .fyers_data import history as fyers_history
+        result=(public_fetch or fyers_history)(sym,range_=period,interval="1d")
+        return result,result["rows"],"AUTHENTICATED_FYERS_HISTORY_NOT_TICK_STREAM","FYERS official authenticated daily historical OHLCV"
     if source=="public":
         if csv_file:raise ValueError("--csv may only be supplied with --source csv")
         result=(public_fetch or yahoo_prices)(sym,range_=period,interval="1d")
         return result,result["rows"],"UNOFFICIAL_BEST_EFFORT_DELAYED","Yahoo Finance chart history (unofficial best effort; timestamp and adjustments unverified)"
-    raise ValueError("Source must be public or csv; demo data is never a fallback")
+    raise ValueError("Source must be public, fyers or csv; demo data is never a fallback")
 
 def _quote_result(symbol,provider,*,quote_fetch=None):
     if provider=="off":
         return {"status":"NOT_REQUESTED","live_authenticated":False},None
     if provider=="auto":
         connected=broker_status()
-        provider=next((x for x in ("kite","dhan") if connected.get(x)),None)
+        provider=next((x for x in ("fyers","kite","dhan") if connected.get(x)),None)
         if not provider:
             return {"status":"NO_CONFIGURED_BROKER","live_authenticated":False,
-                    "action":"Connect authorized Kite or Dhan account to enable current quote snapshots; no live price inferred"},None
-    if provider not in ("kite","dhan"):raise ValueError("Invalid broker quote provider")
+                    "action":"Connect authorized FYERS, Kite or Dhan account to enable current quote snapshots; no live price inferred"},None
+    if provider not in ("fyers","kite","dhan"):raise ValueError("Invalid broker quote provider")
     # Auth failures are not converted to fabricated prices or fallback providers.
     result=(quote_fetch or broker_quote)(symbol,provider)
     if result["symbol"]!=symbol:raise ValueError("Broker returned different instrument")
@@ -57,6 +64,7 @@ def run(symbol,out,*,source="public",csv_file=None,period="1y",quote_provider="a
         max_age_days=7,fetch_public=None,fetch_quote=None,add_zip=True):
     sym=validate_symbol(symbol)
     if period not in ("1mo","3mo","6mo","1y","2y","5y"):raise ValueError("Unsupported historical range")
+    if source=="fyers" and period in ("2y","5y"):raise ValueError("FYERS source supports up to 1y per request")
     if not isinstance(max_age_days,int) or not 0<=max_age_days<=365:
         raise ValueError("Max data age must be 0..365 days")
     folder=Path(out)
@@ -67,17 +75,19 @@ def run(symbol,out,*,source="public",csv_file=None,period="1y",quote_provider="a
     observed=date.fromisoformat(rows[-1]["date"])
     age=(datetime.now(timezone.utc).date()-observed).days
     if age<0:raise ValueError("Historical feed contained future observation")
-    if source=="public" and age>max_age_days:
-        raise ValueError("Public chart stale by "+str(age)+" days; refusing to present as current data")
+    if source in ("public","fyers") and age>max_age_days:
+        raise ValueError("Historical provider observation stale by "+str(age)+" days; refusing to present as current data")
     # Snapshot retrieval must complete before creation; failure cannot silently downgrade the response.
     status,snapshot=_quote_result(sym,quote_provider,quote_fetch=fetch_quote)
     with tempfile.TemporaryDirectory(prefix="fundtex-agent-desk-") as work:
         stage=Path(work)/"source-history.csv"
         temp=io.StringIO(newline="")
         writer=csv.writer(temp)
-        writer.writerow(["date","symbol","close","volume","source"])
+        has_ohlc=all(all(k in row for k in ("open","high","low")) for row in rows)
+        cols=["date","symbol"]+(["open","high","low"] if has_ohlc else [])+["close","volume","source"]
+        writer.writerow(cols)
         for row in rows:
-            writer.writerow([row["date"],sym,row["close"],row.get("volume"),quality])
+            writer.writerow([row["date"],sym]+([row["open"],row["high"],row["low"]] if has_ohlc else [])+[row["close"],row.get("volume"),quality])
         stage.write_text(temp.getvalue(),encoding="utf-8")
         result=build_pack(stage,sym,folder,data_quality=quality,provider=provider)
     # Safe append-only generated files, no credentials and no raw private client documents.

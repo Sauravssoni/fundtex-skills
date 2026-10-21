@@ -26,6 +26,7 @@ def _extract_ltp(value):
 
 def availability():
     return {
+        "fyers":bool(os.getenv("FUNDTEX_FYERS_APP_ID") and os.getenv("FUNDTEX_FYERS_ACCESS_TOKEN")),
         "kite":bool(os.getenv("FUNDTEX_KITE_API_KEY") and os.getenv("FUNDTEX_KITE_ACCESS_TOKEN")),
         "dhan":bool(os.getenv("FUNDTEX_DHAN_CLIENT_ID") and os.getenv("FUNDTEX_DHAN_ACCESS_TOKEN")
                     and os.getenv("FUNDTEX_DHAN_SYMBOL_MAP")),
@@ -35,7 +36,7 @@ def availability():
     }
 
 def _request(url,headers,*,method="GET",body=None,timeout=7):
-    if not (url.startswith('https://api.kite.trade/quote/ltp?') or url=='https://api.dhan.co/v2/marketfeed/ltp'):
+    if not (url.startswith("https://api.kite.trade/quote/ltp?") or url=="https://api.dhan.co/v2/marketfeed/ltp" or url.startswith("https://api-t1.fyers.in/data/quotes?") or url.startswith("https://api-t1.fyers.in/data/history?")):
         raise ValueError("Non-allowlisted broker endpoint")
     try:
         req=Request(url,headers=headers,data=body,method=method)
@@ -83,6 +84,11 @@ def quote(symbol,provider,credentials=None):
     sym=validate_symbol(symbol)
     if credentials is not None and not isinstance(credentials,dict):
         raise ValueError("Invalid in-memory credential configuration")
+    if provider=="fyers":
+        if credentials is not None:
+            raise ValueError("FYERS uses approved local environment credentials, not inline overrides")
+        from .fyers_data import quote as fyers_quote
+        return fyers_quote(sym)
     if provider=="kite":
         key=credentials.get("api_key") if credentials is not None else os.getenv("FUNDTEX_KITE_API_KEY")
         token=credentials.get("access_token") if credentials is not None else os.getenv("FUNDTEX_KITE_ACCESS_TOKEN")
