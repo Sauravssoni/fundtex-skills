@@ -10,6 +10,7 @@ from fundtex_india.stats import report, drawdown, pct_changes
 from fundtex_india.simulate import simulate
 from fundtex_india.valuation import dcf
 from fundtex_india.portfolio import evaluate_portfolio
+from fundtex_india.godeye import walkforward, signal
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "examples" / "india_prices.csv"
@@ -110,6 +111,42 @@ class FundtexPortfolioTest(unittest.TestCase):
         result=json.loads(p.stdout)
         self.assertTrue(result["research_only"])
         self.assertEqual(len(result["weights"]),3)
+
+
+class GodEyeTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.rows=csv_prices(str(FIXTURE),"RELIANCE.NS")["rows"]
+
+    def test_god_eye_walkforward_deterministic(self):
+        a=walkforward(self.rows)
+        self.assertEqual(a,walkforward(self.rows))
+        self.assertEqual(a["out_of_sample_days"],len(self.rows)-121)
+        self.assertIn(a["latest_hypothesis"],("ABSTAIN_CASH","LONG_RESEARCH_ONLY"))
+        self.assertFalse(a["assurance"]["independent_live_validation"])
+
+    def test_no_lookahead_in_decisions(self):
+        original=walkforward(self.rows)
+        modified=[dict(row) for row in self.rows]
+        modified[-1]["close"]=float(modified[-1]["close"])*1.15
+        amended=walkforward(modified)
+        # At least the model-selection score at day T-1 cannot use the
+        # day-T closing price; only the realized return changes.
+        self.assertEqual(original["active_days"],amended["active_days"])
+
+    def test_god_eye_invalid_parameters(self):
+        with self.assertRaises(ValueError):
+            walkforward(self.rows,cost_bps=-1)
+        with self.assertRaises(ValueError):
+            walkforward(self.rows,min_train=120,lookback=100)
+
+    def test_god_eye_cli_json(self):
+        p=subprocess.run([sys.executable,"-m","fundtex_india.cli","godeye","--csv",str(FIXTURE),
+                          "--symbol","RELIANCE.NS"],cwd=ROOT,text=True,capture_output=True)
+        self.assertEqual(p.returncode,0,p.stderr)
+        j=json.loads(p.stdout)
+        self.assertEqual(j["symbol"],"RELIANCE.NS")
+        self.assertEqual(j["data_quality"],"USER_SUPPLIED_UNVERIFIED")
 
 if __name__ == "__main__":
     unittest.main()

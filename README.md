@@ -2,7 +2,7 @@
 
 **Fundtex Financial Intelligence** — a fintech financial-research initiative in the **Syntheon Technology Private Limited** ecosystem.
 
-India-first investment-research skill pack. Keeps all **11 original MIT-licensed trader-skill modules** from [Jake Schincariol](https://github.com/Jakeschincariol/trader-skill) and adds **6 Fundtex India Claude skills** and a reproducible Python research engine for NSE/BSE equity workflows.
+India-first investment-research skill pack. Keeps all **11 original MIT-licensed trader-skill modules** from [Jake Schincariol](https://github.com/Jakeschincariol/trader-skill) and adds **7 Fundtex India Claude skills** and a reproducible Python research engine for NSE/BSE equity workflows.
 
 **Positioning:** Source-first, analyst-reviewed financial intelligence. Fundtex is not presented as a registered SEBI investment adviser/research analyst, licensed exchange data vendor, brokerage, or proven alpha engine.
 
@@ -33,6 +33,7 @@ python3 -m fundtex_india.cli news --query 'Infosys NSE earnings'
 python3 -m fundtex_india.cli brief --csv examples/india_prices.csv --symbol RELIANCE.NS
 python3 -m fundtex_india.cli portfolio --prices examples/portfolio_prices.csv --holdings examples/holdings.csv
 python3 -m fundtex_india.cli analyze --live --symbol INFY.NS
+python3 -m fundtex_india.cli godeye --csv examples/india_prices.csv --symbol RELIANCE.NS
 ```
 
 `--live` uses an **unofficial, best-effort Yahoo historical chart**, *not* a live NSE/BSE exchange-grade quote or data licence; it may be delayed, rate-limited, blocked or inaccurate. Only use it where terms allow. Prefer institution-approved historical exports with `date,symbol,close` or `timestamp,symbol,close`; confirm adjusted-close treatment.
@@ -48,6 +49,7 @@ python3 -m fundtex_india.cli analyze --live --symbol INFY.NS
 | `fundtex-india-risk` | Drawdown, return volatility, Sharpe approximation, RSI, historical 95% VaR/expected shortfall | Based on historical input; no guarantee |
 | `fundtex-india-news` | Indian market news lead discovery | Google News RSS: `UNVERIFIED_HEADLINE_DISCOVERY`; verify primary filings |
 | `fundtex-india-valuation` | DCF scenario and WACC/terminal-growth sensitivity | Explicit user hypothesis, **not market data** |
+| `fundtex-god-eye` | Walk-forward price hypothesis vs buy-and-hold and cash | Research-only, no validated predictive alpha |
 | `fundtex-india-portfolio` | Multi-stock date-aligned sector exposure, covariance, portfolio risk and risk contribution | User-supplied CSV series, daily-rebalanced hypothetical returns |
 | `fundtex-india-brief` | Sourced, analyst-reviewed summary template | Source quality surfaced in report |
 | `simulate` | 1M seeded Gaussian log-return scenario draws | Model-scenario test; **not** 1M historical trades or validated strategy alpha |

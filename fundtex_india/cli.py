@@ -10,6 +10,7 @@ from .simulate import simulate
 from .valuation import dcf
 from .news import discover
 from .portfolio import evaluate_portfolio
+from .godeye import walkforward
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -28,6 +29,12 @@ def make_parser():
             p.add_argument("--position-inr", type=float, default=100000)
         if name == "brief":
             p.add_argument("--with-news", action="store_true", help="Fetch UNVERIFIED headline leads; verify source before relying")
+    p = sub.add_parser("godeye")
+    p.add_argument("--csv",required=True)
+    p.add_argument("--symbol",required=True)
+    p.add_argument("--min-train",type=int,default=120)
+    p.add_argument("--train-lookback",type=int,default=60)
+    p.add_argument("--cost-bps",type=float,default=12)
     p = sub.add_parser("news")
     p.add_argument("--query", required=True)
     p.add_argument("--limit", type=int, default=10)
@@ -41,6 +48,13 @@ def make_parser():
 def execute(args):
     if args.command == "news":
         return discover(args.query, args.limit)
+    if args.command == "godeye":
+        data=csv_prices(args.csv,args.symbol)
+        out=walkforward(data["rows"],min_train=args.min_train,lookback=args.train_lookback,cost_bps=args.cost_bps)
+        out["data_source"]=data["source"]
+        out["input_sha256"]=data["sha256"]
+        out["symbol"]=data["symbol"]
+        return out
     if args.command == "portfolio":
         return evaluate_portfolio(args.prices, args.holdings)
     if args.command == "value":
