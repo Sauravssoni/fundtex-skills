@@ -1,0 +1,37 @@
+name: Fundtex offline numerical and contracts
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Python syntax
+        run: python -m compileall -q fundtex_india
+      - name: Offline unit contracts
+        run: python -m unittest discover -s tests -p "test_fundtex*.py" -v
+      - name: Test CLI DCF and report
+        run: |
+          python -m fundtex_india.cli analyze --csv examples/india_prices.csv --symbol RELIANCE.NS > /tmp/analysis.json
+          python -m fundtex_india.cli value --inputs examples/valuation.json > /tmp/value.json
+          python -c "import json; a=json.load(open('/tmp/analysis.json')); b=json.load(open('/tmp/value.json')); assert a['research_only'] and b['quality']=='USER_HYPOTHESIS_NOT_OBSERVED_MARKET_FACT'"
+  million:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Million-path reproducible numerical stress (synthetic fixtures)
+        env:
+          RUN_MILLION_TEST: '1'
+        run: python -m unittest -v tests.test_fundtex_million
