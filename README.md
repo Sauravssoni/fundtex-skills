@@ -35,14 +35,9 @@ India's analysts navigate **NSE/BSE company announcements, exchange calendars, e
 git clone https://github.com/Sauravssoni/fundtex-skills.git && cd fundtex-skills && bash install.sh
 ```
 
-The reviewed installer copies skills to Claude Code (~/.claude/skills), Codex (~/.codex/skills) and shared agent-skill directories (~/.agents/skills). It does not overwrite existing skills, request login tokens or place trades. It provides a local `~/.local/bin/fundtex` launcher. Inspect installation commands before running code downloaded from GitHub.
+The installer copies **19 compatible skills** (8 India-first + 11 attributed original skills) to Claude Code (~/.claude/skills), Codex (~/.codex/skills) and shared agent-skill directories (~/.agents/skills). It does not overwrite existing skills, request login tokens or place trades. It provides a local `~/.local/bin/fundtex` launcher. Inspect installation commands before running code downloaded from GitHub.
 
-**Claude Code marketplace alternative:**
-
-```text
-/plugin marketplace add Sauravssoni/fundtex-skills
-/plugin install fundtex-intelligence@fundtex
-```
+**Agent install / first-use guidance:** Claude Code and Codex can follow the root [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [self-evolution protocol](docs/SELF_EVOLUTION.md) and the individual SKILL.md contracts. This PUBLIC repo contains skills and numerical engines **only**. The account-scoped ChatGPT plugin source lives on the isolated PRIVATE fundtex-website branch feature/private-fundtex-chatgpt-plugin, and is not distributed by this installer.
 
 **Ask Claude or Codex:**
 
@@ -56,15 +51,16 @@ No agent can obtain real NSE quotations just by reading a skill file. Its runtim
 |---|---|---|
 | **GOD EYE** | Adversarial bull/bear/unknown research + historical walk-forward hypothesis evaluator | Transparent research decision, possible abstention, benchmark |
 | **India market** | NSE .NS / BSE .BO validated historical CSV or unofficial best-effort chart | As-of, source, 20/50/200-day averages, RSI, drawdown |
+| **Forecast Lab** | Past-only empirical probability evaluation, Brier score vs two baselines and central-return interval audit | Explicit no-edge gate and abstention; never guaranteed accuracy |
 | **Portfolio risk** | Sector weights, variance contributions, HHI, daily-return correlation | Concentration memo, tail-risk observation |
 | **Scenario laboratory** | 1 million reproducible Gaussian log-return draws possible | Model-dependent VaR, expected shortfall and limitations |
 | **India news desk** | Public feed discovery, each item marked unverified | News leads for analyst verification against primary filings |
 | **Fundamental valuation** | Explicit-input DCF + WACC/terminal growth sensitivity | Hypothetical INR/share valuations with scenario assumptions |
 | **India analyst brief** | Structured source/evidence/hypothesis method | Signed-off research packet; missing data disclosed |
 
-### Seven India-first skills + eleven preserved original skills
+### Eight India-first skills + eleven preserved original skills
 
-**India layer**: `fundtex-god-eye`, `fundtex-india-market`, `fundtex-india-news`, `fundtex-india-risk`, `fundtex-india-portfolio`, `fundtex-india-valuation`, `fundtex-india-brief`.
+**India layer**: `fundtex-god-eye`, `fundtex-india-forecast`, `fundtex-india-market`, `fundtex-india-news`, `fundtex-india-risk`, `fundtex-india-portfolio`, `fundtex-india-valuation`, `fundtex-india-brief`. For a professional Indian-company dossier, see [Research Desk Playbook](docs/INDIA_RESEARCH_DESK.md).
 
 **Preserved 11 original US modules** (by Jake Schincariol): `trader-copycat`, `trader-news`, `trader-budget`, `trader-pelosi`, `trader-analyst`, `trader-screener`, `trader-risk`, `trader-broker`, `trader-tax`, `trader-alerts`, `trader-rebalance`. Their source methods are US-centric (SEC/NYSE/US tax/congress); **they are not automatically an Indian trading/tax connector**. The original brokerage component prepares approval-gated *US* tickets; the Fundtex India engine is read-only.
 
@@ -104,6 +100,18 @@ Historical testing across archived Indian data found **no robust directional for
 
 Import only legitimately obtained source files. Official-format UDiFF ZIPs do not guarantee exchange authentication or dividend/split-adjusted returns. This repository does **not** redistribute an archive of licensed exchange data.
 
+## Adversarial self-improving research — reproducible evaluation harness
+
+The skill does **not** rewrite itself or execute trades. It drives a controlled research loop: source evidence, generate competing hypotheses, implement experimental branches, test chronologically against untouched baselines, red-team counterexamples, seek reviewer approval and document failures before any release. See [SELF_EVOLUTION](docs/SELF_EVOLUTION.md).
+
+The six-regime evaluator stress-tests historical forecast calibration and abstention under random walks, upward/downward drifts, mean reversion, volatility clustering and jump shocks. An expanded 60-scenario local study scored 25,140 simulated next-session outcomes and correctly withheld unsubstantiated predictions in all 60; see [stress benchmark](docs/STRESS_BENCHMARK.md). The results are **synthetic-only engineering checks**, not financial returns or model accuracy claims.
+
+```bash
+python3 -m fundtex_india.cli evaluate --scenarios 36 --sessions 540 --seed 42
+```
+
+For coding agents: ask them to inspect AGENTS.md, verify the installer, execute the full tests, perform a source-aware India research demo and propose reviewed experiments; no direct or unauthorized access to NSE/broker data is implied.
+
 ## Analyst commands
 
 ```bash
@@ -130,13 +138,15 @@ The `--live` option accesses a **best-effort unofficial Yahoo historical chart**
 
 ## What has actually been tested?
 
-The October 21 local validation on macOS/Python 3.11 includes **26 successful automated checks**, including deterministic simulations, no-lookahead scenario checks, malformed input rejection, portfolio concentration contracts and **1,000,000 synthetic Monte Carlo draws** in approximately **3.67 seconds** in that specific run. These are CPU/numerical tests, **not a million trade backtests**.
+The October 21 local validation on macOS/Python 3.11 includes **30 successful automated checks**, including deterministic simulations, no-lookahead scenario checks, malformed input rejection, portfolio concentration contracts and **1,000,000 synthetic Monte Carlo draws** in **3.67–5.22 seconds** across measured runs. These are CPU/numerical tests, **not a million trade backtests**.
 
 | Gate | Status | Interpretation |
 |---|---|---|
-| India CLI contract/regression tests | Local PASS (26/26) | Parsers, time-causal forecast, simulation, risk and CLI in one environment |
-| 1,000,000 seeded Gaussian paths | Local PASS | Computational performance only |
-| One-shot install + rerun | 18 skills to Claude, Codex and agents; tested 54 copies and idempotent rerun | Snapshot copy; no overwrite |
+| India CLI contract/regression tests | **Local PASS (30/30)** | Parsers, time-causal forecast, simulation, risk, bounded synthetic stress and CLI in one environment |
+| 1,000,000 seeded Gaussian paths | Local PASS (5.22 s in final 30-test run) | Computational performance only |
+| 2,000,000 additional seeded Gaussian paths | Local PASS (8.51 s, five-session hypothetical horizon) | Numerical engine stress; synthetic data |
+| 60 adversarial simulated regimes | **PASS: completed, 25,140 chronological forecasts** | All 60 correctly rejected unproven predictive edge; see [benchmark](docs/STRESS_BENCHMARK.md) |
+| One-shot install + rerun | **PASS: 19 skills × 3 destinations = 57 installations; 57 safely skipped on rerun** | Verified in isolated temporary HOME |
 | Google News discovery | Live tested once | Unverified leads; independent verification required |
 | Yahoo price fetch on test host | HTTP 429 | Not dependable live-market validation |
 | Fully licensed NSE/BSE prices & filings | NOT DONE | Institution feed integration needed |
@@ -150,7 +160,7 @@ python3 -m unittest discover -s tests -p "test_fundtex*.py" -v
 RUN_MILLION_TEST=1 python3 -m unittest -v tests.test_fundtex_million
 ```
 
-See [the validation ledger](docs/VALIDATION.md), [empirical failure results](docs/EMPIRICAL_RESEARCH.md), [authorized data import guide](docs/DATA_INGESTION.md), and [analyst evaluation script](docs/ANALYST_PILOT.md). Any claim of profit, precise forecast confidence or trading outperformance needs independent future evaluation first.
+See [the validation ledger](docs/VALIDATION.md), [60-regime stress results](docs/STRESS_BENCHMARK.md), [empirical historical results](docs/EMPIRICAL_RESEARCH.md), [authorized data import guide](docs/DATA_INGESTION.md), and [analyst evaluation script](docs/ANALYST_PILOT.md). Any claim of profit, precise forecast confidence or trading outperformance needs independent future evaluation first.
 
 ## Legal, privacy and data governance
 

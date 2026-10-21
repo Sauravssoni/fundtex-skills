@@ -13,6 +13,7 @@ from .portfolio import evaluate_portfolio
 from .godeye import walkforward
 from .importers import import_googlefinance, import_nse_udiff, export_prices
 from .forecast import prequential
+from .eval_suite import stress_suite
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -31,6 +32,11 @@ def make_parser():
             p.add_argument("--position-inr", type=float, default=100000)
         if name == "brief":
             p.add_argument("--with-news", action="store_true", help="Fetch UNVERIFIED headline leads; verify source before relying")
+    p = sub.add_parser("evaluate")
+    p.add_argument("--scenarios", type=int, default=36, help="A multiple of six synthetic adverse regime scenarios")
+    p.add_argument("--sessions", type=int, default=540)
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--window", type=int, default=120)
     p = sub.add_parser("forecast")
     p.add_argument("--csv", required=True)
     p.add_argument("--symbol", required=True)
@@ -59,6 +65,8 @@ def make_parser():
     return parser
 
 def execute(args):
+    if args.command == "evaluate":
+        return stress_suite(scenarios=args.scenarios,sessions=args.sessions,seed=args.seed,window=args.window)
     if args.command == "forecast":
         data=csv_prices(args.csv,args.symbol)
         out=prequential(data["rows"],window=args.window,seed=args.seed,probability_margin=args.margin)

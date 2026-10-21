@@ -4,13 +4,19 @@ Environment: MacBook Pro, macOS, Python 3.11, isolated QA clone. No broker crede
 
 ## Verified local engineering
 
-- **26/26 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
-- **1,000,000 seeded Gaussian scenario draws PASSED** in **4.32s** in the latest full suite. This is CPU computation, not one million actual backtested trades.
-- Prior temporary-HOME installer run copied **18 skills into 3 agent skill locations (54 copies)**, then skipped all 54 on a safe second run; installed command-line analyzer worked. Changes to installer after that require another audit.
+- **30/30 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
+- **1,000,000 seeded Gaussian scenario draws PASSED** in **5.22s** in the final full suite. This is CPU computation, not one million actual backtested trades.
+- Final temporary-HOME installer verification copied **19 skills into 3 agent skill locations (57 copies)**, then safely skipped all 57 on a second run; the installed evaluation CLI succeeded without any writes into the user's actual home directory.
 - Google News source discovery succeeded over HTTPS on one test. RSS headlines are unverified leads. Unofficial Yahoo prices returned HTTP 429 and are not reliable for production.
 - Hosted GitHub Actions previously failed before running any steps; CI is not established as green.
 - Four third-party historical Indian equity/index archives, ending 2021-01-25: original GOD EYE underperformed buy-and-hold in all four; prequential positive-day-frequency model failed superiority versus an expanding historical-frequency baseline in all four. The research confidence gate ABSTAINED on all four. See EMPIRICAL_RESEARCH.md.
 - Exchange licensing, adjustments for dividends/splits, point-in-time universe, signal timing, legal suitability, delistings, slippage, liquidity and real client controls are NOT verified.
+
+## Adversarial six-regime stress evaluation
+
+A separate 2,000,000-path seeded Gaussian computational stress run also PASSED in 8.51 seconds on the test Mac (5-session hypothetical horizon); it is not two million real historical trades.
+
+60 fully synthetic scenarios generated 32,400 price observations and 25,140 prequential forecasts. All 60 correctly withheld prediction approval under a strict baseline-superiority gate; mean Brier skill was -0.4345% versus the expanding-frequency baseline. See [full stress benchmark](STRESS_BENCHMARK.md). This is software robustness evaluation, **not market prediction accuracy**.
 
 ## Current predictive classification
 
