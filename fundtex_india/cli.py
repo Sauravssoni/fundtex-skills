@@ -9,6 +9,7 @@ from .stats import report
 from .simulate import simulate
 from .valuation import dcf
 from .news import discover
+from .portfolio import evaluate_portfolio
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -30,6 +31,9 @@ def make_parser():
     p = sub.add_parser("news")
     p.add_argument("--query", required=True)
     p.add_argument("--limit", type=int, default=10)
+    p = sub.add_parser("portfolio")
+    p.add_argument("--prices", required=True, help="Multisymbol sourced date,symbol,close CSV")
+    p.add_argument("--holdings", required=True, help="symbol,weight,sector CSV; weights sum to 1")
     p = sub.add_parser("value")
     p.add_argument("--inputs", required=True, help="JSON of explicitly stated DCF assumptions")
     return parser
@@ -37,6 +41,8 @@ def make_parser():
 def execute(args):
     if args.command == "news":
         return discover(args.query, args.limit)
+    if args.command == "portfolio":
+        return evaluate_portfolio(args.prices, args.holdings)
     if args.command == "value":
         with open(args.inputs, encoding="utf-8") as handle:
             return dcf(json.load(handle))
