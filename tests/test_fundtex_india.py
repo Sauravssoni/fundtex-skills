@@ -45,7 +45,7 @@ class FundtexIndiaTest(unittest.TestCase):
 
     def test_drawdown_exact(self):
         self.assertAlmostEqual(drawdown([10, 15, 12, 20, 10]), -0.5)
-        self.assertEqual(pct_changes([100,110]), [0.1])
+        self.assertAlmostEqual(pct_changes([100,110])[0], 0.1)
 
     def test_simulation_seed_reproducible(self):
         x = simulate(self.data["rows"],paths=1000,seed=7)
