@@ -11,7 +11,7 @@
        "$HOME/.local/bin/fundtex" doctor --repo-root "$PWD"
 
    All twelve India-first skills should be present in each supported agent directory and the installed engine should match the checkout. If versions differ, do not overwrite without approval: use the repository's Python CLI temporarily.
-4. Immediately demonstrate two working **fictional, clearly labelled** forensic reports (not price prediction or actual listed companies):
+4. If the installed version includes Analyst Studio v0.9, immediately generate a clearly synthetic chart and an analyst pack from examples/india_prices.csv (see docs/ANALYST_STUDIO_V09.md). Check actual chart HTML/SVG, CSV and memo, identify optional missing PDF/XLSX/PNG, and label the sample FICTIONAL. Then demonstrate two working **fictional, clearly labelled** forensic reports (not price prediction or actual listed companies):
 
        python3 -m fundtex_india.cli diligence --inputs examples/india_company_diligence_SYNTHETIC.json --format markdown
        python3 -m fundtex_india.cli diligence --inputs examples/india_bank_diligence_SYNTHETIC.json --format markdown

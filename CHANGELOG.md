@@ -1,5 +1,13 @@
 # Release history — Fundtex Financial Intelligence
 
+## v0.9 — 21 October 2026
+- Delivered interactive self-contained research chart HTML/SVG; honest close-only line versus validated OHLC candlestick distinction; date/price validation, SMA20/50, EMA12/26, RSI14 and retrospective cross annotations.
+- Added browser-side drawn levels and SVG/PNG/downloadable-notes export, optional Playwright screenshot and loopback-only local CSV refresh viewer (not a licensed real-time exchange feed).
+- Added SVG graphics for sector pie, comparative bars, correlation heatmaps, historical return histograms and valuation waterfall from explicit user inputs.
+- Added one-command analyst-pack with source receipt, price and historical crossover CSV, visual pack, Markdown memo and manifest. Optional vetted artifact_tool XLSX and ReportLab PDF; no silent dependency installation or unreported omissions.
+- Added four agent skills and specialist operating contracts; public repo now 27 skills (16 India-first + 11 attributed MIT upstream), private ChatGPT plugin remains isolated.
+- Added six studio-specific regression checks covering data integrity, XSS/annotations, graphics and end-to-end pack fallback. The full 70/70 local suite passed with a million-path numerical gate and clean 81-skill install/reinstall. End-to-end CLI chart, report pack and SVG pie generation passed; unavailable PDF/XLSX/browser extras were honestly disclosed on the Mac.
+
 ## v0.8 — 21 October 2026
 - Added official read-only RBI/SEBI RSS event discovery with allowlisted HTTPS sources, timestamped metadata, input hashes, secure XML parsing, size/timeout limits and saved-feed fallback. Actual Mac live fetch returned a network error; live feed access remains unverified there.
 - Added AMFI NAV snapshot parser supporting 2026 eight-column scheme, plan and option format and legacy six-column format. Validated a real observed public HDFC Corporate Bond Fund snapshot row (19 Oct 2026) as a parsing smoke test, without bundling publisher data.

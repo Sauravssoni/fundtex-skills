@@ -21,10 +21,31 @@ from .mission import mission as plan_mission, as_markdown as mission_markdown
 from .regulatory import catalog as source_catalog, fetch as regulatory_fetch, from_file as regulatory_file
 from .amfi import from_file as amfi_file
 from .pilot import from_file as pilot_file
+from .chart_studio import prices as studio_prices, chart_spec as studio_spec, annotations_from_file, svg as studio_svg, write_new
+from .interactive_studio import document as studio_html, screenshot as studio_screenshot, local_serve
+from .pack_studio import build_pack
+from .workbook_studio import write_xlsx
+from .memo_studio import memo as studio_memo, pdf as studio_pdf
+from .graphics_studio import pie as graphic_pie, bars as graphic_bars, heatmap as graphic_heatmap, histogram as graphic_histogram, waterfall as graphic_waterfall
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
     sub = parser.add_subparsers(dest="command", required=True)
+    p = sub.add_parser("chart", help="Audited SVG or standalone interactive HTML price chart")
+    p.add_argument("--csv",required=True);p.add_argument("--symbol",required=True)
+    p.add_argument("--out",required=True);p.add_argument("--format",choices=("html","svg"),default="html")
+    p.add_argument("--annotations",default=None)
+    p = sub.add_parser("chart-screenshot",help="PNG screenshot of local chart via installed Playwright Chromium")
+    p.add_argument("--html",required=True);p.add_argument("--out",required=True)
+    p = sub.add_parser("chart-serve",help="127.0.0.1 viewer refreshing ONE approved local CSV (not live exchange)")
+    p.add_argument("--csv",required=True);p.add_argument("--symbol",required=True);p.add_argument("--port",type=int,default=8734)
+    for name in ("workbook","report"):
+        p=sub.add_parser(name);p.add_argument("--csv",required=True);p.add_argument("--symbol",required=True);p.add_argument("--out",required=True)
+    p=sub.add_parser("analyst-pack",help="Charts, exports, research memo, optional PNG/XLSX/PDF")
+    p.add_argument("--csv",required=True);p.add_argument("--symbol",required=True);p.add_argument("--out",required=True)
+    p.add_argument("--annotations",default=None);p.add_argument("--holdings",default=None);p.add_argument("--portfolio-prices",default=None)
+    p=sub.add_parser("visual",help="Illustrative pie/bar/heatmap/histogram/waterfall from approved JSON")
+    p.add_argument("--inputs",required=True);p.add_argument("--kind",required=True,choices=("pie","bar","heatmap","histogram","waterfall"));p.add_argument("--out",required=True)
     sub.add_parser("sources", help="Approved official Indian data/source registry and licence gates")
     p = sub.add_parser("regulatory", help="Official RBI/SEBI RSS metadata discovery, no full-document verification")
     source = p.add_mutually_exclusive_group(required=True)
@@ -105,6 +126,25 @@ def make_parser():
     return parser
 
 def execute(args):
+    if args.command == "chart":
+        spec=studio_spec(studio_prices(args.csv,args.symbol),annotations_from_file(args.annotations))
+        dest=write_new(args.out,studio_svg(spec) if args.format=="svg" else studio_html(spec))
+        return {"file":dest,"chart_type":spec["price_type"],"quality":spec["data_quality"],"exchange_live":False}
+    if args.command == "chart-screenshot":
+        return {"file":studio_screenshot(args.html,args.out),"source_kind":"LOCAL_HTML"}
+    if args.command == "chart-serve":
+        local_serve(args.csv,args.symbol,port=args.port)
+        return {"status":"Viewer stopped"}
+    if args.command == "analyst-pack":
+        return build_pack(args.csv,args.symbol,args.out,annotations=args.annotations,holdings=args.holdings,portfolio_prices=args.portfolio_prices)
+    if args.command in ("workbook","report"):
+        spec=studio_spec(studio_prices(args.csv,args.symbol))
+        if args.command=="workbook":return {"file":write_xlsx(spec,args.out)}
+        return {"file":studio_pdf(spec,args.out) if args.out.lower().endswith(".pdf") else write_new(args.out,studio_memo(spec))}
+    if args.command == "visual":
+        values=json.loads(open(args.inputs,encoding="utf-8").read())
+        engine={"pie":graphic_pie,"bar":graphic_bars,"heatmap":graphic_heatmap,"histogram":graphic_histogram,"waterfall":graphic_waterfall}[args.kind]
+        return {"file":write_new(args.out,engine(values)),"kind":args.kind}
     if args.command == "sources":
         return source_catalog()
     if args.command == "regulatory":

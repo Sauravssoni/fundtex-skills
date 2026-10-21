@@ -10,6 +10,10 @@ This PUBLIC repo contains Claude/Codex-compatible SKILL.md files, source-attribu
 
 **Company financial diligence CLI:** python3 -m fundtex_india.cli diligence --inputs examples/india_company_diligence_SYNTHETIC.json --format markdown . Fictional demonstration figures are not real market data. For actual company research, open primary issuer/exchange filings and prepare an analyst-approved input first; don't fabricate filing extraction.
 
+## v0.9: analyst output is a first-class deliverable
+
+Read docs/ANALYST_STUDIO_V09.md. For chart requests run fundtex chart, report requests fundtex analyst-pack, user-approved portfolios fundtex portfolio and visual; screenshot after rendering use fundtex chart-screenshot only if the approved browser dependency works. Generate chart HTML/SVG/CSV/Markdown even when XLSX/PDF/PNG options aren't installed; report omitted files explicitly from the pack manifest. Check actual produced artifacts and visible rendering before claiming success. Do NOT invent OHLC or claim that localhost CSV refresh is licensed live exchange streaming. Every manual level and SMA crossover is historical/descriptive. For a boss-grade analyst pack require original verified issuer evidence and clear risks/unknowns; code cannot silently access private work history. The public repo contains no private ChatGPT plugin manifest.
+
 ## v0.8: source-verified financial-data research, never bypass licensing
 
 Read docs/INDIA_SOURCE_CONNECTORS.md and docs/ANALYST_PILOT_V2.md. Before advising an analyst, run fundtex sources to inspect permitted source coverage. With user-approved network access the official SEBI/RBI RSS collector discovers publication metadata; full regulatory claims must be validated against the actually opened original. The network may be blocked: use the documented saved-XML fallback or mark unavailable, never fake a headline. For AMFI NAV use only an authorized downloaded text file, verify daily scheme date/plan/option and label file origin unverified until checked. Commercial NSE/BSE feeds require legal rights and must not be reverse-engineered or scraped around restrictions.

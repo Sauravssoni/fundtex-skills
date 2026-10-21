@@ -46,6 +46,19 @@ The v0.7 full unit run passed **53/53 tests** including an isolated disposable-H
 - Optional MCP v2 sandbox and tool logic are unit-tested without SDK. The actual external MCP SDK, host handshake and external agent calls have NOT yet been end-to-end validated.
 - New tests validate source schemas, poisoned XML rejection, HTTPS requirements, AMFI scheme freshness, NAV invalid numeric rejection, benchmark rejection criteria and no arbitrary MCP file access.
 
+## v0.9 Analyst Studio source and artifact verification
+
+- New component-level tests cover close-only charts that never fabricate OHLC, deterministic indicator calculations, labelled fictional source inputs, HTML/SVG rendering, source hashes, valid/invalid annotations, sector/matrix/waterfall/histogram SVG output, CLI-pack file existence, no-overwrite and malformed future/price data failures.
+- 27 SKILL.md directories (16 India-first and 11 attributed original) are counted by the installer and the isolated skill-discovery test. Three supported agent directories imply 81 first installs and 81 safe skips; verified by rerunning the portability gate.
+- On a separate isolated ChatGPT execution environment, the portable Fundtex Studio v0.9 source package produced a five-sheet XLSX, rendered PDF memo, screenshot PNG, browser-drawn level, SVG visuals, CSVs and source manifest using approved optional engines; 11/11 standalone tests passed, 240 seeded numerical price regimes checked, and 1,000,000 synthetic Gaussian draws completed. All demo figures are FICTIONAL and are not market performance.
+- Mac CLI release dependencies reportlab/artifact_tool may be absent; optional deliverables are recorded as unavailable, never silently fabricated or auto-installed. Live NSE/BSE data and independent prediction validation remain unavailable.
+
+## v0.9 final local release gate (21 October 2026)
+
+**70/70 local Python checks passed** on the authorized Mac, including the million-seeded-draw numerical gate (4.83 s in that run) and disposable-HOME installation of all **27 skills** into three agent directories (81 copies) followed by 81 no-overwrite skips. A separately invoked end-to-end CLI test generated the synthetic close-only interactive HTML chart, core pack (SVG, HTML, memo, CSV, source receipt) and a sector pie SVG. The package correctly disclosed missing optional Mac screenshot/XLSX/PDF dependencies; no unverified image or workbook was invented.
+
+The standalone portable v0.9 demonstration in a separate sandbox successfully generated XLSX, PDF, PNG and additional infographic SVGs with installed isolated tools, passed 11/11 studio tests, 240 seed-controlled data regimes and a million mathematical Gaussian draws. The interactive chart's manual level/clear controls were exercised in headless Chromium with no script errors. The demonstration is **FICTIONAL** and cannot establish real financial or forecasting performance.
+
 ## Current predictive classification
 
 **No demonstrated predictive alpha.** Near-80% historical coverage for an 80% return interval does not prove directional skill. Third-party archives are older than five years and have not been independently reconciled to official corporate actions; no claims about today's market follow.
