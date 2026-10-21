@@ -9,6 +9,7 @@ from fundtex_india.market import csv_prices, validate_rows, validate_symbol
 from fundtex_india.stats import report, drawdown, pct_changes
 from fundtex_india.simulate import simulate
 from fundtex_india.valuation import dcf
+from fundtex_india.portfolio import evaluate_portfolio
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "examples" / "india_prices.csv"
@@ -86,6 +87,29 @@ class FundtexIndiaTest(unittest.TestCase):
                             "--symbol","RELIANCE.NS"],cwd=ROOT,text=True,capture_output=True)
         self.assertEqual(p.returncode,2)
         self.assertTrue(json.loads(p.stderr)["no_fallback_quote"])
+
+
+class FundtexPortfolioTest(unittest.TestCase):
+    def test_portfolio_covariance_and_concentration(self):
+        result=evaluate_portfolio(ROOT/"examples"/"portfolio_prices.csv",ROOT/"examples"/"holdings.csv")
+        self.assertEqual(result["common_price_dates"], 200)
+        self.assertAlmostEqual(result["hhi"],0.38)
+        self.assertAlmostEqual(sum(result["variance_risk_contribution_fraction"].values()),1.0,places=6)
+        self.assertEqual(result["sectors"]["Banking"],0.2)
+        self.assertGreater(result["portfolio_annualized_volatility"],0)
+        self.assertEqual(result["data_quality"],"USER_SUPPLIED_UNVERIFIED")
+
+    def test_missing_symbols_fails_closed(self):
+        with self.assertRaisesRegex(ValueError,"Missing asset"):
+            evaluate_portfolio(ROOT/"examples"/"india_prices.csv",ROOT/"examples"/"holdings.csv")
+
+    def test_cli_portfolio_json(self):
+        p=subprocess.run([sys.executable,"-m","fundtex_india.cli","portfolio","--prices",str(ROOT/"examples"/"portfolio_prices.csv"),
+            "--holdings",str(ROOT/"examples"/"holdings.csv")],cwd=ROOT,text=True,capture_output=True)
+        self.assertEqual(p.returncode,0,p.stderr)
+        result=json.loads(p.stdout)
+        self.assertTrue(result["research_only"])
+        self.assertEqual(len(result["weights"]),3)
 
 if __name__ == "__main__":
     unittest.main()
