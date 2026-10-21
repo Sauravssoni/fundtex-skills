@@ -11,6 +11,8 @@ from .valuation import dcf
 from .news import discover
 from .portfolio import evaluate_portfolio
 from .godeye import walkforward
+from .importers import import_googlefinance, import_nse_udiff, export_prices
+from .forecast import prequential
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -29,6 +31,17 @@ def make_parser():
             p.add_argument("--position-inr", type=float, default=100000)
         if name == "brief":
             p.add_argument("--with-news", action="store_true", help="Fetch UNVERIFIED headline leads; verify source before relying")
+    p = sub.add_parser("forecast")
+    p.add_argument("--csv", required=True)
+    p.add_argument("--symbol", required=True)
+    p.add_argument("--window", type=int, default=252)
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--margin", type=float, default=0.10)
+    p = sub.add_parser("import")
+    p.add_argument("--source-type", required=True, choices=("googlefinance","nse-udiff"))
+    p.add_argument("--files", required=True, nargs="+", help="Local archived CSV or NSE UDiFF ZIP files")
+    p.add_argument("--symbol", required=True)
+    p.add_argument("--out", required=True, help="New output CSV (never overwritten)")
     p = sub.add_parser("godeye")
     p.add_argument("--csv",required=True)
     p.add_argument("--symbol",required=True)
@@ -46,6 +59,24 @@ def make_parser():
     return parser
 
 def execute(args):
+    if args.command == "forecast":
+        data=csv_prices(args.csv,args.symbol)
+        out=prequential(data["rows"],window=args.window,seed=args.seed,probability_margin=args.margin)
+        out["data_source"]=data["source"]
+        out["input_sha256"]=data["sha256"]
+        out["symbol"]=data["symbol"]
+        out["data_quality"]=data["quality"]
+        out["source_note"]=data["note"]
+        out["research_only"]=True
+        return out
+    if args.command == "import":
+        if args.source_type == "googlefinance":
+            if len(args.files) != 1:
+                raise ValueError("Google Finance importer accepts one CSV file")
+            parsed=import_googlefinance(args.files[0],args.symbol)
+        else:
+            parsed=import_nse_udiff(args.files,args.symbol)
+        return export_prices(parsed,args.out)
     if args.command == "news":
         return discover(args.query, args.limit)
     if args.command == "godeye":

@@ -93,6 +93,17 @@ python3 -m fundtex_india.cli godeye --csv examples/india_prices.csv --symbol REL
 
 **Example inputs are synthetic and do not represent historical Reliance pricing.** Use approved adjustment-corrected exports for real research.
 
+## Probabilistic forecast laboratory (v0.3)
+
+Beyond a binary trade hypothesis, Fundtex now audits a **prequential** return-distribution forecast. Each day it generates an empirical next-session positive-return frequency and 10th/50th/90th return quantiles using **only previously observed closes**. It subsequently scores those forecasts against realized outcomes, a fixed 50/50 probability baseline and an expanding-frequency baseline. A moving-block bootstrap and measured 80% central interval coverage are displayed, with conservative abstention gates.
+
+Historical testing across archived Indian data found **no robust directional forecasting advantage across four instruments**, so all four returned an abstention result. That is a system correctness result, not proof of profitable prediction. See [Empirical Research](docs/EMPIRICAL_RESEARCH.md) and [India Data Imports](docs/DATA_INGESTION.md).
+
+    python3 -m fundtex_india.cli forecast --csv /approved/stock-prices.csv --symbol INFY.NS --window 252
+    python3 -m fundtex_india.cli import --source-type nse-udiff --files /approved/day1.zip /approved/day2.zip --symbol INFY.NS --out /tmp/INFY-unadjusted.csv
+
+Import only legitimately obtained source files. Official-format UDiFF ZIPs do not guarantee exchange authentication or dividend/split-adjusted returns. This repository does **not** redistribute an archive of licensed exchange data.
+
 ## Analyst commands
 
 ```bash
@@ -119,13 +130,13 @@ The `--live` option accesses a **best-effort unofficial Yahoo historical chart**
 
 ## What has actually been tested?
 
-The October 21 local validation on macOS/Python 3.11 includes **20 successful automated checks**, including deterministic simulations, no-lookahead scenario checks, malformed input rejection, portfolio concentration contracts and **1,000,000 synthetic Monte Carlo draws** in approximately **3.67 seconds** in that specific run. These are CPU/numerical tests, **not a million trade backtests**.
+The October 21 local validation on macOS/Python 3.11 includes **26 successful automated checks**, including deterministic simulations, no-lookahead scenario checks, malformed input rejection, portfolio concentration contracts and **1,000,000 synthetic Monte Carlo draws** in approximately **3.67 seconds** in that specific run. These are CPU/numerical tests, **not a million trade backtests**.
 
 | Gate | Status | Interpretation |
 |---|---|---|
-| India CLI contract/regression tests | Local PASS (20/20) | Basic known contracts in a single environment |
+| India CLI contract/regression tests | Local PASS (26/26) | Parsers, time-causal forecast, simulation, risk and CLI in one environment |
 | 1,000,000 seeded Gaussian paths | Local PASS | Computational performance only |
-| One-shot install + rerun | **PASS: 54 copied across 3 locations; rerun 54 skipped** | 18 unique skills, installed Claude + Codex + shared agent dirs |
+| One-shot install + rerun | 18 skills to Claude, Codex and agents; tested 54 copies and idempotent rerun | Snapshot copy; no overwrite |
 | Google News discovery | Live tested once | Unverified leads; independent verification required |
 | Yahoo price fetch on test host | HTTP 429 | Not dependable live-market validation |
 | Fully licensed NSE/BSE prices & filings | NOT DONE | Institution feed integration needed |
@@ -139,7 +150,7 @@ python3 -m unittest discover -s tests -p "test_fundtex*.py" -v
 RUN_MILLION_TEST=1 python3 -m unittest -v tests.test_fundtex_million
 ```
 
-See [the evidence ledger](docs/VALIDATION.md) and [an analyst UAT script](docs/ANALYST_PILOT.md). Any claim of profit, precise forecast confidence or trading outperformance needs independent future evaluation first.
+See [the validation ledger](docs/VALIDATION.md), [empirical failure results](docs/EMPIRICAL_RESEARCH.md), [authorized data import guide](docs/DATA_INGESTION.md), and [analyst evaluation script](docs/ANALYST_PILOT.md). Any claim of profit, precise forecast confidence or trading outperformance needs independent future evaluation first.
 
 ## Legal, privacy and data governance
 

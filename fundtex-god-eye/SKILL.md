@@ -21,6 +21,14 @@ argument-hint: "[NSE or BSE company, ticker, sourced price CSV]"
    fundtex godeye --csv /path/to/prices.csv --symbol INFY.NS --min-train 120 --train-lookback 60 --cost-bps 12
    ```
    Or from repository: `python3 -m fundtex_india.cli godeye ...`. Compare against the net buy-and-hold benchmark and cash. Inspect sample length, costs, drawdown, long exposure, and model failure. The engine tests four simple past-derived reference methods, not a certified model. Never fabricate results if code cannot run.
+
+   Also run the **probability-calibration lab**, which generates each historic day’s up-frequency and return quantiles using only its past observations, then scores forecasts after the next close against fixed 50% and expanding-frequency baselines:
+   ```bash
+   fundtex forecast --csv /path/to/approved-prices.csv --symbol INFY.NS --window 252 --margin 0.10
+   ```
+   Report historical Brier skill, 80% quantile-interval coverage, resampled uncertainty bounds and whether the reliability gate ABSTAINED. **All four tested 2000–2021 India series failed to demonstrate robust directional edge.** Do not advertise a future probability as reliably calibrated when that gate fails. See docs/EMPIRICAL_RESEARCH.md.
+
+   For source import, use offline `fundtex import --source-type nse-udiff --files ... --symbol INFY.NS --out /tmp/infy.csv` on properly authorized exchange archives, not scraped feeds. UDiFF closes are unadjusted for dividends/splits. Review docs/DATA_INGESTION.md.
 6. **Risk red-team:** Consider omitted market frictions, corporate actions, point-in-time survival, liquidity, event gaps, shock scenarios, unauthorized data redistribution and forecast fragility. If the model or evidence lacks support, **ABSTAIN**.
 7. **Human-ready decision packet:** Include as-of, evidence ledger, contradictions, thesis and invalidators, quantitative methods, data-quality qualifiers, conditional scenarios and analyst follow-up checklist.
 

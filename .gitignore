@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+.DS_Store
+.reliance-googlefinance-archive.csv
+.NSE_*_from2000.csv
+.NIFTY_50_INDEX_from2000.csv
+.local-market-inputs/
+*.manifest.json

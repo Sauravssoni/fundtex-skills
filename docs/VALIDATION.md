@@ -1,39 +1,32 @@
-# Fundtex validation ledger — 21 October 2026
+# Fundtex Validation Ledger — 21 October 2026
 
-**Environment:** MacBook Pro, macOS, Python 3.11. Local execution against cloned `Sauravssoni/fundtex-skills` main. Work performed in isolated QA directories; no broker keys, production credentials or trade placements.
+Environment: MacBook Pro, macOS, Python 3.11, isolated QA clone. No broker credentials, production trading or private institutional portfolios accessed.
 
-## Executed and verified
+## Verified local engineering
 
-| Check | Result | Meaning |
-|---|---|---|
-| Fundtex numerical/contracts suite | **20/20 PASS** | Input validation, CLI JSON, portfolio, DCF, time-causal GOD EYE, seeded simulation |
-| 1,000,000 Gaussian scenario draws | **PASS, 3.67 s** in one run | CPU computation, *not* one million historical trades |
-| GOD EYE | **79 synthetic out-of-sample decisions** from 200 fabricated observations | Causal model-selection test, **not real market alpha** |
-| Claude/Codex/shared installer | **54 copies installed, 0 skipped** | 18 unique skills replicated across three target directories in a temporary HOME |
-| Installer rerun | **0 copied, 54 skipped** | No overwrite of preexisting skill files |
-| Installed CLI | **PASS** | GOD EYE invoked from isolated installed launcher |
-| Google News HTTPS discovery | **PASS** once | Headline discovery, no verification of underlying article claims |
-| Yahoo unofficial price endpoint | **429 rate-limited** | Reliable live/delayed quotes NOT established |
-| Hosted GitHub Actions | **NOT GREEN: runners failed before steps** | Local test pass must not be confused with CI |
-| Institutional security / SEBI / exchange data rights | **NOT VERIFIED** | Professional deployment not approved |
+- **26/26 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
+- **1,000,000 seeded Gaussian scenario draws PASSED** in **4.32s** in the latest full suite. This is CPU computation, not one million actual backtested trades.
+- Prior temporary-HOME installer run copied **18 skills into 3 agent skill locations (54 copies)**, then skipped all 54 on a safe second run; installed command-line analyzer worked. Changes to installer after that require another audit.
+- Google News source discovery succeeded over HTTPS on one test. RSS headlines are unverified leads. Unofficial Yahoo prices returned HTTP 429 and are not reliable for production.
+- Hosted GitHub Actions previously failed before running any steps; CI is not established as green.
+- Four third-party historical Indian equity/index archives, ending 2021-01-25: original GOD EYE underperformed buy-and-hold in all four; prequential positive-day-frequency model failed superiority versus an expanding historical-frequency baseline in all four. The research confidence gate ABSTAINED on all four. See EMPIRICAL_RESEARCH.md.
+- Exchange licensing, adjustments for dividends/splits, point-in-time universe, signal timing, legal suitability, delistings, slippage, liquidity and real client controls are NOT verified.
 
-## Quantitative interpretation
+## Current predictive classification
 
-**No credible performance edge has been measured.** The 200-row `examples/india_prices.csv` is fabricated for input-contract testing; it cannot establish a real-world next-day hit rate. GOD EYE uses four simple reference policies and selects using trailing past-only returns. Even genuine historical backtests would require a point-in-time universe, delistings, dividend/split adjustments, time-split holdouts, realistic Indian execution charges and slippage, liquidity capacity, sector-relative benchmarks and an embargo on strategy tuning against hidden test periods.
+**No demonstrated predictive alpha.** Near-80% historical coverage for an 80% return interval does not prove directional skill. Third-party archives are older than five years and have not been independently reconciled to official corporate actions; no claims about today's market follow.
 
-The million stochastic scenarios are mathematical draws fit to fabricated input, **not** 1,000,000 historically observed trades. A single local suite cannot certify production quality, security, investment suitability, calibration or profitability.
-
-## Installation provenance
-
-The 11 `trader-*` packages are by Jake Schincariol, MIT, originally US-centered. Seven additional India skills are Fundtex/Syntheon-specific. The original US `trader-broker` flow remains approval-gated and is **not** an India trading integration.
+The offline NSE UDiFF importer reads user-provided ZIPs and checks columns, equity series, duplicate dates and ISIN stability. It does not certify exchange authenticity, market data redistribution rights or corporate-action-adjusted returns.
 
 ## Institutional go/no-go gates
 
-1. Sign exchange/broker-approved data licences with appropriate display/redistribution entitlements.
-2. Source and normalize Indian price, corporate actions, shareholdings and signed financial disclosures with point-in-time provenance.
-3. Validate securities-master accuracy, FII/DII metrics, balance sheets and valuation comparables against primary filings.
-4. Conduct genuine historical walk-forward backtests with survivorship, impact/slippage and transaction cost realism, held-out periods and blind counterfactual baselines.
-5. Complete information-security, tenant isolation, controlled model execution, audit logging and client confidentiality reviews.
-6. Have qualified counsel assess **current** SEBI Research Analyst and Investment Adviser rules, algorithmic services, data licensing and disclosure responsibilities before external personalized recommendations.
+1. Obtain licensed/authorized NSE/BSE institution-grade prices, revisions, company actions and ISIN master.
+2. Add independently verified primary financial disclosures and publication timestamps.
+3. Conduct blind, time-causal, multi-asset walk-forward tests against credible baselines with Indian execution charges and impact.
+4. Report prospective paper-trial calibration, costs, opportunity-matched benchmark and all failures.
+5. Complete SEBI RA/IA, data-licensing and privacy/cybersecurity checks as applicable.
+6. Separately verify live website route and hosted CI; a Git commit and a local build do not establish deployment.
 
-**Release classification:** Public developer/analyst research preview. No promises of returns or investment recommendations. The ChatGPT plugin v0.2 pilot is private and **skills-only**; it cannot execute Python or provide licensed feeds by itself.
+**Verdict:** increasingly useful and testable research software, NOT an investment prediction product certified for institutional recommendations. A conservative ABSTAIN is preferable to an unsupported profit claim.
+
+Eleven original US skills copyright Jake Schincariol, MIT. Fundtex India modules developed by Syntheon Technology.
