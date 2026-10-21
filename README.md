@@ -125,7 +125,7 @@ The October 21 local validation on macOS/Python 3.11 includes **20 successful au
 |---|---|---|
 | India CLI contract/regression tests | Local PASS (20/20) | Basic known contracts in a single environment |
 | 1,000,000 seeded Gaussian paths | Local PASS | Computational performance only |
-| One-shot install + rerun | Tested earlier (17 skills); expanded multi-agent install requires new regression | Snapshot copy; no overwrite |
+| One-shot install + rerun | **PASS: 54 copied across 3 locations; rerun 54 skipped** | 18 unique skills, installed Claude + Codex + shared agent dirs |
 | Google News discovery | Live tested once | Unverified leads; independent verification required |
 | Yahoo price fetch on test host | HTTP 429 | Not dependable live-market validation |
 | Fully licensed NSE/BSE prices & filings | NOT DONE | Institution feed integration needed |

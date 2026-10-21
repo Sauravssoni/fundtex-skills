@@ -1,20 +1,39 @@
 # Fundtex validation ledger — 21 October 2026
 
-**Environment:** MacBook Pro, macOS, Python 3.11, clean cloned checkout of this repository inside an isolated QA working directory. No brokerage or production credentials used.
+**Environment:** MacBook Pro, macOS, Python 3.11. Local execution against cloned `Sauravssoni/fundtex-skills` main. Work performed in isolated QA directories; no broker keys, production credentials or trade placements.
 
-## Confirmed local executions
-- First offline run exposed a test-only exact float equality assertion; corrected with approximate float assertion.
-- Second full local run (before portfolio extension): **13 tests passed**, 0 skipped, including 1,000,000-path stochastic numerical run. Execution of million draws: **4.81 s** initially and **4.33 s** on post-HTTPS update; different wall timings, same seeded fifth and 95th percentiles.
-- Python compileall of all source files: **passed**.
-- One-shot installer tested under a *temporary HOME*: first run installed **16 skills** plus isolated CLI engine and launcher; second run skipped all 16 non-destructively; installed launcher returned valid 200-observation synthetic report. Final clean-home installer regression: **17 skills installed, 0 skipped**, portfolio CLI launched successfully (HHI 0.38 on synthetic fixture), second installation **0 installed, 17 skipped**.
-- Google News RSS: successful verified-HTTPS retrieval of 3 discovery leads from Mac via OS curl certificate trust fallback. These are unverified headline leads.
-- Yahoo chart attempted from Mac: **HTTP 429**. Thus *real-time or delayed Yahoo quote availability is NOT validated*. CSV input path is validated.
-- GitHub Actions runs initiated but jobs failed **before execution** (empty job steps; no logs). **Do not call CI green**. Local regression provides the verified result.
+## Executed and verified
 
-- **Final post-portfolio clean checkout regression:** **16/16 tests passed** including 1M seeded Gaussian scenario draws in **3.98 s** (entire suite 8.44 s). Portfolio convergence, sector exposure, CLI JSON and missing-asset rejection passed.
+| Check | Result | Meaning |
+|---|---|---|
+| Fundtex numerical/contracts suite | **20/20 PASS** | Input validation, CLI JSON, portfolio, DCF, time-causal GOD EYE, seeded simulation |
+| 1,000,000 Gaussian scenario draws | **PASS, 3.67 s** in one run | CPU computation, *not* one million historical trades |
+| GOD EYE | **79 synthetic out-of-sample decisions** from 200 fabricated observations | Causal model-selection test, **not real market alpha** |
+| Claude/Codex/shared installer | **54 copies installed, 0 skipped** | 18 unique skills replicated across three target directories in a temporary HOME |
+| Installer rerun | **0 copied, 54 skipped** | No overwrite of preexisting skill files |
+| Installed CLI | **PASS** | GOD EYE invoked from isolated installed launcher |
+| Google News HTTPS discovery | **PASS** once | Headline discovery, no verification of underlying article claims |
+| Yahoo unofficial price endpoint | **429 rate-limited** | Reliable live/delayed quotes NOT established |
+| Hosted GitHub Actions | **NOT GREEN: runners failed before steps** | Local test pass must not be confused with CI |
+| Institutional security / SEBI / exchange data rights | **NOT VERIFIED** | Professional deployment not approved |
 
-## What numerical testing does *not* prove
-The test simulates a million random scenario draws from a Gaussian fit to an explicitly synthetic price series. This is **not** 1M historical backtested trades, a trading alpha evaluation, forecast validation, portfolio investment advice, capacity/market-impact testing, or an institution's UAT.
+## Quantitative interpretation
 
-## License & provenance
-Source 11 skills authored by Jake Schincariol and retained with his MIT copyright. India additions by Fundtex/Syntheon. No commercial NSE/BSE data licensed.
+**No credible performance edge has been measured.** The 200-row `examples/india_prices.csv` is fabricated for input-contract testing; it cannot establish a real-world next-day hit rate. GOD EYE uses four simple reference policies and selects using trailing past-only returns. Even genuine historical backtests would require a point-in-time universe, delistings, dividend/split adjustments, time-split holdouts, realistic Indian execution charges and slippage, liquidity capacity, sector-relative benchmarks and an embargo on strategy tuning against hidden test periods.
+
+The million stochastic scenarios are mathematical draws fit to fabricated input, **not** 1,000,000 historically observed trades. A single local suite cannot certify production quality, security, investment suitability, calibration or profitability.
+
+## Installation provenance
+
+The 11 `trader-*` packages are by Jake Schincariol, MIT, originally US-centered. Seven additional India skills are Fundtex/Syntheon-specific. The original US `trader-broker` flow remains approval-gated and is **not** an India trading integration.
+
+## Institutional go/no-go gates
+
+1. Sign exchange/broker-approved data licences with appropriate display/redistribution entitlements.
+2. Source and normalize Indian price, corporate actions, shareholdings and signed financial disclosures with point-in-time provenance.
+3. Validate securities-master accuracy, FII/DII metrics, balance sheets and valuation comparables against primary filings.
+4. Conduct genuine historical walk-forward backtests with survivorship, impact/slippage and transaction cost realism, held-out periods and blind counterfactual baselines.
+5. Complete information-security, tenant isolation, controlled model execution, audit logging and client confidentiality reviews.
+6. Have qualified counsel assess **current** SEBI Research Analyst and Investment Adviser rules, algorithmic services, data licensing and disclosure responsibilities before external personalized recommendations.
+
+**Release classification:** Public developer/analyst research preview. No promises of returns or investment recommendations. The ChatGPT plugin v0.2 pilot is private and **skills-only**; it cannot execute Python or provide licensed feeds by itself.
