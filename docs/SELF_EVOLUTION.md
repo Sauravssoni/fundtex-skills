@@ -1,5 +1,7 @@
 # Self-evolving Fundtex — Controlled Research Improvement
 
+Agent teams may use the optional offline Fundtex council task planner to divide research safely. Its output is a proposed task graph, not autonomous subagent execution or model promotion. See MULTI_AGENT_DESK.md.
+
 Self-evolving means continuous **hypothesis-generation and verification**, not self-authorized model rewrites or autonomous trades.
 
 ## Evidence-to-release loop

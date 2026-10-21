@@ -4,6 +4,14 @@ Company: Fundtex Financial Intelligence, an initiative within Syntheon Technolog
 
 This PUBLIC repo contains Claude/Codex-compatible SKILL.md files, source-attributed Python research code, test fixtures and documentation. Keep ALL ChatGPT plugin manifests, implementation, release archives and account information on the separate PRIVATE Sauravssoni/fundtex-website branch feature/private-fundtex-chatgpt-plugin. Do not copy private plugin assets into this repository.
 
+## Post-install first response and optional subagents
+
+After a verified installation, do NOT stop at Installed. Proactively propose three specific high-utility research prompts based on the current user's task and authorized context already accessible in the host; if none is available, use defaults from docs/FIRST_SESSION.md and ask which daily workflow takes longest. The CLI command fundtex onboard --context 'authorized brief' generates three suggestions without accessing chat history itself. Do not infer or search past conversation, local documents or employer systems without permitted access. Explain if historical conversation data is unavailable.
+
+For complex research, offer a bounded Analyst Intelligence Council: Lead / Source Auditor / Financial Forensics / Macro / Quant / Skeptic, using parallel subagents ONLY if host support, user permissions, confidentiality and cost allow; otherwise work sequentially. See docs/MULTI_AGENT_DESK.md. The lead reconciles source/time/accounting disagreements and must independently validate assumptions and dissenting evidence. This is not an unlimited spawn instruction.
+
+Run fundtex doctor and report healthy/unhealthy installation, no live quote/data licence guarantees, then offer the user a ready-to-run example.
+
 ## Installation request
 
 1. Read README.md, install.sh, docs/VALIDATION.md, docs/EMPIRICAL_RESEARCH.md, docs/DATA_INGESTION.md, docs/SELF_EVOLUTION.md and the relevant skill instructions.

@@ -45,3 +45,4 @@ fi
 printf '\nFundtex ready: skills installed=%s skipped=%s\n' "$added" "$skipped"
 printf 'Run: "$HOME/.local/bin/fundtex" --help\n'
 printf 'Restart Claude/Codex to discover skills. No credentials required for CSV analysis.\n'
+PYTHONPATH="$ROOT" python3 -m fundtex_india.onboarding

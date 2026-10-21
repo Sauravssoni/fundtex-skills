@@ -14,10 +14,20 @@ from .godeye import walkforward
 from .importers import import_googlefinance, import_nse_udiff, export_prices
 from .forecast import prequential
 from .eval_suite import stress_suite
+from .onboarding import suggest, doctor
+from .council import plan as council_plan
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
     sub = parser.add_subparsers(dest="command", required=True)
+    p = sub.add_parser("council", help="Offline bounded multi-agent task plan; does not spawn or execute workers")
+    p.add_argument("--scope", default="India equities", help="Short, non-sensitive research domain; not echoed")
+    p.add_argument("--mode", choices=("QUICK","DEEP","QUANT"),default="DEEP")
+    p.add_argument("--max-workers",type=int,default=5)
+    p.add_argument("--parallel",action="store_true",help="Recommend parallel workers where authorized, not spawn them")
+    sub.add_parser("doctor", help="Offline install-health audit; never reads private records")
+    p = sub.add_parser("onboard", help="Suggest 3 first research prompts from explicit task context only")
+    p.add_argument("--context", default="", help="An optional short user-authorized description; never crawls chat history")
     for name in ("analyze", "simulate", "brief"):
         p = sub.add_parser(name)
         src = p.add_mutually_exclusive_group(required=True)
@@ -65,6 +75,12 @@ def make_parser():
     return parser
 
 def execute(args):
+    if args.command == "council":
+        return council_plan(scope=args.scope,max_workers=args.max_workers,parallel=args.parallel,mode=args.mode)
+    if args.command == "doctor":
+        return doctor()
+    if args.command == "onboard":
+        return suggest(args.context)
     if args.command == "evaluate":
         return stress_suite(scenarios=args.scenarios,sessions=args.sessions,seed=args.seed,window=args.window)
     if args.command == "forecast":
