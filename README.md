@@ -1,77 +1,165 @@
-# FUNDTEX FINANCIAL INTELLIGENCE 🇮🇳
+<div align="center">
 
-**Fundtex Financial Intelligence** — a fintech financial-research initiative in the **Syntheon Technology Private Limited** ecosystem.
+![Fundtex Financial Intelligence](assets/fundtex-hero.svg)
 
-India-first investment-research skill pack. Keeps all **11 original MIT-licensed trader-skill modules** from [Jake Schincariol](https://github.com/Jakeschincariol/trader-skill) and adds **7 Fundtex India Claude skills** and a reproducible Python research engine for NSE/BSE equity workflows.
+# FUNDTEX · FINANCIAL INTELLIGENCE
 
-**Positioning:** Source-first, analyst-reviewed financial intelligence. Fundtex is not presented as a registered SEBI investment adviser/research analyst, licensed exchange data vendor, brokerage, or proven alpha engine.
+**A source-first, India-native financial research skill stack for Claude, Codex and analyst teams.**
 
-## One-shot setup
+**Developed by Fundtex Financial Intelligence in the Syntheon Technology Private Limited ecosystem.**
 
-macOS or Linux, git + Python 3.9+, no Python package dependencies:
+[![Research-only](https://img.shields.io/badge/STATUS-RESEARCH%20PREVIEW-204b83?style=flat-square)](docs/VALIDATION.md)
+[![Python](https://img.shields.io/badge/PYTHON-3.9%2B-366bb2?style=flat-square)](fundtex_india)
+[![Original MIT](https://img.shields.io/badge/UPSTREAM-MIT-3d86b4?style=flat-square)](THIRD_PARTY_NOTICES.md)
+[![No Autonomous Trading](https://img.shields.io/badge/EXECUTION-HUMAN%20CONTROLLED-367a80?style=flat-square)](docs/ANALYST_PILOT.md)
+
+[**Product page**](https://fundedtex.com/financial-skills) · [**Quickstart**](#quickstart) · [**GOD EYE**](#god-eye--time-causal-research) · [**Analyst trial**](docs/ANALYST_PILOT.md) · [**Validation**](docs/VALIDATION.md) · [**Source attribution**](THIRD_PARTY_NOTICES.md)
+
+</div>
+
+---
+
+> **Positioning:** A research instrument, not an oracle. Reports must distinguish verifiable market facts, incomplete data, model hypotheses, simulated scenarios and human judgment. No assurance of returns, exchange data licence, SEBI registration, or auto-trading is claimed.
+
+## Why this exists
+
+India's analysts navigate **NSE/BSE company announcements, exchange calendars, earnings statements, auditor notes, RBI macro context, shareholding, sector shocks, and imperfect market feeds**. AI becomes useful only when it can trace its claims back to evidence, compare alternatives and explicitly *abstain* rather than confidently fabricate. Fundtex aims to codify that discipline in portable, inspectable skills.
+
+**Not a replacement for existing professional terminals.** The current edition is a transparent Python research preview with data quality labels, deterministic portfolio analytics, a reproducible walk-forward strategy lab, and agent workflows. Commercial exchange feeds, point-in-time security master and financial statement adapters are upcoming gates.
+
+## Quickstart
+
+**One shell command for macOS/Linux (git, Python 3.9+):**
 
 ```bash
 git clone https://github.com/Sauravssoni/fundtex-skills.git && cd fundtex-skills && bash install.sh
 ```
 
-Installs non-conflicting skill folders under `~/.claude/skills` and the read-only India CLI at `$HOME/.local/bin/fundtex`. Existing folders/binaries are skipped, not overwritten. Restart Claude Code and invoke the Fundtex India skills.
+The reviewed installer copies skills to Claude Code (~/.claude/skills), Codex (~/.codex/skills) and shared agent-skill directories (~/.agents/skills). It does not overwrite existing skills, request login tokens or place trades. It provides a local `~/.local/bin/fundtex` launcher. Inspect installation commands before running code downloaded from GitHub.
 
-**Claude Code plugin alternative:** (plugin installation discovers skills; the Python CLI still requires the one-shot shell installer above)
+**Claude Code marketplace alternative:**
 
 ```text
 /plugin marketplace add Sauravssoni/fundtex-skills
 /plugin install fundtex-intelligence@fundtex
 ```
 
-## India analyst workflows
+**Ask Claude or Codex:**
+
+> Use the fundtex-god-eye skill. Investigate an NSE/BSE company's latest primary exchange filings and earnings, identify risks and contradictions, and compare any time-causal price hypothesis to buy-and-hold with explicit costs. Cite source dates. Say ABSTAIN when you cannot verify the evidence.
+
+No agent can obtain real NSE quotations just by reading a skill file. Its runtime still needs network permissions and legally obtained data. The plugin and CLI are separate: an agent may need to call the installed CLI through its authorized shell.
+
+## The research stack
+
+| Layer | Capability | Analyst output |
+|---|---|---|
+| **GOD EYE** | Adversarial bull/bear/unknown research + historical walk-forward hypothesis evaluator | Transparent research decision, possible abstention, benchmark |
+| **India market** | NSE .NS / BSE .BO validated historical CSV or unofficial best-effort chart | As-of, source, 20/50/200-day averages, RSI, drawdown |
+| **Portfolio risk** | Sector weights, variance contributions, HHI, daily-return correlation | Concentration memo, tail-risk observation |
+| **Scenario laboratory** | 1 million reproducible Gaussian log-return draws possible | Model-dependent VaR, expected shortfall and limitations |
+| **India news desk** | Public feed discovery, each item marked unverified | News leads for analyst verification against primary filings |
+| **Fundamental valuation** | Explicit-input DCF + WACC/terminal growth sensitivity | Hypothetical INR/share valuations with scenario assumptions |
+| **India analyst brief** | Structured source/evidence/hypothesis method | Signed-off research packet; missing data disclosed |
+
+### Seven India-first skills + eleven preserved original skills
+
+**India layer**: `fundtex-god-eye`, `fundtex-india-market`, `fundtex-india-news`, `fundtex-india-risk`, `fundtex-india-portfolio`, `fundtex-india-valuation`, `fundtex-india-brief`.
+
+**Preserved 11 original US modules** (by Jake Schincariol): `trader-copycat`, `trader-news`, `trader-budget`, `trader-pelosi`, `trader-analyst`, `trader-screener`, `trader-risk`, `trader-broker`, `trader-tax`, `trader-alerts`, `trader-rebalance`. Their source methods are US-centric (SEC/NYSE/US tax/congress); **they are not automatically an Indian trading/tax connector**. The original brokerage component prepares approval-gated *US* tickets; the Fundtex India engine is read-only.
+
+## GOD EYE — time-causal research
+
+```text
+                 FUNDAMENTALS / EARNINGS  ──┐
+       NSE & BSE DISCLOSURES / EVENTS  ─────┼─► Evidence ledger
+         RBI / SEBI / MACRO CONTEXT    ─────┤   timestamps + counterclaims
+        APPROVED HISTORICAL PRICES    ──────┘
+                                                 │
+                                Bull ◀── Thesis ──▶ Bear
+                                                 │
+                        Prior-only walk-forward + costs
+                                                 │
+                     Buy & hold baseline / cash benchmark
+                                                 │
+                              HUMAN REVIEW · ABSTAIN
+```
+
+The current price-hypothesis lab compares four **simple transparent** strategies (momentum20, reversion5, trend20x60, breakout20) against cost-adjusted buy-and-hold. Each day's candidate is selected using **only prices and realized returns available by that decision close**. If no method scored positively on its trailing window, it enters a hypothetical cash/abstain position. This is **not evidence of live predictive accuracy**, and the evaluation does not yet have an independently constructed point-in-time universe, full Indian fee model, delisting adjustment or live-forward performance record.
 
 ```bash
-python3 -m fundtex_india.cli analyze --csv examples/india_prices.csv --symbol RELIANCE.NS
-python3 -m fundtex_india.cli simulate --csv examples/india_prices.csv --symbol RELIANCE.NS --paths 1000000 --horizon 1 --seed 42
-python3 -m fundtex_india.cli value --inputs examples/valuation.json
-python3 -m fundtex_india.cli news --query 'Infosys NSE earnings'
-python3 -m fundtex_india.cli brief --csv examples/india_prices.csv --symbol RELIANCE.NS
-python3 -m fundtex_india.cli portfolio --prices examples/portfolio_prices.csv --holdings examples/holdings.csv
-python3 -m fundtex_india.cli analyze --live --symbol INFY.NS
 python3 -m fundtex_india.cli godeye --csv examples/india_prices.csv --symbol RELIANCE.NS
 ```
 
-`--live` uses an **unofficial, best-effort Yahoo historical chart**, *not* a live NSE/BSE exchange-grade quote or data licence; it may be delayed, rate-limited, blocked or inaccurate. Only use it where terms allow. Prefer institution-approved historical exports with `date,symbol,close` or `timestamp,symbol,close`; confirm adjusted-close treatment.
+**Example inputs are synthetic and do not represent historical Reliance pricing.** Use approved adjustment-corrected exports for real research.
 
-**The included example price series and valuation assumptions are deliberately synthetic.** They must never be cited as actual Reliance market history, live prices, company reported numbers, or predictive performance.
-
-## What it does
-
-| Component | Function | Evidence status |
-|---|---|---|
-| 11 retained `trader-*` skills | US 13F copying, US SEC earnings, Congress filings, US news, budgets, screener, risk gating, broker ticket preparation, tax lots, price alerts and rebalancing | Original US-only data sources and assumptions preserved; see `docs/UPSTREAM_README.md` |
-| `fundtex-india-market` | Dated India symbol and closing-price analysis | Validated imported CSV or unofficial Yahoo historical chart |
-| `fundtex-india-risk` | Drawdown, return volatility, Sharpe approximation, RSI, historical 95% VaR/expected shortfall | Based on historical input; no guarantee |
-| `fundtex-india-news` | Indian market news lead discovery | Google News RSS: `UNVERIFIED_HEADLINE_DISCOVERY`; verify primary filings |
-| `fundtex-india-valuation` | DCF scenario and WACC/terminal-growth sensitivity | Explicit user hypothesis, **not market data** |
-| `fundtex-god-eye` | Walk-forward price hypothesis vs buy-and-hold and cash | Research-only, no validated predictive alpha |
-| `fundtex-india-portfolio` | Multi-stock date-aligned sector exposure, covariance, portfolio risk and risk contribution | User-supplied CSV series, daily-rebalanced hypothetical returns |
-| `fundtex-india-brief` | Sourced, analyst-reviewed summary template | Source quality surfaced in report |
-| `simulate` | 1M seeded Gaussian log-return scenario draws | Model-scenario test; **not** 1M historical trades or validated strategy alpha |
-
-## Verification
+## Analyst commands
 
 ```bash
-python3 -m unittest discover -s tests -p 'test_fundtex*.py' -v
-RUN_MILLION_TEST=1 python3 -m unittest -v tests.test_fundtex_million
-python3 -m compileall -q fundtex_india
+# Evidence-labelled historical volatility, RSI, drawdown and tail risk
+python3 -m fundtex_india.cli analyze --csv examples/india_prices.csv --symbol RELIANCE.NS
+
+# Sector / covariance contribution / correlation / concentration
+python3 -m fundtex_india.cli portfolio --prices examples/portfolio_prices.csv --holdings examples/holdings.csv
+
+# Strict past-only research-policy selection + OOS comparison
+python3 -m fundtex_india.cli godeye --csv examples/india_prices.csv --symbol RELIANCE.NS --min-train 120 --train-lookback 60 --cost-bps 12
+
+# Explicit assumption valuation in INR/share
+python3 -m fundtex_india.cli value --inputs examples/valuation.json
+
+# Reproducible synthetic distribution scenarios (NOT historical backtests)
+python3 -m fundtex_india.cli simulate --csv examples/india_prices.csv --symbol RELIANCE.NS --paths 1000000 --seed 42
+
+# Discover unverified headline leads (no assertion without opening a source)
+python3 -m fundtex_india.cli news --query "Infosys NSE earnings"
 ```
 
-The test suite exercises CSV validation, provenance labels, risk formulas, failure behavior, seeded reproducibility, DCF checks and a computational million-path gate. The latter tests numerical execution only. CI status must be checked before reporting a pass; GitHub Actions jobs can fail to start when an account has runner/billing restrictions.
+The `--live` option accesses a **best-effort unofficial Yahoo historical chart**, not a real-time exchange-certified NSE/BSE feed. It can rate-limit with HTTP 429 and has not demonstrated reliable availability for professional use.
 
-## India analyst-review and compliance contract
+## What has actually been tested?
 
-All results should include source, link/filename, as-of date, samples, methodology, limitations, alternatives, sensitivity and contradictory evidence. Verify corporate disclosures with [NSE](https://www.nseindia.com/), [BSE](https://www.bseindia.com/), company investor-relations material, [SEBI](https://www.sebi.gov.in/) and [RBI](https://www.rbi.org.in/). Institutional research, client recommendations, redistribution of exchange data, and AI processing of confidential client information can require extra regulatory, data-licensing and infosec controls.
+The October 21 local validation on macOS/Python 3.11 includes **20 successful automated checks**, including deterministic simulations, no-lookahead scenario checks, malformed input rejection, portfolio concentration contracts and **1,000,000 synthetic Monte Carlo draws** in approximately **3.67 seconds** in that specific run. These are CPU/numerical tests, **not a million trade backtests**.
 
-**Safety:** India CLI is read-only and has **no brokerage integration**. Do not use the original US broker pathway to execute Indian orders. No autonomous trading, derivatives leverage, assured returns or production security certification.
+| Gate | Status | Interpretation |
+|---|---|---|
+| India CLI contract/regression tests | Local PASS (20/20) | Basic known contracts in a single environment |
+| 1,000,000 seeded Gaussian paths | Local PASS | Computational performance only |
+| One-shot install + rerun | Tested earlier (17 skills); expanded multi-agent install requires new regression | Snapshot copy; no overwrite |
+| Google News discovery | Live tested once | Unverified leads; independent verification required |
+| Yahoo price fetch on test host | HTTP 429 | Not dependable live-market validation |
+| Fully licensed NSE/BSE prices & filings | NOT DONE | Institution feed integration needed |
+| Out-of-sample prediction on real PIT universe | NOT DONE | **No proven investment edge** |
+| Production GitHub CI | NOT GREEN | Hosted runner failed before any tests started |
 
-**Licensing:** Original `trader-*` code is MIT by Jake Schincariol; see original `LICENSE` and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Fundtex additions are separate. No endorsement by upstream project.
+Reproduce:
 
-## Next institutional gates
+```bash
+python3 -m unittest discover -s tests -p "test_fundtex*.py" -v
+RUN_MILLION_TEST=1 python3 -m unittest -v tests.test_fundtex_million
+```
 
-Licensed NSE/BSE pricing and corporate actions; financial-statement ingestion with filing evidence; INR portfolio/sector factor risk; genuine historical walk-forward backtests with delistings, costs and survivorship-bias controls; versioned models; access control, audit trails and security review; explicit SEBI/legal counsel review for regulated external advisory use.
+See [the evidence ledger](docs/VALIDATION.md) and [an analyst UAT script](docs/ANALYST_PILOT.md). Any claim of profit, precise forecast confidence or trading outperformance needs independent future evaluation first.
+
+## Legal, privacy and data governance
+
+- **NSE data:** usage, redistribution and display are governed by [NSE market-data policy](https://www.nseindia.com/static/market-data/nse-data-policy). Access through this repo does not grant redistribution rights.
+- **SEBI:** review the most current [Research Analyst rules](https://www.sebi.gov.in/) before providing investment research services, algorithmic recommendation or external client advice, including AI disclosures, registration and security responsibilities.
+- **Data:** client holdings, portfolio models and documents must not be sent to outside AI tools without the owning institution's consent and security review.
+- **Trading:** no autonomous India live brokerage path, no margin/F&O engine, no performance guarantee or suitability assessment.
+
+## Roadmap: what earns the next level
+
+Licensed NSE/BSE feed contracts and corporate-action adjustment; primary filings/financial-statement parser with citations; Indian charges/taxes/settlement rules reviewed by specialists; point-in-time historical backtest with survivorship, liquidity and slippage; blind holdouts and rolling forward-paper evaluation; risk-constrained portfolio optimization and institution-grade approval/audit/tenant isolation; a real-data MCP service for a full ChatGPT integration.
+
+**Open source does not mean unlicensed datasets or verified predictions.** Contributions are welcome with reproducible tests, honest baselines, data provenance and disclosure of model limitations.
+
+---
+
+<div align="center">
+
+**Fundtex Financial Intelligence** · **Syntheon Technology Private Limited**
+
+Original `trader-*` work © 2026 Jake Schincariol, MIT. Attribution preserved in [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Separate Fundtex India additions are not affiliated with or endorsed by the upstream author.
+
+</div>
