@@ -10,7 +10,7 @@
 
        "$HOME/.local/bin/fundtex" doctor --repo-root "$PWD"
 
-   All twelve India-first skills should be present in each supported agent directory and the installed engine should match the checkout. If versions differ, do not overwrite without approval: use the repository's Python CLI temporarily.
+   All eighteen India-first skills should be present in each supported agent directory and the installed engine should match the checkout. If versions differ, do not overwrite without approval: use the repository's Python CLI temporarily.
 4. If the installed version includes Analyst Studio v0.9, immediately generate a clearly synthetic chart and an analyst pack from examples/india_prices.csv (see docs/ANALYST_STUDIO_V09.md). Check actual chart HTML/SVG, CSV and memo, identify optional missing PDF/XLSX/PNG, and label the sample FICTIONAL. Then demonstrate two working **fictional, clearly labelled** forensic reports (not price prediction or actual listed companies):
 
        python3 -m fundtex_india.cli diligence --inputs examples/india_company_diligence_SYNTHETIC.json --format markdown
@@ -19,6 +19,12 @@
    Identify useful real analyst checks: cash conversion, receivables, debt/EBITDA, lender GNPA/NNPA, credit cost and capital. No invented live quotes.
 5. Run python3 -m unittest discover -s tests -p 'test_fundtex*.py' -v. Optionally run heavier million-path numerical and 60-regime stress after the first useful output or when the user requests it.
 6. Present a concise verified status, a short example of the fictional analysis, three relevant first real-research questions using only actually accessible permitted context, and one next question: "Which company, sector or research task should we tackle first?" If history isn't available, say so and use useful defaults.
+
+## v1.0 one-natural-language-request auto research
+
+When the user asks to analyze a company, automatically use the fundtex-auto-analyst and fundtex-india-live-data skills plus docs/AGENT_NATIVE_V1.md. From a verified NSE/BSE symbol, use the installed Fundtex CLI to fetch the newest legally permitted best-effort historical prices, an authenticated broker LTP snapshot if already configured, a chart with historical indicators, source receipts, report ZIP and optional renderings. End users should not have to find CLI commands. Public Yahoo chart history is not licensed real-time streaming. Broker quote access requires explicit local account configuration and does not verify company fundamental financial statements. Prefer working results and cite actually opened original issuer filings; do not invent prices or lead with marketing.
+
+For an existing install, perform an approved backup-first bash install.sh --upgrade only after inspecting old modifications and explaining that installed files will be refreshed with backups. The default bash install.sh never overwrites them.
 
 ## On the first real Indian company request
 

@@ -1,4 +1,7 @@
-# Fundtex Claude Code — first-run operating contract
+# Fundtex Claude Code — agent-native analyst desk
+
+**One user analysis prompt must trigger the full approved-source workflow, not a help-page hunt.** First read docs/AGENT_NATIVE_V1.md and the fundtex-auto-analyst and fundtex-india-live-data skills. Check current CLI version, ask approval before backup-first upgrades, identify the verified Indian symbol, and run fundtex research on actual dated permitted history. Integrate a Kite/Dhan authenticated LTP snapshot ONLY when previously configured; otherwise report NO_CONFIGURED_BROKER. Return chart, memo and ZIP links. Conduct source-aware fundamental diligence through actually opened primary filings, NOT synthetic assumptions. Optional exports must be checked, never claimed if missing. No dashboard, no autonomous orders or guaranteed prediction edge.
+
 
 **On the first user request, open docs/CLAUDE_FIRST_RUN.md and follow it.** Distinguish terminal-enabled Claude Code from regular Claude chat; don't claim installation without actual tools. The fast acceptance path is safe install -> fresh-checkout doctor -> two labelled fictional diligence reports -> 3 context-aware real research suggestions -> user's first task. Heavy stress suites come after the first useful result, unless explicitly requested. Do not invent live market access, current company filings or investment-performance superiority.
 

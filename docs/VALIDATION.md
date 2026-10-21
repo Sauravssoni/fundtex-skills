@@ -2,7 +2,21 @@
 
 Environment: MacBook Pro, macOS, Python 3.11, isolated QA clone. No broker credentials, production trading or private institutional portfolios accessed.
 
-## Verified local engineering
+## v1.0 — latest verified engineering and real public market-data acceptance
+
+**79/79 local Python regression checks passed** on 21 October 2026 after removing the obsolete dashboard-only prototype/test. The suite included a million seeded Gaussian draws in **5.07 seconds**. These are numerical tests, not trading returns or externally validated prediction performance.
+
+The installer completed a **29-skill, three-agent-location** isolated HOME trial: **87 first installs, 87 non-destructive repeat skips, and an explicitly approved 87-skill backup-first upgrade**. The previous customized test skill marker survived in a retained backup. The installed engine version matched the fresh checkout. The user's actual HOME was not modified during QA.
+
+A real best-effort Yahoo historical chart request succeeded for **INFY.NS** and reported the latest observation as **21 October 2026**. A three-month public-data end-to-end report generated **12 artifacts and a ZIP**, a dated source evidence record and a source quality of UNOFFICIAL_BEST_EFFORT_DELAYED with zero observed age at the test. The test expressly set quote_provider=off; it did not access or verify any user's private broker account. This is current historical market data, NOT a licensed realtime NSE stream.
+
+Zerodha Kite Connect and DhanHQ v2 LTP REST snapshot adapters have unit tests for valid/missing quote responses, invalid instrument IDs, unauthorized endpoint rejection, and preventing credential material from appearing in outputs. **Actual authenticated provider calls have not been tested**, because no user-authorized credentials were supplied. Official broker quote documentation and data-usage rights must govern production use.
+
+The one-shot CLI writes source-hashed HTML/SVG charts, historical CSV, descriptive technical observations, a skeptical research task plan, Markdown memo and a ZIP. An additional Pillow chart PNG is generated where the renderer is present. A true browser screenshot, styled XLSX and PDF use optional approved dependencies and are recorded as omissions when missing; no artifact is falsely claimed. Full automatic issuer-filing analysis still requires an authorized coding agent to open and verify actual original disclosures.
+
+No new live tick-streaming feed, licensed market-data redistribution agreement, verified positive predictive alpha or autonomous trade execution was established. The product remains a research preview; it is not Bloomberg Terminal equivalence.
+
+## Historical v0.8 local engineering
 
 - **64/64 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
 - **1,000,000 seeded Gaussian scenario draws PASSED** in **3.17s** in the v0.8 64-test suite. This is CPU computation, not one million actual backtested trades.

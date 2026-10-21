@@ -1,5 +1,14 @@
 # Release history — Fundtex Financial Intelligence
 
+## v1.0 — 21 October 2026
+- Reprioritized user experience as natural-language agent-native financial research; removed the unfinished dashboard from release rather than forcing a second interface.
+- Added fundtex research automatic source-aware daily-price fetching, evidence ledger, historical chart, indicators, separate optional authenticated Kite/Dhan last-price snapshots, report folder and ZIP.
+- Added source access, staleness rejection, synthetic-label retention and no-fallback-on-network-failure guards. Unofficial Yahoo public history stays classified UNOFFICIAL_BEST_EFFORT_DELAYED; neither source type constitutes licensed exchange real-time streaming.
+- Added two discoverable skills for automatic analyst research and licensed-provider integration; 29 total skill folders, 18 India-first and 11 attributed upstream. Added concise universal one-prompt workflow documentation.
+- Added explicit install.sh --upgrade with backup-first update of previous installed skills and engine; default repeated install remains no-overwrite.
+- Added direct PNG historical chart rendering through Pillow if Chromium screenshot isn't available (not represented as a browser screenshot). Optional institutional XLSX/PDF packages still require approved installation.
+- Full v1.0 suite: 79/79 local tests passed with million-draw numerical gate; isolated 87-skill installation, safe skips and backup-first upgrades passed. A real INFY.NS public Yahoo three-month historical request produced a 12-file research pack plus ZIP, dated 21 October 2026. Broker authenticated access remains unverified without user credentials.
+
 ## v0.9 — 21 October 2026
 - Delivered interactive self-contained research chart HTML/SVG; honest close-only line versus validated OHLC candlestick distinction; date/price validation, SMA20/50, EMA12/26, RSI14 and retrospective cross annotations.
 - Added browser-side drawn levels and SVG/PNG/downloadable-notes export, optional Playwright screenshot and loopback-only local CSV refresh viewer (not a licensed real-time exchange feed).

@@ -14,8 +14,8 @@ class AgentPortabilityTests(unittest.TestCase):
     def test_expected_21_skills_have_valid_frontmatter(self):
         folders=sorted(p for p in ROOT.iterdir() if p.is_dir()
                        and p.name.startswith(("fundtex-","trader-")) and (p/"SKILL.md").is_file())
-        self.assertEqual(len(folders),27)
-        self.assertEqual(sum(x.name.startswith("fundtex-") for x in folders),16)
+        self.assertEqual(len(folders),29)
+        self.assertEqual(sum(x.name.startswith("fundtex-") for x in folders),18)
         for folder in folders:
             lines=(folder/"SKILL.md").read_text(encoding="utf-8").splitlines()
             self.assertGreater(len(lines),8,folder.name)
@@ -46,14 +46,14 @@ class AgentPortabilityTests(unittest.TestCase):
             b=subprocess.run(["bash","install.sh"],cwd=ROOT,env=env,text=True,capture_output=True)
             self.assertEqual(a.returncode,0,a.stderr)
             self.assertEqual(b.returncode,0,b.stderr)
-            self.assertIn("skills installed=81 skipped=0",a.stdout)
-            self.assertIn("skills installed=0 skipped=81",b.stdout)
+            self.assertIn("skills installed=87 skipped=0",a.stdout)
+            self.assertIn("skills installed=0 skipped=87",b.stdout)
             self.assertIn("Try one of these research-first prompts:",a.stdout)
             status=doctor(home=temp,repo_root=str(ROOT))
             self.assertTrue(status["all_india_skills_installed"])
             self.assertFalse(status["installed_engine_stale_relative_to_checkout"])
             for v in status["installation"].values():
-                self.assertEqual(v["india_skills_present"],16)
+                self.assertEqual(v["india_skills_present"],18)
             launcher=Path(temp)/".local/bin/fundtex"
             p=subprocess.run([str(launcher),"mission","--task","Indian bank research",
                                "--agent","gemini","--mode","DEEP","--abilities",
@@ -63,6 +63,18 @@ class AgentPortabilityTests(unittest.TestCase):
             result=json.loads(p.stdout)
             self.assertTrue(result["plan_only"])
             self.assertEqual(result["execution"],"SEQUENTIAL_FALLBACK")
+            # Upgrade is explicit, preserves a real copy of customized skill contents.
+            modified=Path(temp)/".claude/skills/fundtex-auto-analyst/SKILL.md"
+            modified.write_text(modified.read_text()+"\nCUSTOM_USER_MARKER_KEEP_IN_BACKUP\n")
+            update=subprocess.run(["bash","install.sh","--upgrade"],cwd=ROOT,env=env,text=True,capture_output=True)
+            self.assertEqual(update.returncode,0,update.stderr)
+            self.assertIn("updated=87",update.stdout)
+            self.assertNotIn("CUSTOM_USER_MARKER_KEEP_IN_BACKUP",modified.read_text())
+            backups=list((Path(temp)/".local/share/fundtex-intelligence").glob(
+                "fundtex-backup-*/agent-1-fundtex-auto-analyst/SKILL.md"))
+            self.assertEqual(len(backups),1)
+            self.assertIn("CUSTOM_USER_MARKER_KEEP_IN_BACKUP",backups[0].read_text())
+            self.assertFalse(doctor(home=temp,repo_root=str(ROOT))["installed_engine_stale_relative_to_checkout"])
 
 if __name__ == "__main__":
     unittest.main()

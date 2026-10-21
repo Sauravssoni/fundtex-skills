@@ -33,6 +33,18 @@ class StudioTests(unittest.TestCase):
         self.assertIn("Export PNG screenshot",page)
         self.assertIn("Draw level",page)
 
+    def test_png_fallback_when_pillow_is_available(self):
+        try:
+            import PIL
+        except ImportError:
+            self.skipTest("Optional Pillow absent")
+        from fundtex_india.raster_studio import render
+        with tempfile.TemporaryDirectory() as tmp:
+            target=Path(tmp)/"price-chart.png"
+            render(self.spec,target)
+            self.assertEqual(target.read_bytes()[:8],b"\x89PNG\r\n\x1a\n")
+            with self.assertRaises(ValueError):render(self.spec,target)
+
     def test_no_malicious_annotations(self):
         with tempfile.TemporaryDirectory() as tmp:
             f=Path(tmp)/"notes.json"

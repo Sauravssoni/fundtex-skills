@@ -3,7 +3,7 @@ description: India-first Fundtex financial research, primary-source and forensic
 alwaysApply: false
 ---
 
-For installation, read AGENTS.md and docs/CLAUDE_FIRST_RUN.md. For real Indian equities, use docs/ANALYST_DELIVERY_CONTRACT.md and source actually opened issuer/exchange filings. Do not claim live NSE/BSE feed access, privileged user history, or verified forecast alpha.
+For a natural-language finance task, follow docs/AGENT_NATIVE_V1.md and automatically invoke fundtex-auto-analyst; do not ask the user to hunt commands or open a dashboard. Connect official Kite/Dhan quotes only if already authorized and configured, keep Yahoo historical source quality labelled unofficial, and verify issuer filings separately. For installation, read AGENTS.md and docs/CLAUDE_FIRST_RUN.md. For real Indian equities, use docs/ANALYST_DELIVERY_CONTRACT.md and source actually opened issuer/exchange filings. Do not claim live NSE/BSE feed access, privileged user history, or verified forecast alpha.
 
 Optional planner:
 python3 -m fundtex_india.cli mission --task "India listed bank earnings diligence" --agent cursor --mode DEEP --abilities terminal,python --format markdown

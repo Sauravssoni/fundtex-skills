@@ -10,12 +10,16 @@ from .interactive_studio import document, screenshot, local_serve
 from .graphics_studio import pie, bars, histogram, heatmap, waterfall
 from .memo_studio import memo, pdf
 from .workbook_studio import write_xlsx
+from .raster_studio import render as raster_chart
 from .portfolio import evaluate_portfolio
 
-def build_pack(csv_path,symbol,out,*,annotations=None,holdings=None,portfolio_prices=None):
+def build_pack(csv_path,symbol,out,*,annotations=None,holdings=None,portfolio_prices=None,data_quality=None,provider=None):
     folder=Path(out)
     if folder.exists():raise ValueError("Pack output already exists; choose new directory")
-    data=prices(csv_path,symbol);spec=chart_spec(data,annotations_from_file(annotations))
+    data=prices(csv_path,symbol)
+    if data_quality and data["data_quality"]!="SYNTHETIC_FIXTURE":
+        data["data_quality"]=data_quality
+    spec=chart_spec(data,annotations_from_file(annotations))
     folder.mkdir(parents=True)
     created=[];omitted={}
     def save(name,contents):
@@ -60,6 +64,12 @@ def build_pack(csv_path,symbol,out,*,annotations=None,holdings=None,portfolio_pr
         created.append("chart-screenshot.png")
     except Exception as exc:
         omitted["chart-screenshot.png"]=f"Optional browser unavailable: {type(exc).__name__}: {str(exc)[:110]}"
+    # Separate static chart PNG (not a browser screenshot), when Pillow is present.
+    try:
+        raster_chart(spec,folder/"price-chart.png")
+        created.append("price-chart.png")
+    except (ValueError,ImportError,OSError) as exc:
+        omitted["price-chart.png"]=f"Optional PNG raster renderer unavailable: {type(exc).__name__}"
     try:
         write_xlsx(spec,folder/"analyst-workbook.xlsx")
         created.append("analyst-workbook.xlsx")
@@ -73,7 +83,8 @@ def build_pack(csv_path,symbol,out,*,annotations=None,holdings=None,portfolio_pr
     manifest={
         "product":"Fundtex Analyst Studio v0.9",
         "symbol":spec["symbol"],"last_observation":spec["last_observation"],
-        "data_quality":spec["data_quality"],"source_sha256":spec["source_sha256"],
+        "data_quality":spec["data_quality"],"provider":provider or "User-supplied CSV",
+        "source_sha256":spec["source_sha256"],
         "generated_utc":datetime.now(timezone.utc).isoformat(),
         "created_files":created,"omitted_optional_outputs":omitted,
         "live_exchange_quotes":False,"trading_authority":False,

@@ -23,6 +23,10 @@ Useful official references: https://platform.claude.com/docs/en/agents-and-tools
 6. For a real company, use actually opened NSE/BSE/issuer primary documents and official RBI/SEBI context. No built-in licensed live quote feed.
 7. For a complex task, use the Mission Control CLI below to design worker boundaries.
 
+## v1.0 Automatic Indian market research (prefer to plans alone)
+
+Agent-native workflow is now docs/AGENT_NATIVE_V1.md and fundtex-auto-analyst/SKILL.md. The user describes the question in natural language; the coding agent verifies ticker, source rights and installed version, invokes fundtex research with best-effort real public historical data or approved CSV, optionally adds authenticated Kite/Dhan quote snapshots if already configured, and returns actual report links. No separate dashboard. Mission Control remains a planner and is NOT proof of true agent spawning or licensed exchange market data.
+
 ## Mission Control
 
 Run:

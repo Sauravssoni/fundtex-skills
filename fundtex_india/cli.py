@@ -27,10 +27,23 @@ from .pack_studio import build_pack
 from .workbook_studio import write_xlsx
 from .memo_studio import memo as studio_memo, pdf as studio_pdf
 from .graphics_studio import pie as graphic_pie, bars as graphic_bars, heatmap as graphic_heatmap, histogram as graphic_histogram, waterfall as graphic_waterfall
+from .broker_quotes import availability as broker_availability, quote as authenticated_quote
+from .research_auto import run as automatic_research
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
     sub = parser.add_subparsers(dest="command", required=True)
+    p = sub.add_parser("research",help="One command: fetch approved India historical prices, optional authenticated broker LTP, charts + ZIP report")
+    p.add_argument("--symbol",required=True)
+    p.add_argument("--source",choices=("public","csv"),default="public")
+    p.add_argument("--csv",default=None,help="Explicitly approved price CSV if --source csv")
+    p.add_argument("--period",choices=("1mo","3mo","6mo","1y","2y","5y"),default="1y")
+    p.add_argument("--quote",choices=("auto","off","kite","dhan"),default="auto",help="Read-only optional authenticated broker snapshot, NEVER an order")
+    p.add_argument("--max-age-days",type=int,default=7)
+    p.add_argument("--out",required=True,help="NEW output directory and ZIP, never overwritten")
+    p = sub.add_parser("broker-status",help="Configured Indian broker quote sources; never prints tokens")
+    p = sub.add_parser("quote",help="Current authenticated broker quote snapshot, never trading")
+    p.add_argument("--symbol",required=True);p.add_argument("--provider",choices=("kite","dhan"),required=True)
     p = sub.add_parser("chart", help="Audited SVG or standalone interactive HTML price chart")
     p.add_argument("--csv",required=True);p.add_argument("--symbol",required=True)
     p.add_argument("--out",required=True);p.add_argument("--format",choices=("html","svg"),default="html")
@@ -126,6 +139,13 @@ def make_parser():
     return parser
 
 def execute(args):
+    if args.command == "research":
+        return automatic_research(args.symbol,args.out,source=args.source,csv_file=args.csv,
+                                  period=args.period,quote_provider=args.quote,max_age_days=args.max_age_days)
+    if args.command == "quote":
+        return authenticated_quote(args.symbol,args.provider)
+    if args.command == "broker-status":
+        return broker_availability()
     if args.command == "chart":
         spec=studio_spec(studio_prices(args.csv,args.symbol),annotations_from_file(args.annotations))
         dest=write_new(args.out,studio_svg(spec) if args.format=="svg" else studio_html(spec))

@@ -1,0 +1,39 @@
+---
+name: fundtex-auto-analyst
+description: Use when a user asks Claude, Codex, Gemini CLI or another agent to analyze an Indian company, stock, bank or sector and automatically produce charts, latest permitted market prices, technical ratios, research brief, professional Excel/PDF where available and downloadable ZIP. Orchestrate real sources and skeptical specialist agents without users hunting CLI commands.
+---
+
+# Fundtex Auto Analyst — Agent-Native First-Run Contract
+
+**Users speak ordinary English. Do not ask them to find scripts.** When a user says "Analyze Infosys and prepare a full investment committee pack", identify the actual NSE/BSE symbol (verify on a real public issuer/exchange page, not from assumption). If one essential ticker is missing and cannot be safely established, ask ONE clarification. Do not silently choose a similarly named ticker.
+
+## First step — inspect real capabilities
+
+- Confirm this agent has an authorized terminal and a Fundtex checkout or installed CLI. Read AGENTS.md, docs/AGENT_NATIVE_V1.md, docs/ANALYST_STUDIO_V09.md and relevant fundtex skills.
+- Run the version/doctor checks against the latest checkout. Existing installations are intentionally not overwritten; inspect and obtain approval before upgrading.
+- If no authorized terminal: explain what environment is needed; never falsely claim command execution.
+- Do not pretend to know private chats, client accounts or employer data not actually accessible and authorized.
+
+## Single user request → automatic analyst output
+
+For current India historical evidence, prefer the **best-effort public feed** when suitable and rights permit. One agent-side command (never ask user to memorize it):
+
+    fundtex research --symbol INFY.NS --source public --quote auto --out /approved/new/fundtex-INFYN-20261021
+
+This creates a new folder and ZIP with interactive SVG/HTML chart, historical close series, RSI/SMA, source-hashed CSVs, evidence/limitations, independent skeptic mission, Markdown memo and optional Excel/PDF/PNG. The output receipt states every omitted optional file. **Opening the generated files and checking accuracy is the agent's job**, not the user's.
+
+For a permitted customer CSV use --source csv --csv /approved/input.csv. An actual source marked SYNTHETIC_FIXTURE MUST remain fictional, even if named a famous ticker. Never fall back to synthetic prices when the network is unavailable.
+
+## Real-time prices require a real provider
+
+- If an authorized Kite Connect or DhanHQ integration is configured, --quote auto retrieves a read-only LTP snapshot without exposing credentials. Market streaming is NOT implemented by this skill or CLI.
+- If no broker connected, explicitly label quote status NO_CONFIGURED_BROKER and keep the public historical chart separate.
+- If the user explicitly requests a broker and it fails, fail closed. Do not silently return a public quote and claim it is authenticated.
+- Distinguish observation date, retrieval UTC, authenticated quote timestamp if published, potential delay and any exchange market-data rights.
+- A best-effort public Yahoo Finance chart request can return current-day historical closes but is NOT official or guaranteed real-time.
+
+## Professional review
+
+Use any permitted exchange/issuer/RBI/SEBI official tools to open actual dated source documents, reconcile original filings, assess financial quality and company-specific risks. The CLI pack cannot extract or verify company financial statements automatically. Independent skeptic pass must challenge data timing, assumptions and meaningful contrary evidence before claiming any thesis. Specialized subagents are optional and require real host support; sequential reviewer passes are the default.
+
+Return the report ZIP and concise decision-first summary with source ages, missing evidence and exact output links. Do not claim Bloomberg feature parity, autonomous trading or proven alpha.
