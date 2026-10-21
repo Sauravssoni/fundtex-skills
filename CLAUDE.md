@@ -1,4 +1,6 @@
-# Fundtex Claude Code
+# Fundtex Claude Code — first-run operating contract
+
+**On the first user request, open docs/CLAUDE_FIRST_RUN.md and follow it.** Distinguish terminal-enabled Claude Code from regular Claude chat; don't claim installation without actual tools. The fast acceptance path is safe install -> fresh-checkout doctor -> two labelled fictional diligence reports -> 3 context-aware real research suggestions -> user's first task. Heavy stress suites come after the first useful result, unless explicitly requested. Do not invent live market access, current company filings or investment-performance superiority.
 
 Read AGENTS.md (canonical contract) and README.md before acting. This PUBLIC repository contains skills and a local read-only Python analytical engine. Private ChatGPT plugin source lives only on the PRIVATE fundtex-website feature/private-fundtex-chatgpt-plugin branch.
 

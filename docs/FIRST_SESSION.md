@@ -13,7 +13,7 @@ An analyst should immediately receive useful research actions, not a generic pro
 ## Agent-compatible commands
 
     bash install.sh
-    $HOME/.local/bin/fundtex doctor
+    $HOME/.local/bin/fundtex doctor --repo-root /path/to/the/cloned/fundtex-skills
     $HOME/.local/bin/fundtex onboard --context "Indian NBFC and banking earnings analysis"
     $HOME/.local/bin/fundtex council --mode DEEP --max-workers 5 --parallel
     $HOME/.local/bin/fundtex evaluate --scenarios 6 --sessions 400 --seed 42

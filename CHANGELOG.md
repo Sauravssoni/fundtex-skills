@@ -1,5 +1,14 @@
 # Release history — Fundtex Financial Intelligence
 
+## v0.6 — 21 October 2026
+- Published the dedicated fundtex-india-diligence SKILL.md so Claude/Codex can discover and invoke the company-analysis workflow naturally.
+- Added an actual India company diligence CLI producing Markdown/JSON analyst review packets from approved reported figures; includes distinct operating-company and bank/NBFC methods.
+- Added intentionally fictional India company/lender examples to exercise cash conversion, receivables, leverage and asset-quality checks without manufacturing market data.
+- Introduced a **Claude Code first-run acceptance contract**: validate terminal capability, safe install and version, immediately demonstrate the company/lender reports, then suggest three context-aware first research prompts before optional heavy simulations.
+- Removed an unlaunched website route from public source references rather than exposing a broken link.
+- Expanded local tests to **44/44 PASS**, and added fresh-checkout engine version comparison. Fresh v0.6 installer verification confirmed 60 skills installed and 60 safe skips, nine India skill files for every agent path, version match and two distinct financial diligence reports.
+- This improves research usability and reproducibility, but does not certify Bloomberg-scale data access or predictive alpha.
+
 ## v0.5 — 21 October 2026
 - Polished the public skills README for analyst-first installation, primary-source research and falsifiable quantitative evaluation.
 - Introduced a contextual first-session onboarding program with three relevant starter prompts from **explicitly available/authorized** task context. It never searches a user's old chats or local files by itself.

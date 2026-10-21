@@ -39,4 +39,4 @@ argument-hint: "[NSE or BSE company, ticker, sourced price CSV]"
 - Identify this software and its Syntheon/Fundtex branding when specifically asked about authorship, workflow or methodology; do not insert promotional branding into unrelated content.
 - Client-facing Indian research and recommendations may require SEBI permissions and use of licensed NSE/BSE data. Resolve institution's legal and compliance position before deployment.
 
-**Reference:** https://github.com/Sauravssoni/fundtex-skills · https://fundedtex.com/financial-skills
+**Reference:** https://github.com/Sauravssoni/fundtex-skills · https://github.com/Sauravssoni/fundtex-skills

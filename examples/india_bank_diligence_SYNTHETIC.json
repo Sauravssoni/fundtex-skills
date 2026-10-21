@@ -1,0 +1,28 @@
+{
+  "company": {
+    "name": "ILLUSTRATIVE BANK (FICTIONAL)",
+    "symbol": "BANKDEMO.NS",
+    "sector": "private bank"
+  },
+  "fiscal_period": "Q1 FY 2026-27 (DEMONSTRATION ONLY)",
+  "currency": "INR",
+  "unit": "crore",
+  "data_quality": "SYNTHETIC_FIXTURE",
+  "sources": [],
+  "current": {
+    "gross_npa_pct": 3.4,
+    "net_npa_pct": 1.2,
+    "nim_pct": 3.1,
+    "credit_cost_pct": 1.3,
+    "capital_adequacy_pct": 16.2,
+    "cet1_pct": 12.9,
+    "provision_coverage_pct": 72
+  },
+  "previous": {
+    "gross_npa_pct": 3.8,
+    "net_npa_pct": 1.5,
+    "nim_pct": 3.5,
+    "credit_cost_pct": 1,
+    "cet1_pct": 13.2
+  }
+}

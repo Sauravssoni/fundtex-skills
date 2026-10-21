@@ -4,8 +4,8 @@ Environment: MacBook Pro, macOS, Python 3.11, isolated QA clone. No broker crede
 
 ## Verified local engineering
 
-- **39/39 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
-- **1,000,000 seeded Gaussian scenario draws PASSED** in **4.10s** in the final 39-test suite. This is CPU computation, not one million actual backtested trades.
+- **44/44 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
+- **1,000,000 seeded Gaussian scenario draws PASSED** in **4.12s** in the final v0.6 44-test suite. This is CPU computation, not one million actual backtested trades.
 - Final temporary-HOME installer verification copied **19 skills into 3 agent skill locations (57 copies)**, then safely skipped all 57 on a second run; the installed evaluation CLI succeeded without any writes into the user's actual home directory.
 - Google News source discovery succeeded over HTTPS on one test. RSS headlines are unverified leads. Unofficial Yahoo prices returned HTTP 429 and are not reliable for production.
 - Hosted GitHub Actions previously failed before running any steps; CI is not established as green.
@@ -21,6 +21,12 @@ The installer was executed twice under a fresh disposable HOME. The first execut
 A separate 2,000,000-path seeded Gaussian computational stress run also PASSED in 8.51 seconds on the test Mac (5-session hypothetical horizon); it is not two million real historical trades.
 
 60 fully synthetic scenarios generated 32,400 price observations and 25,140 prequential forecasts. All 60 correctly withheld prediction approval under a strict baseline-superiority gate; mean Brier skill was -0.4345% versus the expanding-frequency baseline. See [full stress benchmark](STRESS_BENCHMARK.md). This is software robustness evaluation, **not market prediction accuracy**.
+
+## Financial analyst diligence QA (v0.6)
+
+The ninth India-specific skill, fundtex-india-diligence, is installed alongside the existing eight India skills. Together with the 11 attributed upstream skills, the v0.6 distribution has 20 SKILL.md folders. Fresh clean-install verification PASSED: 60 skill copies across Claude/Codex/shared agent locations, 60 non-destructive skips on reinstall, nine India skills detected in each agent directory, matching engine versions, and both fictional company and lender reports executed successfully.
+
+Fundtex's separate offline company diligence tool successfully processed deliberately fictional Indian operating-company and banking examples. It reproduced revenue growth, cash conversion, negative FCF, net debt/EBITDA, high receivables review questions, and banking-specific GNPA/NNPA/credit cost/capital ratios. Unit tests reject nonfinite, boolean, unknown or unverified input status, and source links remain labelled not independently opened. This validates arithmetic/contract behavior only: no real issuer financial statement authentication or institutional sign-off has occurred. See COMPANY_DILIGENCE.md and CLAUDE_FIRST_RUN.md.
 
 ## Current predictive classification
 

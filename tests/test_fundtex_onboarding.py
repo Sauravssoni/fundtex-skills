@@ -41,7 +41,7 @@ class OnboardingTest(unittest.TestCase):
             self.assertTrue(d["checks_are_offline"])
             self.assertTrue(d["readme_available"])
             for agent in (".claude",".codex",".agents"):
-                for name in ("fundtex-god-eye","fundtex-india-forecast","fundtex-india-market",
+                for name in ("fundtex-god-eye","fundtex-india-diligence","fundtex-india-forecast","fundtex-india-market",
                              "fundtex-india-news","fundtex-india-risk","fundtex-india-portfolio",
                              "fundtex-india-valuation","fundtex-india-brief"):
                     dest=Path(temp)/agent/"skills"/name

@@ -4,6 +4,12 @@ Company: Fundtex Financial Intelligence, an initiative within Syntheon Technolog
 
 This PUBLIC repo contains Claude/Codex-compatible SKILL.md files, source-attributed Python research code, test fixtures and documentation. Keep ALL ChatGPT plugin manifests, implementation, release archives and account information on the separate PRIVATE Sauravssoni/fundtex-website branch feature/private-fundtex-chatgpt-plugin. Do not copy private plugin assets into this repository.
 
+## Handoff priority: show working financial research in the first session
+
+**Read docs/CLAUDE_FIRST_RUN.md first.** This is a working acceptance contract for Claude Code/Codex with terminal access, not ordinary Claude web chat. If terminal unavailable, never pretend to install. After permission and safe install, use the doctor command against the fresh checkout, run the small fictional company and bank diligence demonstrations, and give the user a concise real result plus three tailored first tasks. This takes priority over optional million-path simulations, full adversarial regime sweeps or exploratory refactors. Run larger tests when time and resources permit. Test failures must be disclosed.
+
+**Company financial diligence CLI:** python3 -m fundtex_india.cli diligence --inputs examples/india_company_diligence_SYNTHETIC.json --format markdown . Fictional demonstration figures are not real market data. For actual company research, open primary issuer/exchange filings and prepare an analyst-approved input first; don't fabricate filing extraction.
+
 ## Post-install first response and optional subagents
 
 After a verified installation, do NOT stop at Installed. Proactively propose three specific high-utility research prompts based on the current user's task and authorized context already accessible in the host; if none is available, use defaults from docs/FIRST_SESSION.md and ask which daily workflow takes longest. The CLI command fundtex onboard --context 'authorized brief' generates three suggestions without accessing chat history itself. Do not infer or search past conversation, local documents or employer systems without permitted access. Explain if historical conversation data is unavailable.
