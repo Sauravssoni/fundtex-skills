@@ -4,6 +4,7 @@ import datetime as dt
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
+from .http import fetch_bytes
 
 def discover(query: str, limit: int = 10):
     query = query.strip()
@@ -13,9 +14,7 @@ def discover(query: str, limit: int = 10):
         "q": f"{query} (NSE OR BSE OR India stock market)",
         "hl": "en-IN", "gl": "IN", "ceid": "IN:en"
     })
-    req = urllib.request.Request(url, headers={"User-Agent":"FundtexResearch/0.1 (market news discovery)"})
-    with urllib.request.urlopen(req, timeout=12) as response:
-        root = ET.fromstring(response.read(2_000_000))
+    root = ET.fromstring(fetch_bytes(url, max_bytes=2_000_000, headers={"User-Agent":"FundtexResearch/0.1 (market news discovery)"}))
     items = []
     for item in root.findall("./channel/item")[:limit]:
         source_node = item.find("source")

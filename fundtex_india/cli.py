@@ -46,6 +46,7 @@ def execute(args):
             "symbol":data["symbol"], "market":"India",
             "data_quality":data["quality"], "data_source":data["source"],
             "data_last_observation":data["observed_as_of"], "data_note":data["note"],
+            "source_sha256": data.get("sha256"),
             "research_only": True}
     if args.command in ("analyze","brief"):
         base["analysis"] = report(data["rows"], annual_risk_free=args.risk_free)

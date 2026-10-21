@@ -8,6 +8,7 @@ import re
 import urllib.parse
 import urllib.request
 from pathlib import Path
+from .http import fetch_bytes
 
 SYMBOL = re.compile(r"^[A-Z0-9][A-Z0-9&_-]{0,24}\.(NS|BO)$")
 
@@ -68,9 +69,7 @@ def yahoo_prices(symbol: str, *, range_: str = "1y", interval: str = "1d") -> di
     if range_ not in {"1mo", "3mo", "6mo", "1y", "2y", "5y"} or interval not in {"1d", "1wk"}:
         raise ValueError("Unsupported chart query")
     url = "https://query1.finance.yahoo.com/v8/finance/chart/" + urllib.parse.quote(symbol) + "?" + urllib.parse.urlencode({"range": range_, "interval": interval})
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 FundtexResearch/0.1"})
-    with urllib.request.urlopen(req, timeout=12) as response:
-        blob = json.load(response)
+    blob = json.loads(fetch_bytes(url, max_bytes=5_000_000, headers={"User-Agent": "Mozilla/5.0 FundtexResearch/0.1"}))
     chart = blob.get("chart") or {}
     if chart.get("error"):
         raise ValueError(f"Chart provider error: {chart['error']}")
