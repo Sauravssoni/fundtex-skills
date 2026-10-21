@@ -16,7 +16,7 @@ git clone https://github.com/Sauravssoni/fundtex-skills.git && cd fundtex-skills
 
 Installs non-conflicting skill folders under `~/.claude/skills` and the read-only India CLI at `$HOME/.local/bin/fundtex`. Existing folders/binaries are skipped, not overwritten. Restart Claude Code and invoke the Fundtex India skills.
 
-**Claude Code plugin alternative:**
+**Claude Code plugin alternative:** (plugin installation discovers skills; the Python CLI still requires the one-shot shell installer above)
 
 ```text
 /plugin marketplace add Sauravssoni/fundtex-skills
