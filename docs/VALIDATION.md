@@ -4,8 +4,8 @@ Environment: MacBook Pro, macOS, Python 3.11, isolated QA clone. No broker crede
 
 ## Verified local engineering
 
-- **44/44 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
-- **1,000,000 seeded Gaussian scenario draws PASSED** in **4.12s** in the final v0.6 44-test suite. This is CPU computation, not one million actual backtested trades.
+- **53/53 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
+- **1,000,000 seeded Gaussian scenario draws PASSED** in **7.92s** in the final v0.7 53-test suite. This is CPU computation, not one million actual backtested trades.
 - Final temporary-HOME installer verification copied **19 skills into 3 agent skill locations (57 copies)**, then safely skipped all 57 on a second run; the installed evaluation CLI succeeded without any writes into the user's actual home directory.
 - Google News source discovery succeeded over HTTPS on one test. RSS headlines are unverified leads. Unofficial Yahoo prices returned HTTP 429 and are not reliable for production.
 - Hosted GitHub Actions previously failed before running any steps; CI is not established as green.
@@ -27,6 +27,14 @@ A separate 2,000,000-path seeded Gaussian computational stress run also PASSED i
 The ninth India-specific skill, fundtex-india-diligence, is installed alongside the existing eight India skills. Together with the 11 attributed upstream skills, the v0.6 distribution has 20 SKILL.md folders. Fresh clean-install verification PASSED: 60 skill copies across Claude/Codex/shared agent locations, 60 non-destructive skips on reinstall, nine India skills detected in each agent directory, matching engine versions, and both fictional company and lender reports executed successfully.
 
 Fundtex's separate offline company diligence tool successfully processed deliberately fictional Indian operating-company and banking examples. It reproduced revenue growth, cash conversion, negative FCF, net debt/EBITDA, high receivables review questions, and banking-specific GNPA/NNPA/credit cost/capital ratios. Unit tests reject nonfinite, boolean, unknown or unverified input status, and source links remain labelled not independently opened. This validates arithmetic/contract behavior only: no real issuer financial statement authentication or institutional sign-off has occurred. See COMPANY_DILIGENCE.md and CLAUDE_FIRST_RUN.md.
+
+## v0.7 Portable Agent Mission Control (planning only)
+
+Added GEMINI.md, Cursor .mdc rule, Copilot repository instructions and a dedicated Fundtex Analyst Council skill, plus deterministic Mission Control for explicit host capabilities, user permission, bounded specialist roles and fallback paths. Nine additional tests passed since v0.6: all 53 tests including million-draw numerical computation. These tests confirm deterministic plan construction and no raw task echo, not live agent-spawn execution. See AGENT_PORTABILITY.md and ANALYST_DELIVERY_CONTRACT.md.
+
+## Final v0.7 cross-agent installer regression
+
+The v0.7 full unit run passed **53/53 tests** including an isolated disposable-HOME install of **21 unique skills to three agent locations (63 installed files)**, a repeat that safely skipped **63 existing copies**, matching CLI version checks, all ten India-first skill files, a verified installed Mission Control command that returned a bounded sequential plan, and checks that no private plugin manifest exists in the public repository. This does not constitute a live full Claude/Codex/Gemini/Cursor session trial, subagent spawn or financial-data feed validation.
 
 ## Current predictive classification
 

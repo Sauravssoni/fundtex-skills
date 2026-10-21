@@ -55,7 +55,7 @@ def doctor(home: str | None = None, *, repo_root: str | None = None) -> dict:
     homepath=Path(home if home is not None else os.path.expanduser("~")).expanduser()
     root=Path(repo_root).resolve() if repo_root else Path(__file__).resolve().parents[1]
     targets=(".claude/skills",".codex/skills",".agents/skills")
-    expected=("fundtex-god-eye","fundtex-india-diligence","fundtex-india-forecast","fundtex-india-market",
+    expected=("fundtex-god-eye","fundtex-analyst-council","fundtex-india-diligence","fundtex-india-forecast","fundtex-india-market",
               "fundtex-india-news","fundtex-india-risk","fundtex-india-portfolio",
               "fundtex-india-valuation","fundtex-india-brief")
     manifest={}
@@ -101,6 +101,7 @@ def welcome() -> str:
         "",
         "Personalize: fundtex onboard --context 'I research Indian banks, NBFCs and credit'",
         "Healthcheck:  fundtex doctor",
+        "Agent plan:   fundtex mission --task 'India banking peer diligence' --mode DEEP",
         "Evidence first. No live-price guarantee. No autonomous trades.",
         "For contextual past-work suggestions ask your agent to consider only",
         "conversation/memory sources it is actually authorized to access.",

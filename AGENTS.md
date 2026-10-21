@@ -10,6 +10,14 @@ This PUBLIC repo contains Claude/Codex-compatible SKILL.md files, source-attribu
 
 **Company financial diligence CLI:** python3 -m fundtex_india.cli diligence --inputs examples/india_company_diligence_SYNTHETIC.json --format markdown . Fictional demonstration figures are not real market data. For actual company research, open primary issuer/exchange filings and prepare an analyst-approved input first; don't fabricate filing extraction.
 
+## Maximum capability, without inventing capabilities
+
+Across Claude Code, Codex, Gemini CLI, Cursor, Copilot and other agents, read docs/AGENT_PORTABILITY.md and docs/ANALYST_DELIVERY_CONTRACT.md. Use GEMINI.md, CLAUDE.md, .github/copilot-instructions.md and .cursor/rules/fundtex-research.mdc where your host supports them; a text file cannot grant subagents, shell/network, paid financial feeds or cross-chat memory.
+
+For a serious research mission, first inspect your REAL host capabilities and authorization. Then invoke fundtex mission --task 'brief non-sensitive finance task' --agent generic --mode DEEP --abilities terminal,python --max-workers 5 --format markdown. Add web and subagents to abilities and --approved only if the host actually supports them and the user already authorized the data scope and costs. The mission CLI is a deterministic OFFLINE PLAN, not agent execution. Use specialist roles in parallel only when actual host tools permit; otherwise use sequential passes including an independent skeptic.
+
+For software improvements, follow docs/SELF_EVOLUTION.md and tests: branch, hypothesis, baselines, adversarial/fallback checks, review approval. First deliver a working source-verified financial outcome whenever possible rather than spending the initial session on simulations or marketing. Source authenticity, sector correctness, open counterarguments and clear handoff are mandatory.
+
 ## Post-install first response and optional subagents
 
 After a verified installation, do NOT stop at Installed. Proactively propose three specific high-utility research prompts based on the current user's task and authorized context already accessible in the host; if none is available, use defaults from docs/FIRST_SESSION.md and ask which daily workflow takes longest. The CLI command fundtex onboard --context 'authorized brief' generates three suggestions without accessing chat history itself. Do not infer or search past conversation, local documents or employer systems without permitted access. Explain if historical conversation data is unavailable.

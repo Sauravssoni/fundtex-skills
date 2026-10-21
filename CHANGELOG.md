@@ -1,5 +1,12 @@
 # Release history — Fundtex Financial Intelligence
 
+## v0.7 — 21 October 2026
+- Added portable instructions for Gemini CLI, Cursor and GitHub Copilot in addition to Claude Code and Codex.
+- Added Fundtex Analyst Council SKILL.md for discoverable role-based India research, plus mission CLI with tool/permission declarations, skeptical mandatory reviewer, output contract and sequential fallback.
+- Added AGENT_PORTABILITY.md and ANALYST_DELIVERY_CONTRACT.md to make first-session and professional research quality expectations explicit, without claiming that instructions can grant host tools.
+- 53/53 offline automated tests including million-draw computation; fresh temporary HOME installer passed for 21 skills in three destinations (63 installs), second run safely skipped all 63, and installed Mission Control executed. Live individual agent-client behavior remains untested.
+- These capabilities produce plans and reliable calculations, not live exchange access, autonomous subagents, independent investment forecasts or proof of Bloomberg superiority.
+
 ## v0.6 — 21 October 2026
 - Published the dedicated fundtex-india-diligence SKILL.md so Claude/Codex can discover and invoke the company-analysis workflow naturally.
 - Added an actual India company diligence CLI producing Markdown/JSON analyst review packets from approved reported figures; includes distinct operating-company and bank/NBFC methods.

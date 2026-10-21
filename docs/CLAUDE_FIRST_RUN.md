@@ -10,7 +10,7 @@
 
        "$HOME/.local/bin/fundtex" doctor --repo-root "$PWD"
 
-   All nine India skills should be present in each supported agent directory and the installed engine should match the checkout. If versions differ, do not overwrite without approval: use the repository's Python CLI temporarily.
+   All ten India-first skills should be present in each supported agent directory and the installed engine should match the checkout. If versions differ, do not overwrite without approval: use the repository's Python CLI temporarily.
 4. Immediately demonstrate two working **fictional, clearly labelled** forensic reports (not price prediction or actual listed companies):
 
        python3 -m fundtex_india.cli diligence --inputs examples/india_company_diligence_SYNTHETIC.json --format markdown

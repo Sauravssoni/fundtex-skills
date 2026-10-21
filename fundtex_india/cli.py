@@ -17,10 +17,19 @@ from .eval_suite import stress_suite
 from .onboarding import suggest, doctor
 from .council import plan as council_plan
 from .diligence import from_json as company_diligence, render_markdown as diligence_markdown
+from .mission import mission as plan_mission, as_markdown as mission_markdown
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
     sub = parser.add_subparsers(dest="command", required=True)
+    p = sub.add_parser("mission", help="Plan portable specialist-agent research, never execute or spawn agents")
+    p.add_argument("--task", required=True, help="Short, non-sensitive research objective (never echoed)")
+    p.add_argument("--agent", choices=("generic","claude","codex","gemini","cursor","copilot","opencode"),default="generic")
+    p.add_argument("--mode", choices=("FAST","DEEP","INSTITUTIONAL"),default="FAST")
+    p.add_argument("--abilities", default="terminal,python",help="Comma-separated host capabilities (terminal,python,web,subagents,filesystem)")
+    p.add_argument("--max-workers",type=int,default=5)
+    p.add_argument("--approved",action="store_true",help="User already authorized supported web and worker tasks")
+    p.add_argument("--format",choices=("json","markdown"),default="markdown")
     p = sub.add_parser("diligence", help="Source-aware Indian company forensic financial packet from approved JSON")
     p.add_argument("--inputs", required=True, help="Financial statement figures from user-approved filing")
     p.add_argument("--format", choices=("json","markdown"),default="json")
@@ -80,6 +89,10 @@ def make_parser():
     return parser
 
 def execute(args):
+    if args.command == "mission":
+        return plan_mission(args.task,agent=args.agent,mode=args.mode,
+                            abilities=[x.strip() for x in args.abilities.split(",") if x.strip()],
+                            max_workers=args.max_workers,confirmed_permission=args.approved)
     if args.command == "diligence":
         return company_diligence(args.inputs)
     if args.command == "council":
@@ -148,6 +161,8 @@ def main(argv=None):
         return 2
     if args.command == "diligence" and args.format == "markdown":
         print(diligence_markdown(result))
+    elif args.command == "mission" and args.format == "markdown":
+        print(mission_markdown(result))
     else:
         print(json.dumps(result, indent=2, allow_nan=False))
     return 0

@@ -4,7 +4,7 @@
 
 # FUNDTEX · FINANCIAL INTELLIGENCE
 
-**Public Skills Edition v0.6 — research-first | India-native | Claude Code + Codex**
+**Public Skills Edition v0.7 — agent-optimized | India-native | Claude Code · Codex · Gemini CLI · Cursor · Copilot**
 
 **A source-first, India-native financial research skill stack for Claude, Codex and analyst teams.**
 
@@ -37,7 +37,7 @@ India's analysts navigate **NSE/BSE company announcements, exchange calendars, e
 git clone https://github.com/Sauravssoni/fundtex-skills.git && cd fundtex-skills && bash install.sh
 ```
 
-The installer copies **20 compatible skills** (9 India-first + 11 attributed original skills) to Claude Code (~/.claude/skills), Codex (~/.codex/skills) and shared agent-skill directories (~/.agents/skills). It does not overwrite existing skills, request login tokens or place trades. It provides a local `~/.local/bin/fundtex` launcher, prints three starter prompts, and exposes offline `doctor`, `onboard`, `council` and `diligence` commands. Restart Claude Code/Codex if an already-open session has not reloaded its skills. Inspect installation commands before running code downloaded from GitHub.
+The installer copies **21 compatible skills** (10 India-first + 11 attributed original skills) to Claude Code (~/.claude/skills), Codex (~/.codex/skills) and shared agent-skill directories (~/.agents/skills). It does not overwrite existing skills, request login tokens or place trades. It provides a local `~/.local/bin/fundtex` launcher, prints three starter prompts, and exposes offline `doctor`, `onboard`, `council` and `diligence` commands. Restart Claude Code/Codex if an already-open session has not reloaded its skills. Inspect installation commands before running code downloaded from GitHub.
 
 **Agent install / first-use guidance:** Claude Code and Codex can follow the root [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [self-evolution protocol](docs/SELF_EVOLUTION.md) and the individual SKILL.md contracts. This PUBLIC repo contains skills and numerical engines **only**. The account-scoped ChatGPT plugin source lives on the isolated PRIVATE fundtex-website branch feature/private-fundtex-chatgpt-plugin, and is not distributed by this installer.
 
@@ -74,6 +74,31 @@ The first command checks installed skill locations. The second returns three rea
 > Clone https://github.com/Sauravssoni/fundtex-skills into an approved directory if not already present, read docs/CLAUDE_FIRST_RUN.md, inspect and safely run its installer, check the installed version, generate the fictional company/bank diligence demos, run offline tests, and then suggest three genuinely useful Indian-finance research tasks using only the context you can actually access before helping me complete one with verified primary filings.
 
 If no relevant past context is available, Fundtex defaults to equity diligence, confidential-data-safe portfolio risk analysis and a benchmarked forecast audit. It asks what part of the analyst's actual work needs improvement rather than inventing preferences.
+
+## Agent Mission Control — use the host's actual abilities
+
+Every serious research assignment can begin with an **offline deterministic task plan**. Unlike a giant generic prompt, it chooses an Indian-market research path, mandatory skeptic, source standards, precise fallback, output format and human-review gates. It never claims to spawn models or access an exchange itself.
+
+    "$HOME/.local/bin/fundtex" mission --task "Indian NBFC peer earnings and forensic credit quality" --agent generic --mode DEEP --abilities terminal,python --max-workers 5 --format markdown
+
+When the user and host **actually** authorize external research and subagents, the agent can add web,subagents to --abilities and --approved. An agent without delegation support performs the same specialized passes sequentially. The Task Graph does not run tools, workers, orders or web searches by itself.
+
+**Supported instruction conventions:**
+
+| Coding agent | Repository entry point |
+|---|---|
+| Claude Code | CLAUDE.md + local SKILL.md directories |
+| Codex | AGENTS.md + skills |
+| Gemini CLI | GEMINI.md + compatible skills |
+| Cursor | .cursor/rules/fundtex-research.mdc + AGENTS.md |
+| GitHub Copilot | .github/copilot-instructions.md |
+| Other capable terminal agents | AGENTS.md + direct Fundtex Python CLI, explicit skill selection |
+
+This is **agent portability**, not guaranteed availability in every app or edition. See [compatibility and fallbacks](docs/AGENT_PORTABILITY.md), [analyst deliverable contract](docs/ANALYST_DELIVERY_CONTRACT.md), [multi-agent research](docs/MULTI_AGENT_DESK.md), and the [first-run playbook](docs/CLAUDE_FIRST_RUN.md). An ordinary chat without a connected execution environment cannot clone and install software.
+
+**One prompt for any terminal-enabled coding agent:**
+
+> Safely clone or reuse https://github.com/Sauravssoni/fundtex-skills, read AGENTS.md and docs/CLAUDE_FIRST_RUN.md, inspect and run the installer with permission, confirm the version and two fictional Indian diligence demos, then use Fundtex Mission Control to scope my research with only your actually available tools, delegate to bounded specialist agents if supported or work sequentially, verify real NSE/BSE/issuer filings before financial claims, deliver a skeptical and source-linked analyst memo, and proactively suggest three next tasks suited to context you can genuinely access.
 
 ## Optional Intelligence Council — parallel agents, not parallel hype
 
@@ -128,9 +153,9 @@ See [India Research Desk](docs/INDIA_RESEARCH_DESK.md), [First Session](docs/FIR
 | **Fundamental valuation** | Explicit-input DCF + WACC/terminal growth sensitivity | Hypothetical INR/share valuations with scenario assumptions |
 | **India analyst brief** | Structured source/evidence/hypothesis method | Signed-off research packet; missing data disclosed |
 
-### Nine India-first skills + eleven preserved original skills
+### Ten India-first skills + eleven preserved original skills
 
-**India layer**: `fundtex-god-eye`, `fundtex-india-diligence`, `fundtex-india-forecast`, `fundtex-india-market`, `fundtex-india-news`, `fundtex-india-risk`, `fundtex-india-portfolio`, `fundtex-india-valuation`, `fundtex-india-brief`. For a professional Indian-company dossier, see [Research Desk Playbook](docs/INDIA_RESEARCH_DESK.md), [Diligence Engine](docs/COMPANY_DILIGENCE.md) and [Claude Code First-Run](docs/CLAUDE_FIRST_RUN.md).
+**India layer**: `fundtex-god-eye`, `fundtex-analyst-council`, `fundtex-india-diligence`, `fundtex-india-forecast`, `fundtex-india-market`, `fundtex-india-news`, `fundtex-india-risk`, `fundtex-india-portfolio`, `fundtex-india-valuation`, `fundtex-india-brief`. For a professional Indian-company dossier, see [Research Desk Playbook](docs/INDIA_RESEARCH_DESK.md), [Diligence Engine](docs/COMPANY_DILIGENCE.md) and [Claude Code First-Run](docs/CLAUDE_FIRST_RUN.md).
 
 **Preserved 11 original US modules** (by Jake Schincariol): `trader-copycat`, `trader-news`, `trader-budget`, `trader-pelosi`, `trader-analyst`, `trader-screener`, `trader-risk`, `trader-broker`, `trader-tax`, `trader-alerts`, `trader-rebalance`. Their source methods are US-centric (SEC/NYSE/US tax/congress); **they are not automatically an Indian trading/tax connector**. The original brokerage component prepares approval-gated *US* tickets; the Fundtex India engine is read-only.
 
@@ -208,15 +233,15 @@ The `--live` option accesses a **best-effort unofficial Yahoo historical chart**
 
 ## What has actually been tested?
 
-The October 21 local validation on macOS/Python 3.11 includes **44 successful automated checks**, including deterministic simulations, no-lookahead scenario checks, malformed input rejection, portfolio concentration contracts and **1,000,000 synthetic Monte Carlo draws** in **3.67–5.22 seconds** across measured runs. These are CPU/numerical tests, **not a million trade backtests**.
+The October 21 local validation on macOS/Python 3.11 includes **53 successful automated checks**, including deterministic simulations, no-lookahead scenario checks, malformed input rejection, portfolio concentration contracts and **1,000,000 synthetic Monte Carlo draws** in **3.67–7.92 seconds** across measured runs. These are CPU/numerical tests, **not a million trade backtests**.
 
 | Gate | Status | Interpretation |
 |---|---|---|
-| India CLI contract/regression tests | **Local PASS (44/44)** | Price and filing input, financial diligence, sector-specific lender calculations, forecasts, risk, provenance, onboarding and fallbacks |
-| 1,000,000 seeded Gaussian paths | Local PASS (4.12 s in final v0.6 44-test run) | Computational performance only |
+| India CLI contract/regression tests | **Local PASS (53/53)** | Price and filing input, financial diligence, sector-specific lender calculations, forecasts, risk, provenance, onboarding and fallbacks |
+| 1,000,000 seeded Gaussian paths | Local PASS (7.92 s in latest v0.7 53-test run) | Computational performance only |
 | 2,000,000 additional seeded Gaussian paths | Local PASS (8.51 s, five-session hypothetical horizon) | Numerical engine stress; synthetic data |
 | 60 adversarial simulated regimes | **PASS: completed, 25,140 chronological forecasts** | All 60 correctly rejected unproven predictive edge; see [benchmark](docs/STRESS_BENCHMARK.md) |
-| One-shot install + rerun | **v0.6 PASS: 20 skills × 3 destinations = 60 installations, 60 safe skips** | Fresh isolated HOME; 9 India skills per agent, installed-version match, company and bank reports verified |
+| One-shot install + rerun | **v0.7 PASS: 21 skills × 3 destinations = 63 installations, 63 safe skips** | Temporary HOME, health checks and installed Mission Control CLI tested |
 | Google News discovery | Live tested once | Unverified leads; independent verification required |
 | Yahoo price fetch on test host | HTTP 429 | Not dependable live-market validation |
 | Fully licensed NSE/BSE prices & filings | NOT DONE | Institution feed integration needed |
