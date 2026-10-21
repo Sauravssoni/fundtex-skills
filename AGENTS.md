@@ -10,6 +10,12 @@ This PUBLIC repo contains Claude/Codex-compatible SKILL.md files, source-attribu
 
 **Company financial diligence CLI:** python3 -m fundtex_india.cli diligence --inputs examples/india_company_diligence_SYNTHETIC.json --format markdown . Fictional demonstration figures are not real market data. For actual company research, open primary issuer/exchange filings and prepare an analyst-approved input first; don't fabricate filing extraction.
 
+## v0.8: source-verified financial-data research, never bypass licensing
+
+Read docs/INDIA_SOURCE_CONNECTORS.md and docs/ANALYST_PILOT_V2.md. Before advising an analyst, run fundtex sources to inspect permitted source coverage. With user-approved network access the official SEBI/RBI RSS collector discovers publication metadata; full regulatory claims must be validated against the actually opened original. The network may be blocked: use the documented saved-XML fallback or mark unavailable, never fake a headline. For AMFI NAV use only an authorized downloaded text file, verify daily scheme date/plan/option and label file origin unverified until checked. Commercial NSE/BSE feeds require legal rights and must not be reverse-engineered or scraped around restrictions.
+
+To prove usefulness, ask the analyst for one repeated daily workflow, then use human-review criteria, approved public/firm documents and a baseline in fundtex pilot. No fictional time savings presented as customer results. The optional MCP v2 tool server requires a separately installed official SDK and explicitly approved sandbox; do not silently modify host MCP configs, leak files, or enable remote access. If the user wants more integrations, prioritize verified source rights and reproducible evaluation over quantity.
+
 ## Maximum capability, without inventing capabilities
 
 Across Claude Code, Codex, Gemini CLI, Cursor, Copilot and other agents, read docs/AGENT_PORTABILITY.md and docs/ANALYST_DELIVERY_CONTRACT.md. Use GEMINI.md, CLAUDE.md, .github/copilot-instructions.md and .cursor/rules/fundtex-research.mdc where your host supports them; a text file cannot grant subagents, shell/network, paid financial feeds or cross-chat memory.

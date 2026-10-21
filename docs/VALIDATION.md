@@ -4,8 +4,8 @@ Environment: MacBook Pro, macOS, Python 3.11, isolated QA clone. No broker crede
 
 ## Verified local engineering
 
-- **53/53 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
-- **1,000,000 seeded Gaussian scenario draws PASSED** in **7.92s** in the final v0.7 53-test suite. This is CPU computation, not one million actual backtested trades.
+- **64/64 local Python tests PASSED** including offline NSE UDiFF and historic Google Finance-style importers, source SHA-256 receipts, prequential probabilistic forecasts, no-future-price checks, financial analysis and GOD EYE walk-forward contracts.
+- **1,000,000 seeded Gaussian scenario draws PASSED** in **3.17s** in the v0.8 64-test suite. This is CPU computation, not one million actual backtested trades.
 - Final temporary-HOME installer verification copied **19 skills into 3 agent skill locations (57 copies)**, then safely skipped all 57 on a second run; the installed evaluation CLI succeeded without any writes into the user's actual home directory.
 - Google News source discovery succeeded over HTTPS on one test. RSS headlines are unverified leads. Unofficial Yahoo prices returned HTTP 429 and are not reliable for production.
 - Hosted GitHub Actions previously failed before running any steps; CI is not established as green.
@@ -35,6 +35,16 @@ Added GEMINI.md, Cursor .mdc rule, Copilot repository instructions and a dedicat
 ## Final v0.7 cross-agent installer regression
 
 The v0.7 full unit run passed **53/53 tests** including an isolated disposable-HOME install of **21 unique skills to three agent locations (63 installed files)**, a repeat that safely skipped **63 existing copies**, matching CLI version checks, all ten India-first skill files, a verified installed Mission Control command that returned a bounded sequential plan, and checks that no private plugin manifest exists in the public repository. This does not constitute a live full Claude/Codex/Gemini/Cursor session trial, subagent spawn or financial-data feed validation.
+
+## v0.8 official source + benchmark verification
+
+- 64/64 Python tests passed with the 1,000,000-draw synthetic numerical gate (3.17 sec on this Mac during first full suite).
+- 23 public SKILL.md folders (12 India-first plus 11 attributed original), 69 skill copies across Claude/Codex/shared-agent directories and 69 safe skips on repeated install were exercised in temporary isolated HOME through the complete test suite.
+- AMFI parser passed a smoke test using an **actually observed** official-site eight-column HDFC Corporate Bond Fund Direct Plan Growth NAV record dated 19 October 2026. Only parsing of that publicly displayed row was tested; neither a full current NAV batch nor data rights were independently approved.
+- Official RBI and SEBI feed URLs were verified as publisher-supported; a live Mac-network request failed with URLError. The offline XML parser, bounded allowlist and fallback passed. No claim of a working live regulatory deployment.
+- Synthetic human workflow benchmark inputs generate an explicit NOT_REVIEWED_DO_NOT_ADVERTISE flag. Actual sister/institution baseline measurements are not yet provided; no time-savings claims can be made.
+- Optional MCP v2 sandbox and tool logic are unit-tested without SDK. The actual external MCP SDK, host handshake and external agent calls have NOT yet been end-to-end validated.
+- New tests validate source schemas, poisoned XML rejection, HTTPS requirements, AMFI scheme freshness, NAV invalid numeric rejection, benchmark rejection criteria and no arbitrary MCP file access.
 
 ## Current predictive classification
 

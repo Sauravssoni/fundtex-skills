@@ -1,5 +1,13 @@
 # Release history — Fundtex Financial Intelligence
 
+## v0.8 — 21 October 2026
+- Added official read-only RBI/SEBI RSS event discovery with allowlisted HTTPS sources, timestamped metadata, input hashes, secure XML parsing, size/timeout limits and saved-feed fallback. Actual Mac live fetch returned a network error; live feed access remains unverified there.
+- Added AMFI NAV snapshot parser supporting 2026 eight-column scheme, plan and option format and legacy six-column format. Validated a real observed public HDFC Corporate Bond Fund snapshot row (19 Oct 2026) as a parsing smoke test, without bundling publisher data.
+- Added a de-identified analyst pilot scoring tool for baseline versus Fundtex research minutes, verified facts, unsupported claims and critical errors. Fictional metrics cannot be promoted as reviewed customer outcomes.
+- Added optional MCP Python SDK v2 connector with explicit approved-directory sandbox, six read-only tools, no silent installation or arbitrary filesystem/network access; real MCP client handshake remains unverified.
+- Added two specialized skills: fundtex-india-regulatory and fundtex-analyst-pilot (23 public SKILL.md total, 12 India-first).
+- Expanded local regression to 64/64 tests including clean skill install/fallback, plus repeated numerical stress. No independently proven forecast edge or Bloomberg feed parity.
+
 ## v0.7 — 21 October 2026
 - Added portable instructions for Gemini CLI, Cursor and GitHub Copilot in addition to Claude Code and Codex.
 - Added Fundtex Analyst Council SKILL.md for discoverable role-based India research, plus mission CLI with tool/permission declarations, skeptical mandatory reviewer, output contract and sequential fallback.

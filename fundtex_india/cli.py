@@ -18,10 +18,26 @@ from .onboarding import suggest, doctor
 from .council import plan as council_plan
 from .diligence import from_json as company_diligence, render_markdown as diligence_markdown
 from .mission import mission as plan_mission, as_markdown as mission_markdown
+from .regulatory import catalog as source_catalog, fetch as regulatory_fetch, from_file as regulatory_file
+from .amfi import from_file as amfi_file
+from .pilot import from_file as pilot_file
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("sources", help="Approved official Indian data/source registry and licence gates")
+    p = sub.add_parser("regulatory", help="Official RBI/SEBI RSS metadata discovery, no full-document verification")
+    source = p.add_mutually_exclusive_group(required=True)
+    source.add_argument("--feed", choices=("sebi","rbi-releases","rbi-notifications"),help="Explicit opt-in official HTTPS RSS request")
+    source.add_argument("--file",help="Previously approved local RSS/Atom XML")
+    p.add_argument("--max-items",type=int,default=15)
+    p = sub.add_parser("amfi", help="Read user-approved AMFI-format NAV file (not a live stock price)")
+    p.add_argument("--file",required=True)
+    p.add_argument("--query",default="",help="Scheme name / AMC / code filter")
+    p.add_argument("--as-of",default=None,help="YYYY-MM-DD snapshot evaluation date")
+    p.add_argument("--max-results",type=int,default=15)
+    p = sub.add_parser("pilot", help="Human-scored baseline vs Fundtex workflow speed/quality pilot")
+    p.add_argument("--inputs",required=True,help="Approved de-identified JSON of measured tasks")
     p = sub.add_parser("mission", help="Plan portable specialist-agent research, never execute or spawn agents")
     p.add_argument("--task", required=True, help="Short, non-sensitive research objective (never echoed)")
     p.add_argument("--agent", choices=("generic","claude","codex","gemini","cursor","copilot","opencode"),default="generic")
@@ -89,6 +105,14 @@ def make_parser():
     return parser
 
 def execute(args):
+    if args.command == "sources":
+        return source_catalog()
+    if args.command == "regulatory":
+        return regulatory_fetch(args.feed,max_items=args.max_items) if args.feed else regulatory_file(args.file,max_items=args.max_items)
+    if args.command == "amfi":
+        return amfi_file(args.file,query=args.query,max_results=args.max_results,as_of=args.as_of)
+    if args.command == "pilot":
+        return pilot_file(args.inputs)
     if args.command == "mission":
         return plan_mission(args.task,agent=args.agent,mode=args.mode,
                             abilities=[x.strip() for x in args.abilities.split(",") if x.strip()],
@@ -156,7 +180,7 @@ def main(argv=None):
     args = make_parser().parse_args(argv)
     try:
         result = execute(args)
-    except (ValueError, KeyError, OSError, TypeError, json.JSONDecodeError) as exc:
+    except (ValueError, KeyError, OSError, TypeError, UnicodeError, json.JSONDecodeError) as exc:
         print(json.dumps({"status":"ERROR","message":str(exc),"no_fallback_quote":True}), file=sys.stderr)
         return 2
     if args.command == "diligence" and args.format == "markdown":

@@ -1,0 +1,43 @@
+{
+  "data_class": "SYNTHETIC_FIXTURE",
+  "reviewer_id": "FICTIONAL_DEMO_REVIEWER",
+  "reviewer_approved": false,
+  "tasks": [
+    {
+      "id": "FICTIONAL_BANK_ASSET_QUALITY",
+      "expected_facts": 12,
+      "baseline": {
+        "minutes": 50,
+        "verified_facts": 8,
+        "unsupported_claims": 1,
+        "critical_errors": 0,
+        "primary_sources_opened": 2
+      },
+      "fundtex": {
+        "minutes": 29,
+        "verified_facts": 9,
+        "unsupported_claims": 0,
+        "critical_errors": 0,
+        "primary_sources_opened": 3
+      }
+    },
+    {
+      "id": "FICTIONAL_INDUSTRIAL_EARNINGS",
+      "expected_facts": 9,
+      "baseline": {
+        "minutes": 42,
+        "verified_facts": 8,
+        "unsupported_claims": 0,
+        "critical_errors": 0,
+        "primary_sources_opened": 2
+      },
+      "fundtex": {
+        "minutes": 36,
+        "verified_facts": 7,
+        "unsupported_claims": 1,
+        "critical_errors": 0,
+        "primary_sources_opened": 2
+      }
+    }
+  ]
+}

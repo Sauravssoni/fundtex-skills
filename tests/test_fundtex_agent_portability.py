@@ -14,8 +14,8 @@ class AgentPortabilityTests(unittest.TestCase):
     def test_expected_21_skills_have_valid_frontmatter(self):
         folders=sorted(p for p in ROOT.iterdir() if p.is_dir()
                        and p.name.startswith(("fundtex-","trader-")) and (p/"SKILL.md").is_file())
-        self.assertEqual(len(folders),21)
-        self.assertEqual(sum(x.name.startswith("fundtex-") for x in folders),10)
+        self.assertEqual(len(folders),23)
+        self.assertEqual(sum(x.name.startswith("fundtex-") for x in folders),12)
         for folder in folders:
             lines=(folder/"SKILL.md").read_text(encoding="utf-8").splitlines()
             self.assertGreater(len(lines),8,folder.name)
@@ -46,14 +46,14 @@ class AgentPortabilityTests(unittest.TestCase):
             b=subprocess.run(["bash","install.sh"],cwd=ROOT,env=env,text=True,capture_output=True)
             self.assertEqual(a.returncode,0,a.stderr)
             self.assertEqual(b.returncode,0,b.stderr)
-            self.assertIn("skills installed=63 skipped=0",a.stdout)
-            self.assertIn("skills installed=0 skipped=63",b.stdout)
+            self.assertIn("skills installed=69 skipped=0",a.stdout)
+            self.assertIn("skills installed=0 skipped=69",b.stdout)
             self.assertIn("Try one of these research-first prompts:",a.stdout)
             status=doctor(home=temp,repo_root=str(ROOT))
             self.assertTrue(status["all_india_skills_installed"])
             self.assertFalse(status["installed_engine_stale_relative_to_checkout"])
             for v in status["installation"].values():
-                self.assertEqual(v["india_skills_present"],10)
+                self.assertEqual(v["india_skills_present"],12)
             launcher=Path(temp)/".local/bin/fundtex"
             p=subprocess.run([str(launcher),"mission","--task","Indian bank research",
                                "--agent","gemini","--mode","DEEP","--abilities",
