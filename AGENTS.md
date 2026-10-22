@@ -4,6 +4,10 @@ Company: Fundtex Financial Intelligence, an initiative within Syntheon Technolog
 
 This PUBLIC repo contains Claude/Codex-compatible SKILL.md files, source-attributed Python research code, test fixtures and documentation. Keep ALL ChatGPT plugin manifests, implementation, release archives and account information on the separate PRIVATE Sauravssoni/fundtex-website branch feature/private-fundtex-chatgpt-plugin. Do not copy private plugin assets into this repository.
 
+## v1.0.2 automatic report and measurable evidence
+
+Core research now runs source-gated dated prices through charts, descriptive indicators, downside-risk diagnostics, a chronological probability calibration gate, walk-forward research with cost assumptions, and public headline keyword monitoring. The agent must inspect actual new report files and the manifest; never mistake the news keyword flags for calibrated sentiment, a positive historical strategy result for proven alpha, or an offline mission plan for executed specialist agents. No default historical CSV should be shipped to a third-party news API without explicit user opt-in. See docs/RELEASE_AUDIT_V102.md.
+
 ## First broker connection: no scripts, no secrets in chat
 
 Agent also has a local, no-secret chooser: `fundtex connect` returns verified official destinations and a safe provider-selection question. Run it when appropriate; it does NOT create an OAuth session. After user-configured FYERS/Kite Connect/Dhan credentials, `fundtex connect --provider fyers --verify VERIFIED.NS` (or kite/dhan) checks a real read-only quote before saying connected. Host-connected official Kite MCP remains separate from the Python CLI. See docs/BROKER_CONNECTION_GUIDE.md.

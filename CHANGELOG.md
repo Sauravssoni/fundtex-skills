@@ -1,5 +1,13 @@
 # Release history — Fundtex Financial Intelligence
 
+## v1.0.2 — 22 October 2026
+- Independently audited a fresh actual INFY.NS public historical fetch (247 sessions, dated through 22 Oct) and one-company core analyst ZIP generation (17.7 s total from first fetch on one Mac); never claimed an exchange-licensed streaming feed.
+- Fixed flat-return RSI indicator to report neutral 50, added independent arithmetic tests and preserved OHLC versus close-only chart distinction.
+- Integrated historical downside/volatility diagnostics, causal forecast/baseline/abstention report, cost-aware walk-forward experiment and source-labelled headline topic flags into the single natural-language agent/CLI report pack.
+- Kept private local CSV news queries off by default, made public news best-effort and reportable when unavailable. Added adversarial negative tests and production-scope audit documentation.
+- Authentic client brokerage sign-in, consistent optional PDF/XLSX renderers and independently verified profitable predictions remain production readiness gates, not asserted achievements.
+
+
 ## v1.0.1 — 22 October 2026
 - Added agent-guided brokerage connection discovery for official Zerodha Kite MCP, FYERS, Kite Connect and DhanHQ, including broker-owned authentication steps, fee/entitlement boundaries and no token collection in chat.
 - Added `fundtex connect` with optional user-approved official site opening and real read-only quote verification (when direct credentials are already user-configured). Configuration alone never proves an authenticated account. Zerodha MCP remains hosted in an authorized Claude/MCP client rather than magically bridged into the Fundtex Python process.

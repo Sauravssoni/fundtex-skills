@@ -19,6 +19,7 @@ from .market import validate_symbol, yahoo_prices
 from .chart_studio import prices as audited_csv_prices
 from .mission import mission
 from .pack_studio import build_pack
+from .research_extensions import write_extra
 
 def _history(symbol,*,source,csv_file=None,period="1y",public_fetch=None):
     sym=validate_symbol(symbol)
@@ -61,7 +62,8 @@ def _quote_result(symbol,provider,*,quote_fetch=None):
     return {"status":"AUTHENTICATED_SNAPSHOT","live_authenticated":True,"provider":provider},result
 
 def run(symbol,out,*,source="public",csv_file=None,period="1y",quote_provider="auto",
-        max_age_days=7,fetch_public=None,fetch_quote=None,add_zip=True):
+        max_age_days=7,fetch_public=None,fetch_quote=None,add_zip=True,
+        include_news=False,fetch_news=None):
     sym=validate_symbol(symbol)
     if period not in ("1mo","3mo","6mo","1y","2y","5y"):raise ValueError("Unsupported historical range")
     if source=="fyers" and period in ("2y","5y"):raise ValueError("FYERS source supports up to 1y per request")
@@ -95,6 +97,7 @@ def run(symbol,out,*,source="public",csv_file=None,period="1y",quote_provider="a
         "symbol":sym,"historical_provider":provider,"historical_data_quality":quality,
         "history_source_uri":raw.get("source","approved local CSV"),
         "source_snapshot_sha256":result["source_sha256"],
+        "original_input_sha256_if_available":raw.get("source_sha256",raw.get("sha256")),
         "published_observation_date":observed.isoformat(),
         "age_days":age,"retrieved_at_utc":datetime.now(timezone.utc).isoformat(),
         "historical_data_is_streaming_live":False,
@@ -134,7 +137,18 @@ def run(symbol,out,*,source="public",csv_file=None,period="1y",quote_provider="a
     )
     (folder/"START_HERE.md").write_text(report,encoding="utf-8")
     result["created_files"].append("START_HERE.md")
-    result["version"]="1.0-agent-desk"
+    extra=write_extra(folder,rows,sym,include_news=include_news,news_fetch=fetch_news)
+    result["created_files"].extend(extra["created"])
+    result["research_extensions"]={"created":extra["created"],"unavailable":extra["unavailable"],
+                                  "predictive_validation_not_equivalent_to_trading_edge":True}
+    if extra["created"]:
+        with (folder/"START_HERE.md").open("a",encoding="utf-8") as note:
+            note.write("\n## Added downside, walk-forward, forecast and news evidence\n\n")
+            note.write("Generated: "+", ".join(extra["created"])+".\n\n")
+            note.write("Missing or inapplicable: "+json.dumps(extra["unavailable"],ensure_ascii=False)+"\n\n")
+            note.write("Headline topic flags are unverified keyword mentions, not validated financial sentiment. ")
+            note.write("Chronological forecast/backtest outputs remain research experiments; review their ABSTAIN/assurance gates.\n")
+    result["version"]="1.0.2-agent-desk"
     result["historical_source_quality"]=quality
     result["broker_quote"]=status
     result["source_observation_age_days"]=age

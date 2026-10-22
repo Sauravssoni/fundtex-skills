@@ -41,6 +41,8 @@ def make_parser():
     p.add_argument("--period",choices=("1mo","3mo","6mo","1y","2y","5y"),default="1y")
     p.add_argument("--quote",choices=("auto","off","fyers","kite","dhan"),default="auto",help="Read-only optional authenticated broker snapshot, NEVER an order")
     p.add_argument("--max-age-days",type=int,default=7)
+    p.add_argument("--no-news",action="store_true",help="Disable unverified headline monitoring and external news query")
+    p.add_argument("--with-news",action="store_true",help="Opt in to public headline monitoring even for approved local CSV")
     p.add_argument("--out",required=True,help="NEW output directory and ZIP, never overwritten")
     p = sub.add_parser("connect",help="Step-by-step official broker authorization guide; never accepts tokens in chat")
     p.add_argument("--provider",choices=("choose","zerodha-mcp","fyers","kite","dhan"),default="choose")
@@ -146,7 +148,8 @@ def make_parser():
 def execute(args):
     if args.command == "research":
         return automatic_research(args.symbol,args.out,source=args.source,csv_file=args.csv,
-                                  period=args.period,quote_provider=args.quote,max_age_days=args.max_age_days)
+                                  period=args.period,quote_provider=args.quote,max_age_days=args.max_age_days,
+                                  include_news=(not args.no_news and (args.source != "csv" or args.with_news)))
     if args.command == "quote":
         return authenticated_quote(args.symbol,args.provider)
     if args.command == "connect":

@@ -4,7 +4,7 @@
 
 # FUNDTEX · FINANCIAL INTELLIGENCE
 
-**Public Skills Edition v1.0.1 — Agent-Native India Research Desk | One natural-language prompt · actual historical data · authorized broker snapshots · automatic analyst exports**
+**Public Skills Edition v1.0.2 — Agent-Native India Research Desk | One natural-language prompt · actual historical data · authorized broker snapshots · automatic analyst exports**
 
 **A source-aware, reproducible Indian financial analyst research desk with official RBI/SEBI regulatory discovery, approved mutual-fund NAV snapshots, verified-input fundamentals, evidence-led agent skills and human-reviewed productivity benchmarks.**
 
@@ -56,6 +56,10 @@ The installer copies **29 compatible skills** (18 India-first + 11 attributed or
 > Use the fundtex-god-eye skill. Investigate an NSE/BSE company's latest primary exchange filings and earnings, identify risks and contradictions, and compare any time-causal price hypothesis to buy-and-hold with explicit costs. Cite source dates. Say ABSTAIN when you cannot verify the evidence.
 
 No agent can obtain real NSE quotations just by reading a skill file. Its runtime still needs network permissions and legally obtained data. The plugin and CLI are separate: an agent may need to call the installed CLI through its authorized shell.
+
+## v1.0.2 — Quantified research, honest sentiment monitoring and chart-math audit
+
+The no-dashboard, one-command research flow now also records historical tail risk, price-based walk-forward strategy tests with cost assumptions, a strictly time-causal probabilistic calibration report (when enough sessions exist), and bounded public-news headline topic monitoring. News metadata is **unverified**, article contents are not automatically authenticated and keyword topics are **not a financial sentiment prediction model**. Failure/unavailable reasons appear in the source-hashed manifest. Authorized local CSVs do not trigger an external news lookup without an explicit opt-in. Flat-price RSI is neutral (50); it no longer incorrectly displays 100. Details and go/no-go evidence: [release audit](docs/RELEASE_AUDIT_V102.md).
 
 ## v1.0.1 — Conversational broker connection (no scripts for the end user)
 

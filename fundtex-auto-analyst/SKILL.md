@@ -20,7 +20,7 @@ For current India historical evidence, prefer authenticated **FYERS** daily OHLC
 
     fundtex research --symbol INFY.NS --source public --quote auto --out /approved/new/fundtex-INFYN-20261021
 
-This creates a new folder and ZIP with interactive SVG/HTML chart, historical close series, RSI/SMA, source-hashed CSVs, evidence/limitations, independent skeptic mission, Markdown memo and optional Excel/PDF/PNG. The output receipt states every omitted optional file. **Opening the generated files and checking accuracy is the agent's job**, not the user's.
+This creates a new folder and ZIP with interactive SVG/HTML chart, historical close series, RSI/SMA, source-hashed CSVs, evidence/limitations, independent skeptic mission, Markdown memo and optional Excel/PDF/PNG. v1.0.2 also attempts tail-risk diagnostics, chronological calibration/ABSTAIN gates, walk-forward performance with explicit cost assumptions, and bounded unverified headline-topic monitoring. Any missing data/news or insufficient sample length must be disclosed; a headline keyword is not a verified sentiment signal. The output receipt states every omitted optional file. **Opening the generated files and checking accuracy is the agent's job**, not the user's.
 
 For a permitted customer CSV use --source csv --csv /approved/input.csv. An actual source marked SYNTHETIC_FIXTURE MUST remain fictional, even if named a famous ticker. Never fall back to synthetic prices when the network is unavailable.
 
