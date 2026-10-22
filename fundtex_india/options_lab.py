@@ -204,7 +204,7 @@ def evaluate(spec: dict):
     if sigma is not None:
         sigma=_number(sigma,"annualized_volatility",0,3)
         r=_number(spec.get("annual_risk_free",0.06),"annual_risk_free",-0.1,0.3)
-        n=_integer(spec.get("paths",10000),"paths",100,100000)
+        n=_integer(spec.get("paths",10000),"paths",100,1000000)
         seed=_integer(spec.get("seed",42),"seed",0,2147483647)
         years=(expiry-valued).days/365.0
         dividend=_number(spec.get("annual_dividend_yield",0.0),"annual_dividend_yield",0,0.3)
@@ -217,11 +217,27 @@ def evaluate(spec: dict):
         def q(x):
             z=x*(n-1);j=int(z);return pnl[j]*(1-(z-j))+pnl[min(j+1,n-1)]*(z-j)
         left=[x for x in pnl if x<=q(0.05)]
+        # Uncertainty is from finite Monte Carlo draws conditional on the assumed
+        # terminal distribution, NOT model risk, fee uncertainty or real-world alpha.
+        positive=sum(x>0 for x in pnl)
+        phat=positive/n
+        z=1.96
+        denom=1+z*z/n
+        centre=(phat+z*z/(2*n))/denom
+        half=(z/denom)*math.sqrt(phat*(1-phat)/n+z*z/(4*n*n))
+        sample_mean=mean(pnl)
+        sample_std=math.sqrt(sum((x-sample_mean)**2 for x in pnl)/(n-1))
+        sampling_mean_half=z*sample_std/math.sqrt(n)
         curve["scenario_simulation"]={
             "model":"Single terminal lognormal underlying price; user-supplied annualized volatility, NOT option IV surface",
             "paths":n,"seed":seed,"volatility_user_supplied":sigma,"annual_risk_free":r,
             "horizon_calendar_days":(expiry-valued).days,
-            "mean_model_pnl_inr":round(mean(pnl),2),"probability_positive_model_pnl":sum(x>0 for x in pnl)/n,
+            "mean_model_pnl_inr":round(sample_mean,2),"probability_positive_model_pnl":phat,
+            "monte_carlo_sampling_only_95pct_interval":{
+                "positive_pnl_frequency_wilson":[round(max(0,centre-half),6),round(min(1,centre+half),6)],
+                "mean_model_pnl_inr_normal_approx":[round(sample_mean-sampling_mean_half,2),round(sample_mean+sampling_mean_half,2)],
+                "does_not_account_for_model_misspecification":True
+            },
             "p05_model_pnl_inr":round(q(.05),2),"p50_model_pnl_inr":round(q(.5),2),
             "p95_model_pnl_inr":round(q(.95),2),
             "expected_shortfall_worst5pct_pnl_inr":round(mean(left),2),
