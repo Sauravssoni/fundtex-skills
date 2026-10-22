@@ -7,6 +7,16 @@ description: Use when a user asks Claude, Codex, Gemini CLI or another agent to 
 
 **Users speak ordinary English. Do not ask them to find scripts.** When a user says "Analyze Infosys and prepare a full investment committee pack", identify the actual NSE/BSE symbol (verify on a real public issuer/exchange page, not from assumption). If one essential ticker is missing and cannot be safely established, ask ONE clarification. Do not silently choose a similarly named ticker.
 
+## Zero-friction installed-skill workflow
+
+**No extra CLI commands for the human after installation.** A terminal-enabled Claude Code, Codex, Gemini CLI or compatible host handles command selection, source resolution, charts, scenarios, report QA and shareable artifacts. Installed reference files are at `$HOME/.local/share/fundtex-intelligence/docs/`, fixtures at `$HOME/.local/share/fundtex-intelligence/examples/`, and the executable at `$HOME/.local/bin/fundtex`. Use the absolute paths if the current working directory is unrelated to the repository; `docs/foo.md` is not guaranteed to exist in the user's project.
+
+For any real research request: (1) use host-confirmed permissions; (2) silently run `fundtex doctor` to determine bundle readiness; (3) detect real connected financial MCP tools and no-key public-history fallback; (4) identify and verify instrument; (5) run analysis/research or options/strategy engine; (6) cross-check source/date/units and aggressively challenge the thesis; (7) open and inspect produced charts/manifest and correct discrepancies; (8) deliver useful concise research with exact validated artifact paths. Ask for explicit authorization before any broker login or using confidential data. Do not ask users to manually find scripts, install extra plugins, build JSON or run one command per analysis step. A skill cannot guarantee shell/tool permissions, installs or true live exchange coverage; if absent, disclose capability gap.
+
+For a first chart request without a broker, **do not block on broker setup**. Run a permitted dated public historical report while offering broker connection for a separate authenticated quote. Show the source quality and last observation. If user wants trading strategies, use the new `fundtex-strategy-research` or `fundtex-hedged-options` skill; actual historical option-chain backtesting requires entitled instrument-level chain data and cannot be invented from spot candles.
+
+A polished optional browser companion can be opened only on user request; it must never be the primary analysis workflow. The existing `activity-view` only displays real host-emitted events after opt-in hooks and should remain empty rather than hallucinate ongoing agents.
+
 ## First step — inspect real capabilities
 
 - Confirm this agent has an authorized terminal and a Fundtex checkout or installed CLI. Read AGENTS.md, docs/AGENT_NATIVE_V1.md, docs/ANALYST_STUDIO_V09.md and relevant fundtex skills.

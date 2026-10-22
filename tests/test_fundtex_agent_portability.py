@@ -52,6 +52,11 @@ class AgentPortabilityTests(unittest.TestCase):
             status=doctor(home=temp,repo_root=str(ROOT))
             self.assertTrue(status["all_india_skills_installed"])
             self.assertFalse(status["installed_engine_stale_relative_to_checkout"])
+            self.assertTrue(status["installed_reference_bundle_present"])
+            self.assertTrue(status["autonomous_first_run_ready"])
+            self.assertEqual(status["missing_reference_paths"], [])
+            self.assertTrue((Path(temp)/".local/share/fundtex-intelligence/docs/CLAUDE_FIRST_RUN.md").is_file())
+            self.assertTrue((Path(temp)/".local/share/fundtex-intelligence/examples/india_prices.csv").is_file())
             for v in status["installation"].values():
                 self.assertEqual(v["india_skills_present"],21)
             launcher=Path(temp)/".local/bin/fundtex"
@@ -69,6 +74,9 @@ class AgentPortabilityTests(unittest.TestCase):
             update=subprocess.run(["bash","install.sh","--upgrade"],cwd=ROOT,env=env,text=True,capture_output=True)
             self.assertEqual(update.returncode,0,update.stderr)
             self.assertIn("updated=96",update.stdout)
+            self.assertIn("UPDATE docs references",update.stdout)
+            self.assertIn("UPDATE examples references",update.stdout)
+            self.assertTrue(doctor(home=temp,repo_root=str(ROOT))["autonomous_first_run_ready"])
             self.assertNotIn("CUSTOM_USER_MARKER_KEEP_IN_BACKUP",modified.read_text())
             backups=list((Path(temp)/".local/share/fundtex-intelligence").glob(
                 "fundtex-backup-*/agent-1-fundtex-auto-analyst/SKILL.md"))
