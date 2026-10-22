@@ -34,6 +34,7 @@ from .institutional import investment_committee, lunar_placebo
 from .activity import emit as agent_activity_emit, view as agent_activity_view
 from .reconcile import reconcile as reconcile_prices
 from .options_lab import evaluate as options_payoff
+from .options_builder import propose as propose_option_spreads
 from .strategy_lab import run as backtest_strategy
 from .integrations import catalog as integration_catalog
 
@@ -94,6 +95,9 @@ def make_parser():
     p.add_argument("--permutations", type=int, default=1000)
     p.add_argument("--seed", type=int, default=42)
     sub.add_parser("integrations", help="Real capabilities, available MCP/provider routes, no fake connections")
+    p = sub.add_parser("options-build", help="Generate conservative defined-risk vertical candidates from APPROVED option bid/ask CSV")
+    p.add_argument("--chain", required=True)
+    p.add_argument("--inputs", required=True, help="Validated underlying, dates, width, lot-size and risk budget JSON")
     p = sub.add_parser("options-sim", help="Defined-risk hedged options expiry payoff and optional scenario simulation (no orders)")
     p.add_argument("--inputs", required=True, help="Approved local JSON, explicit 2026 fees, strikes and exact lot size")
     p = sub.add_parser("strategy-build", help="No-code training-only strategy selection and next-open historical test")
@@ -231,6 +235,9 @@ def execute(args):
         return result
     if args.command == "integrations":
         return integration_catalog()
+    if args.command == "options-build":
+        with open(args.inputs, encoding="utf-8") as handle:
+            return propose_option_spreads(args.chain,json.load(handle))
     if args.command == "options-sim":
         with open(args.inputs, encoding="utf-8") as handle:
             return options_payoff(json.load(handle))
