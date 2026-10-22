@@ -32,6 +32,7 @@ from .research_auto import run as automatic_research
 from .broker_onboarding import guide as broker_connection_guide
 from .institutional import investment_committee, lunar_placebo
 from .activity import emit as agent_activity_emit, view as agent_activity_view
+from .reconcile import reconcile as reconcile_prices
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -76,6 +77,12 @@ def make_parser():
     p.add_argument("--events", required=True)
     p.add_argument("--port", type=int, default=8736)
     p.add_argument("--open", action="store_true", help="Open local browser only when approved")
+    p = sub.add_parser("reconcile", help="Compare two independently sourced dated closing-price CSVs before analyst use")
+    p.add_argument("--primary", required=True)
+    p.add_argument("--secondary", required=True)
+    p.add_argument("--symbol", required=True)
+    p.add_argument("--tolerance-bps", type=float, default=25.0)
+    p.add_argument("--min-overlap", type=int, default=12)
     p = sub.add_parser("investment-committee", help="Human-review investment committee math from documented, user-approved JSON")
     p.add_argument("--inputs", required=True, help="JSON with issuer, filing references, financials and scenarios")
     p = sub.add_parser("lunar-study", help="Exploratory phase hypothesis falsification, NOT a trading predictor")
@@ -196,6 +203,9 @@ def execute(args):
                                    status=args.status, detail=args.detail)
     if args.command == "activity-view":
         return agent_activity_view(args.events, port=args.port, open_browser=args.open)
+    if args.command == "reconcile":
+        return reconcile_prices(args.primary,args.secondary,args.symbol,
+                                tolerance_bps=args.tolerance_bps,min_overlap=args.min_overlap)
     if args.command == "investment-committee":
         with open(args.inputs, encoding="utf-8") as handle:
             return investment_committee(json.load(handle))
