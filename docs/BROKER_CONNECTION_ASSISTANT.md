@@ -2,6 +2,8 @@
 
 **Default experience:** A user sends an ordinary financial-analysis request to Claude Code, Codex, Cursor or a compatible agent. Fundtex must identify the broker situation, guide the authorized login once, and then do the analysis and output generation. The user is NOT required to read documentation, run Fundtex scripts, locate provider keys or paste sensitive credentials into chat.
 
+This is not a separate onboarding project or a request for another introduction: it is part of the very first real analysis inside the user's existing agent chat.
+
 ## Agent first-use dialogue
 
 Do not repeat introductory messages already delivered to the user. Check which market-data tools and accounts are ALREADY connected before asking. Only if nothing usable is found, ask exactly one natural question:
