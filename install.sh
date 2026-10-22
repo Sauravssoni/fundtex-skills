@@ -68,6 +68,44 @@ elif [[ ! -e "$DATA/fundtex_india" ]]; then
 else
   printf 'SKIP  existing India engine; upgrade requires explicit replacement\n'
 fi
+# Ship the actual local reference library that installed skills cite.
+# No network, no external configs, no implicit overwrite or deletion.
+for component in docs examples; do
+  source_dir="$ROOT/$component"
+  target="$DATA/$component"
+  [[ -d "$source_dir" ]] || { printf 'Missing required bundle: %s\n' "$component" >&2; exit 1; }
+  if [[ -e "$target" && "$UPGRADE" -eq 1 ]]; then
+    stage="$DATA/.$component.fundtex-next.$"
+    cp -R "$source_dir" "$stage"
+    mv "$target" "$backup/$component"
+    if ! mv "$stage" "$target"; then
+      mv "$backup/$component" "$target"
+      printf 'Reference bundle upgrade failed; restored %s\n' "$component" >&2
+      exit 1
+    fi
+    printf 'UPDATE %s references (backup saved)\n' "$component"
+  elif [[ ! -e "$target" ]]; then
+    cp -R "$source_dir" "$target"
+    printf 'ADD   %s local references\n' "$component"
+  else
+    printf 'SKIP  existing %s references; no silent overwrite\n' "$component"
+  fi
+done
+for reference in AGENTS.md CLAUDE.md GEMINI.md README.md; do
+  source_file="$ROOT/$reference"
+  target="$DATA/$reference"
+  [[ -f "$source_file" ]] || { printf 'Missing required agent reference: %s\n' "$reference" >&2; exit 1; }
+  if [[ -e "$target" && "$UPGRADE" -eq 1 ]]; then
+    cp "$target" "$backup/$reference"
+    stage="$DATA/.$reference.fundtex-next.$"
+    cp "$source_file" "$stage"
+    mv "$stage" "$target"
+  elif [[ ! -e "$target" ]]; then
+    cp "$source_file" "$target"
+  fi
+done
+printf 'References available for any working directory at %s\n' "$DATA"
+
 if [[ ! -e "$BIN/fundtex" ]]; then
   cat > "$BIN/fundtex" <<'EOF'
 #!/usr/bin/env bash
