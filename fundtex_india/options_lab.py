@@ -45,7 +45,7 @@ def _parse_input(spec: dict):
     if not isinstance(spec, dict):
         raise ValueError("Strategy specification must be a JSON object")
     allowed = {"spot", "lot_size", "underlying", "valuation_date", "expiry_date", "legs",
-               "rates", "annualized_volatility", "annual_risk_free", "paths", "seed",
+               "rates", "annualized_volatility", "annual_risk_free", "annual_dividend_yield", "paths", "seed",
                "max_risk_inr", "require_defined_risk", "data_quality"}
     if set(spec)-allowed: raise ValueError("Unknown strategy specification fields")
     spot = _number(spec.get("spot"), "spot", 0.001)
@@ -131,6 +131,43 @@ def _geometry(positions,credit,fee):
         "model_payoff_at_zero_inr":round(values[0],2),
     }
 
+def _greeks(spot, positions, *, sigma, risk_free, dividend_yield, years):
+    """Illustrative European Black-Scholes aggregate sensitivities, not observed option-chain greeks."""
+    if years<=0 or sigma<=0:
+        return {"status":"NOT_COMPUTABLE_ZERO_TIME_OR_VOLATILITY"}
+    root=math.sqrt(years);discount_r=math.exp(-risk_free*years);discount_q=math.exp(-dividend_yield*years)
+    total={"delta_inr_per_underlying_point":0.0,"gamma_inr_per_underlying_point_squared":0.0,
+           "vega_inr_per_one_percentage_point_volatility":0.0,"theta_inr_per_calendar_day":0.0,
+           "rho_inr_per_one_percentage_point_rate":0.0}
+    def ncdf(x):return .5*math.erfc(-x/math.sqrt(2))
+    for leg in positions:
+        k=leg["strike"]
+        d1=(math.log(spot/k)+(risk_free-dividend_yield+0.5*sigma*sigma)*years)/(sigma*root)
+        d2=d1-sigma*root
+        pdf=math.exp(-.5*d1*d1)/math.sqrt(2*math.pi)
+        common=-spot*discount_q*pdf*sigma/(2*root)
+        if leg["kind"]=="call":
+            delta=discount_q*ncdf(d1)
+            theta=common-risk_free*k*discount_r*ncdf(d2)+dividend_yield*spot*discount_q*ncdf(d1)
+            rho=k*years*discount_r*ncdf(d2)
+        else:
+            delta=discount_q*(ncdf(d1)-1)
+            theta=common+risk_free*k*discount_r*ncdf(-d2)-dividend_yield*spot*discount_q*ncdf(-d1)
+            rho=-k*years*discount_r*ncdf(-d2)
+        factor=leg["direction"]*leg["units"]
+        total["delta_inr_per_underlying_point"]+=factor*delta
+        total["gamma_inr_per_underlying_point_squared"]+=factor*discount_q*pdf/(spot*sigma*root)
+        total["vega_inr_per_one_percentage_point_volatility"]+=factor*spot*discount_q*pdf*root*.01
+        total["theta_inr_per_calendar_day"]+=factor*theta/365
+        total["rho_inr_per_one_percentage_point_rate"]+=factor*rho*.01
+    return {"status":"ILLUSTRATIVE_EUROPEAN_BLACK_SCHOLES_NOT_MARKET_GREEKS",
+            "assumptions":{"annualized_volatility":sigma,"annual_risk_free":risk_free,
+                           "annual_dividend_yield":dividend_yield,"days_to_expiry":round(years*365,6)},
+            "aggregate":{k:round(v,6) for k,v in total.items()},
+            "warnings":["European Black-Scholes with flat input volatility, rates and dividend yield",
+                        "No fitted volatility surface, early exercise, gap jump, borrow effects or actual option bid-ask",
+                        "Greeks are local sensitivities, not a profit probability or a margin guarantee"]}
+
 def evaluate(spec: dict):
     spot,lot,symbol,valued,expiry,positions,rates,charges,fee,credit=_parse_input(spec)
     g=_geometry(positions,credit,fee)
@@ -170,6 +207,8 @@ def evaluate(spec: dict):
         n=_integer(spec.get("paths",10000),"paths",100,100000)
         seed=_integer(spec.get("seed",42),"seed",0,2147483647)
         years=(expiry-valued).days/365.0
+        dividend=_number(spec.get("annual_dividend_yield",0.0),"annual_dividend_yield",0,0.3)
+        curve["illustrative_greeks"]=_greeks(spot,positions,sigma=sigma,risk_free=r,dividend_yield=dividend,years=years)
         rng=random.Random(seed)
         dr=(r-0.5*sigma*sigma)*years
         volatility=sigma*math.sqrt(years)
