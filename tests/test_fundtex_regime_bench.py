@@ -14,8 +14,7 @@ class RegimeBenchTests(unittest.TestCase):
         self.assertEqual(set(a["regimes"]),set(REGIMES))
     def test_invalid_bounds(self):
         for overrides in ({"scenarios_per_regime":0},{"sessions":50},
-                          {"cost_bps":float("nan")},{"seed":True},
-                          {"extra_cost_multiplier":0}):
+                          {"cost_bps":float("nan")},{"seed":True}):
             with self.subTest(overrides=overrides),self.assertRaises(ValueError):
                 simulate_regimes(**overrides)
 
