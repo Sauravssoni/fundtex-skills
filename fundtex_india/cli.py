@@ -45,7 +45,7 @@ def make_parser():
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("research",help="One command: fetch approved India historical prices, optional authenticated broker LTP, charts + ZIP report")
     p.add_argument("--symbol",required=True)
-    p.add_argument("--source",choices=("public","fyers","csv"),default="public",help="public: unofficial delayed; fyers: authenticated daily OHLCV; csv: approved local historical data")
+    p.add_argument("--source",choices=("public","public-ohlc","fyers","csv"),default="public",help="public: unofficial adjusted close; public-ohlc: unofficial raw unadjusted candles; fyers: authorized OHLCV; csv: approved local")
     p.add_argument("--csv",default=None,help="Explicitly approved price CSV if --source csv")
     p.add_argument("--period",choices=("1mo","3mo","6mo","1y","2y","5y"),default="1y")
     p.add_argument("--quote",choices=("auto","off","fyers","kite","dhan"),default="auto",help="Read-only optional authenticated broker snapshot, NEVER an order")
