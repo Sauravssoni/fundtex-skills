@@ -68,3 +68,18 @@ A professional approval demands: exchange-authenticated contract/lot/expiry mast
 ## Read-only release tests
 
 Run `python3 -m unittest discover -s tests -p 'test_fundtex*.py'`, `RUN_MILLION_TEST=1 python3 -m unittest tests.test_fundtex_million`, `python3 -m fundtex_india.cli options-sim --inputs examples/options_put_credit_SYNTHETIC.json`, and `python3 -m fundtex_india.cli integrations`. Source and output facts must be checked for every release; no green claim before the exact commit is tested.
+
+## Executed release evidence, 23 October 2026
+
+Isolated authorized Mac test root: `/tmp/fundtex-strategy-audit-20261023` on Apple M1 Pro / Python 3.11, with sensitive inherited HOME/environment stripped for unit runs:
+
+- Full `unittest discover`: **133 tests run, 0 failures, 2 skips** (optional Pillow raster and one-million-path stress disabled in regular suite).
+- Explicit `RUN_MILLION_TEST=1`: **1,000,000 synthetic random draws PASS in 3.92s**. This is runtime and numerical determinism, not trading alpha.
+- Synthetic 2-leg NIFTY put-credit-spread CLI: PASS, including bounded payoff, modeled 2026 entry charges, theoretical aggregate Greeks and 10,000 seeded terminal scenarios. It displays `SYNTHETIC_FIXTURE`, has no authenticated broker feed and cannot place orders.
+- Bid/ask CSV vertical scanner: pure-math tests for put/call spread structure, crossed markets, stale date, lot mismatch, duplicate strikes, risk-budget fail-closed; CLI and local MCP functions returned equal outputs on approved synthetic test files.
+- Genuine MCP Python SDK v2.3.0 installed **only into** `/tmp/fundtex-mcp-v2-check-20261023`. The public `build_server()` constructed successfully as `MCPServer`, and `list_tools()` returned the ten expected source, mission, regulatory, AMFI, diligence, pilot, status, options, vertical-scanner and strategy-backtest tools. This verifies schema construction; no host session, external OAuth, data feed or account entitlement has been authenticated.
+- The host's preinstalled generic `mcp` module did **not** expose v2 `MCPServer`; global Python was left unchanged. Consumers need an isolated MCP v2 env or equivalent verified host runtime.
+
+**Not verified**: real options chain quotes or expiry conditions, historical Indian options-chain backtest, exact post-tax/settlement risk, consistent exchange data licensing, deployed website and authentication, securities registration, profitable alpha, full browser visual QA or a production-grade installed host MCP connection.
+
+**Release decision**: draft research engineering PR; no merge to public main or trade execution until independent empirical, security, compliance and data audits.
