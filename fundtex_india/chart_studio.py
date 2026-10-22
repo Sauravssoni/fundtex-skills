@@ -26,6 +26,8 @@ def prices(path, symbol):
         if "close" not in hdr or "date" not in hdr:
             raise ValueError("Expected date and close CSV columns")
         has_ohlc={"open","high","low","close"}<=hdr
+        complete_ohlc_rows=False
+        empty_ohlc_rows=False
         synthetic=False
         data=[]
         for row in rdr:
@@ -33,7 +35,17 @@ def prices(path, symbol):
                 continue
             if row.get("data_quality")=="SYNTHETIC_FIXTURE" or row.get("source")=="SYNTHETIC_FIXTURE":synthetic=True
             date=dt.date.fromisoformat(str(row["date"]))
-            fields=("open","high","low","close") if has_ohlc else ("close",)
+            if has_ohlc:
+                blanks=[k for k in ("open","high","low") if row.get(k) in (None,"")]
+                if len(blanks)==3:
+                    empty_ohlc_rows=True
+                elif blanks:
+                    raise ValueError("Partial OHLC candle: open/high/low must all be present or all absent")
+                else:
+                    complete_ohlc_rows=True
+                if empty_ohlc_rows and complete_ohlc_rows:
+                    raise ValueError("Cannot mix close-only and full OHLC rows")
+            fields=("open","high","low","close") if has_ohlc and complete_ohlc_rows else ("close",)
             values={k:float(row[k]) for k in fields}
             if any(not math.isfinite(v) or v<=0 for v in values.values()):
                 raise ValueError("Nonfinite/nonpositive price")
@@ -53,7 +65,7 @@ def prices(path, symbol):
     if dates[-1]>dt.datetime.now(dt.timezone.utc).date().isoformat():
         raise ValueError("Future date in price history")
     digest=hashlib.sha256(p.read_bytes()).hexdigest()
-    return {"rows":data,"ohlc":has_ohlc,"source_sha256":digest,"symbol":symbol.upper(),
+    return {"rows":data,"ohlc":has_ohlc and complete_ohlc_rows,"source_sha256":digest,"symbol":symbol.upper(),
             "data_quality":"SYNTHETIC_FIXTURE" if synthetic else "USER_SUPPLIED_UNVERIFIED","source_label":p.name,
             "last_observation":dates[-1]}
 
