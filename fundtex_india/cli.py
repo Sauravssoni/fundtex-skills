@@ -33,6 +33,9 @@ from .broker_onboarding import guide as broker_connection_guide
 from .institutional import investment_committee, lunar_placebo
 from .activity import emit as agent_activity_emit, view as agent_activity_view
 from .reconcile import reconcile as reconcile_prices
+from .options_lab import evaluate as options_payoff
+from .strategy_lab import run as backtest_strategy
+from .integrations import catalog as integration_catalog
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -90,6 +93,13 @@ def make_parser():
     p.add_argument("--symbol", required=True)
     p.add_argument("--permutations", type=int, default=1000)
     p.add_argument("--seed", type=int, default=42)
+    sub.add_parser("integrations", help="Real capabilities, available MCP/provider routes, no fake connections")
+    p = sub.add_parser("options-sim", help="Defined-risk hedged options expiry payoff and optional scenario simulation (no orders)")
+    p.add_argument("--inputs", required=True, help="Approved local JSON, explicit 2026 fees, strikes and exact lot size")
+    p = sub.add_parser("strategy-build", help="No-code training-only strategy selection and next-open historical test")
+    p.add_argument("--csv", required=True, help="Real approved OHLC price file; no close-to-open fabrication")
+    p.add_argument("--symbol", required=True, help="Exchange ticker, checked against approved price CSV")
+    p.add_argument("--inputs", required=True, help="JSON array of bounded rule candidates and experiment settings")
     sub.add_parser("sources", help="Approved official Indian data/source registry and licence gates")
     p = sub.add_parser("regulatory", help="Official RBI/SEBI RSS metadata discovery, no full-document verification")
     source = p.add_mutually_exclusive_group(required=True)
@@ -219,6 +229,14 @@ def execute(args):
                        "source_sha256": data.get("sha256"), "data_quality": data["quality"],
                        "research_only": True})
         return result
+    if args.command == "integrations":
+        return integration_catalog()
+    if args.command == "options-sim":
+        with open(args.inputs, encoding="utf-8") as handle:
+            return options_payoff(json.load(handle))
+    if args.command == "strategy-build":
+        with open(args.inputs, encoding="utf-8") as handle:
+            return backtest_strategy(args.csv,args.symbol,json.load(handle))
     if args.command == "sources":
         return source_catalog()
     if args.command == "regulatory":
