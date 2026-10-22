@@ -31,6 +31,7 @@ from .broker_quotes import availability as broker_availability, quote as authent
 from .research_auto import run as automatic_research
 from .broker_onboarding import guide as broker_connection_guide
 from .institutional import investment_committee, lunar_placebo
+from .activity import emit as agent_activity_emit, view as agent_activity_view
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -65,6 +66,16 @@ def make_parser():
     p.add_argument("--annotations",default=None);p.add_argument("--holdings",default=None);p.add_argument("--portfolio-prices",default=None)
     p=sub.add_parser("visual",help="Illustrative pie/bar/heatmap/histogram/waterfall from approved JSON")
     p.add_argument("--inputs",required=True);p.add_argument("--kind",required=True,choices=("pie","bar","heatmap","histogram","waterfall"));p.add_argument("--out",required=True)
+    p = sub.add_parser("activity-log", help="Append one true, sanitized agent lifecycle event (host instrumentation required)")
+    p.add_argument("--events", required=True, help="Approved local JSONL trace file")
+    p.add_argument("--agent", required=True, help="True agent name declared by the hosting runtime")
+    p.add_argument("--event", required=True, help="Short action ID")
+    p.add_argument("--status", required=True, choices=("start","progress","done","error","blocked"))
+    p.add_argument("--detail", default="")
+    p = sub.add_parser("activity-view", help="Optional 127.0.0.1-only agent activity dashboard")
+    p.add_argument("--events", required=True)
+    p.add_argument("--port", type=int, default=8736)
+    p.add_argument("--open", action="store_true", help="Open local browser only when approved")
     p = sub.add_parser("investment-committee", help="Human-review investment committee math from documented, user-approved JSON")
     p.add_argument("--inputs", required=True, help="JSON with issuer, filing references, financials and scenarios")
     p = sub.add_parser("lunar-study", help="Exploratory phase hypothesis falsification, NOT a trading predictor")
@@ -180,6 +191,11 @@ def execute(args):
         values=json.loads(open(args.inputs,encoding="utf-8").read())
         engine={"pie":graphic_pie,"bar":graphic_bars,"heatmap":graphic_heatmap,"histogram":graphic_histogram,"waterfall":graphic_waterfall}[args.kind]
         return {"file":write_new(args.out,engine(values)),"kind":args.kind}
+    if args.command == "activity-log":
+        return agent_activity_emit(args.events, agent=args.agent, event=args.event,
+                                   status=args.status, detail=args.detail)
+    if args.command == "activity-view":
+        return agent_activity_view(args.events, port=args.port, open_browser=args.open)
     if args.command == "investment-committee":
         with open(args.inputs, encoding="utf-8") as handle:
             return investment_committee(json.load(handle))
