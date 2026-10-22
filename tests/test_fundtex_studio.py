@@ -94,14 +94,14 @@ class StudioTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             file=Path(tmp)/"bad-ohlc.csv"
             start="2025-01-01"
-            file.write_text("date,open,high,low,close\\n"
-                +"\\n".join(f"2025-01-{i:02d},100,102,,101" for i in range(1,20))+"\\n")
+            file.write_text("date,open,high,low,close\n"
+                +"\n".join(f"2025-01-{i:02d},100,102,,101" for i in range(1,20))+"\n")
             with self.assertRaisesRegex(ValueError,"Partial OHLC"):
                 prices(file,"DEMO.NS")
-            file.write_text("date,open,high,low,close\\n"
-                +"2025-01-01,,,,101\\n"
-                +"2025-01-02,100,102,99,101\\n"
-                +"".join(f"2025-01-{i:02d},,,,101\\n" for i in range(3,20)))
+            file.write_text("date,open,high,low,close\n"
+                +"2025-01-01,,,,101\n"
+                +"2025-01-02,100,102,99,101\n"
+                +"".join(f"2025-01-{i:02d},,,,101\n" for i in range(3,20)))
             with self.assertRaisesRegex(ValueError,"mix close-only"):
                 prices(file,"DEMO.NS")
 
