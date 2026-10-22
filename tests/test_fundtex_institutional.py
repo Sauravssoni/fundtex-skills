@@ -16,7 +16,7 @@ class FundtexInstitutional(unittest.TestCase):
         self.assertEqual(r["ratios"]["net_debt"], 140.0)
         self.assertEqual(r["scenario_model"]["hypothetical_probability_weighted_value_per_share"],120.0)
         self.assertEqual(r["verdict"],"HUMAN_VERIFICATION_REQUIRED")
-        self.assertTrue(r["risk_flags"])
+        self.assertEqual(r["risk_flags"], [])  # CFO/NI = 0.70; below-0.5 warning must NOT fire
     def test_synthetic_case_never_claims_real_fundamentals(self):
         self.input["provenance"]="SYNTHETIC_FIXTURE_FOR_ARITHMETIC_ONLY"
         self.assertEqual(investment_committee(self.input)["input_assurance"], "SYNTHETIC_FIXTURE")
@@ -26,6 +26,12 @@ class FundtexInstitutional(unittest.TestCase):
     def test_probability_reject(self):
         self.input["scenarios"][0]["probability"]=0.3
         with self.assertRaisesRegex(ValueError, "sum to one"): investment_committee(self.input)
+    def test_actual_weak_cash_conversion_detected(self):
+        self.input["financials"]["cash_from_operations"] = 40
+        r = investment_committee(self.input)
+        self.assertEqual(r["ratios"]["free_cash_flow"], 20.0)
+        self.assertTrue(any("CFO/NI" in x for x in r["risk_flags"]))
+
     def test_future_and_nan_reject(self):
         self.input["financials"]["revenue"]=float("nan")
         with self.assertRaisesRegex(ValueError,"finite"): investment_committee(self.input)
