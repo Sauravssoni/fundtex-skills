@@ -13,6 +13,7 @@ from .diligence import from_json as diligence
 from .pilot import from_file as pilot
 from .mission import mission
 from .options_lab import evaluate as option_strategy
+from .options_builder import propose as option_spread_builder
 from .strategy_lab import run as historical_strategy
 from .integrations import catalog as integration_catalog
 
@@ -57,6 +58,7 @@ def tools_logic():
         "regulatory":lambda filename:parse_regulatory(approved_file(filename)),
         "pilot":lambda filename:pilot(approved_file(filename)),
         "options":lambda filename:option_strategy(_approved_json(filename)),
+        "option_builder":lambda chain_filename,json_filename:option_spread_builder(approved_file(chain_filename),_approved_json(json_filename)),
         "strategy":lambda csv_filename,json_filename,symbol:historical_strategy(
             approved_file(csv_filename),symbol,_approved_json(json_filename)),
         "integrations":integration_catalog,
@@ -108,6 +110,11 @@ def build_server():
     def fundtex_options_expiry(filename: str) -> dict:
         """Analyze user-approved bounded multi-leg options JSON, entry costs and expiry P&L; no orders."""
         return funcs["options"](filename)
+
+    @app.tool()
+    def fundtex_options_spread_builder(chain_filename: str, json_filename: str) -> dict:
+        """Score bounded costed defined-risk spreads from a user-approved timestamped bid/ask chain file, no orders."""
+        return funcs["option_builder"](chain_filename,json_filename)
 
     @app.tool()
     def fundtex_strategy_backtest(csv_filename: str, json_filename: str, symbol: str) -> dict:
