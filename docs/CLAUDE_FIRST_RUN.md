@@ -10,7 +10,7 @@
 
        "$HOME/.local/bin/fundtex" doctor --repo-root "$PWD"
 
-   All eighteen India-first skills should be present in each supported agent directory and the installed engine should match the checkout. If versions differ, do not overwrite without approval: use the repository's Python CLI temporarily.
+   All twenty-one India-first skills should be present in each supported agent directory and the installed engine should match the checkout. If versions differ, do not overwrite without approval: use the repository's Python CLI temporarily.
 4. If the installed version includes Analyst Studio v0.9, immediately generate a clearly synthetic chart and an analyst pack from examples/india_prices.csv (see docs/ANALYST_STUDIO_V09.md). Check actual chart HTML/SVG, CSV and memo, identify optional missing PDF/XLSX/PNG, and label the sample FICTIONAL. Then demonstrate two working **fictional, clearly labelled** forensic reports (not price prediction or actual listed companies):
 
        python3 -m fundtex_india.cli diligence --inputs examples/india_company_diligence_SYNTHETIC.json --format markdown
@@ -19,6 +19,12 @@
    Identify useful real analyst checks: cash conversion, receivables, debt/EBITDA, lender GNPA/NNPA, credit cost and capital. No invented live quotes.
 5. Run python3 -m unittest discover -s tests -p 'test_fundtex*.py' -v. Optionally run heavier million-path numerical and 60-regime stress after the first useful output or when the user requests it.
 6. Present a concise verified status, a short example of the fictional analysis, three relevant first real-research questions using only actually accessible permitted context, and one next question: "Which company, sector or research task should we tackle first?" If history isn't available, say so and use useful defaults.
+
+## Installed-document resolution and autonomous verification
+
+Installer must place `docs/`, `examples/`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` and `README.md` in `$HOME/.local/share/fundtex-intelligence/`. The agent must run `fundtex doctor` and confirm `autonomous_first_run_ready`, `installed_reference_bundle_present` and no stale engine. The installed skills must read the bundled absolute paths rather than assuming the user opened a repository checkout.
+
+If explicitly asked to see a visual welcome/onboarding companion, open the optional Fundtex launchpad only with the host's browser permission. Never force a browser popup, redirect the user to a separate dashboard, silently connect accounts or require a second installation. The agent handles real tasks first, then may ask about a broker feed in a single concise question.
 
 ## v1.0 one-natural-language-request auto research
 
