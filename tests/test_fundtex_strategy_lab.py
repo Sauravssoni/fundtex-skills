@@ -36,6 +36,20 @@ class StrategyResearchTests(unittest.TestCase):
         self.assertGreater(a["holdout"]["sessions"],40)
         self.assertEqual(a["selected_from_trials"],2)
         self.assertFalse(a["trading_authority"])
+    def test_bootstrap_holdout_uncertainty_reproducible_not_alpha(self):
+        self.spec["bootstrap_repetitions"]=200
+        self.spec["bootstrap_seed"]=19
+        a=run(self.csv,"TEST.NS",self.spec)
+        b=run(self.csv,"TEST.NS",self.spec)
+        self.assertEqual(a["holdout_sampling_uncertainty"],b["holdout_sampling_uncertainty"])
+        stat=a["holdout_sampling_uncertainty"]
+        self.assertEqual(stat["repetitions"],200)
+        self.assertTrue(stat["not_a_significance_test_or_calibrated_alpha"])
+        self.assertLessEqual(stat["exploratory_95pct_interval"][0],stat["exploratory_95pct_interval"][1])
+        self.spec["bootstrap_repetitions"]=-1
+        with self.assertRaises(ValueError):
+            run(self.csv,"TEST.NS",self.spec)
+
     def test_no_fake_line_fill(self):
         with self.csv.open("w") as fh:
             fh.write("date,symbol,close\n")
