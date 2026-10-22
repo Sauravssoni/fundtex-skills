@@ -37,6 +37,23 @@ class SpreadBuilderTests(unittest.TestCase):
         self.assertTrue(propose(self.path,self.cfg)["eligible_candidates"])
         self.cfg["max_risk_inr"]=100
         self.assertEqual(propose(self.path,self.cfg)["eligible_candidates"],[])
+    def test_cli_and_mcp_share_same_result(self):
+        import json,os,subprocess,sys
+        from unittest.mock import patch
+        from fundtex_india import mcp_server
+        cfg_path=Path(self.t.name)/"spread.json"
+        cfg_path.write_text(json.dumps(self.cfg))
+        from pathlib import Path as P
+        home=P(__file__).resolve().parents[1]
+        x=subprocess.run([sys.executable,"-m","fundtex_india.cli","options-build",
+                          "--chain",str(self.path),"--inputs",str(cfg_path)],
+                         cwd=home,text=True,capture_output=True,timeout=12)
+        self.assertEqual(x.returncode,0,x.stderr)
+        out=json.loads(x.stdout)
+        self.assertFalse(out["trading_authority"])
+        with patch.dict(os.environ,{"FUNDTEX_APPROVED_DATA_DIR":self.t.name}):
+            mcp=mcp_server.tools_logic()["option_builder"]("chain.csv","spread.json")
+        self.assertEqual(out,mcp)
     def test_quote_date_and_market_ba_rejected(self):
         self.rows[0][-1]="2026-10-12";self.write()
         with self.assertRaisesRegex(ValueError,"stale"):propose(self.path,self.cfg)
