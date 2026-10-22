@@ -35,6 +35,22 @@ https://support.zerodha.com/category/trading-and-markets/general-kite/others-kit
 
 The published Desktop example registers a local connector with an npx mcp-remote wrapper pointed at https://mcp.kite.trade/mcp. Ask permission, inspect the existing Claude Desktop config (never clobber other servers), write only the needed server entry, have the user restart Desktop and sign in at Zerodha's own web page. Do not claim a Claude Code config is interchangeable with Desktop JSON.
 
+### Codex CLI / IDE (authorized by the user)
+
+For current Codex CLI versions supporting remote HTTP MCP, inspect configured servers before altering anything. With explicit approval, register the personal official endpoint:
+
+    codex mcp add kite --url https://mcp.kite.trade/mcp
+
+Then verify:
+
+    codex mcp list
+
+If the provider advertises an OAuth flow supported by the installed Codex version, trigger its authentication through the Codex MCP user interface or:
+
+    codex mcp login kite
+
+The person must complete the Zerodha login themselves. If provider/host OAuth discovery does not work, do not improvise credential forwarding; use the official vendor-supported client instructions or continue with approved historical data. Codex user configuration is not the same as Claude's, and the connector may expose different tools or fail entitlement checks.
+
 ### Other agents
 
 Claude Code, Codex, Cursor and VS Code have DIFFERENT MCP registration commands. Inspect the host's actual MCP capability; prefer HTTP remote server at https://mcp.kite.trade/mcp if the client supports it, else follow the official broker configuration. Never claim unsupported host integration.
