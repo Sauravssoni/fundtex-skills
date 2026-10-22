@@ -32,6 +32,9 @@ An approved analyst agent can call `fundtex investment-committee --inputs exampl
 
 `fundtex lunar-study --csv /approved/daily-prices.csv --symbol INFY.NS` runs an experimental, chronological-placebo falsification only; no lunar or astrology signal is used to recommend trades. `fundtex activity-view --events /approved/private/agent-events.jsonl --open` is an **optional** localhost display of actually emitted host-agent events; it cannot capture an agent by itself. Claude/Codex should invoke these commands directly for users who request the relevant capability, without requiring a dashboard. See [auto-analyst skill](fundtex-auto-analyst/SKILL.md).
 
+
+**Broker update (22 October 2026):** Zerodha currently advertises free Kite Connect APIs for qualifying mass-retail startups, subject to contacting Zerodha and agreeing terms. Its retail Personal tier has no data access; Connect is ₹500/month with possible earned developer credits for active traders starting October 2026. Official Zerodha Kite MCP remains broker-hosted and free in supported agent clients. FYERS advertises data APIs free to account holders; Dhan charges separately for Data APIs. No provider's personal credentials alone grants Fundtex permission to redistribute live quotes publicly. Sources: https://support.zerodha.com/category/trading-and-markets/general-kite/kite-api/articles/what-are-the-charges-for-kite-apis and https://support.fyers.in/portal/en/kb/articles/does-fyers-charge-any-subscription-fees-for-trading-api .
+
 ## Why this exists
 
 India's analysts navigate **NSE/BSE company announcements, exchange calendars, earnings statements, auditor notes, RBI macro context, shareholding, sector shocks, and imperfect market feeds**. AI becomes useful only when it can trace its claims back to evidence, compare alternatives and explicitly *abstain* rather than confidently fabricate. Fundtex aims to codify that discipline in portable, inspectable skills.
