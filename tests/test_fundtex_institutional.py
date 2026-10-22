@@ -5,7 +5,7 @@ from fundtex_india.institutional import investment_committee, lunar_placebo
 
 class FundtexInstitutional(unittest.TestCase):
     def setUp(self):
-        self.input = {"issuer":{"symbol":"INFY.NS","units":"INR_CRORE","as_of":"2025-03-31","period":"FY25"},
+        self.input = {"issuer":{"symbol":"INFY.NS","units":"INR_CRORE","per_share_currency":"INR","as_of":"2025-03-31","period":"FY25"},
             "financials":{"revenue":1000,"ebitda":250,"net_income":100,"cash_from_operations":70,"capital_expenditure":20,"total_debt":180,"cash_and_equivalents":40},
             "references":[{"url":"https://example.org/1","published":"2025-04-01"},{"url":"https://example.org/2","published":"2025-04-02"}],
             "scenarios":[{"name":"bear","probability":0.4,"value_per_share":60,"assumptions":"downside"},
@@ -17,6 +17,9 @@ class FundtexInstitutional(unittest.TestCase):
         self.assertEqual(r["scenario_model"]["hypothetical_probability_weighted_value_per_share"],120.0)
         self.assertEqual(r["verdict"],"HUMAN_VERIFICATION_REQUIRED")
         self.assertTrue(r["risk_flags"])
+    def test_share_currency_is_not_accounting_unit(self):
+        self.input["issuer"].pop("per_share_currency")
+        with self.assertRaisesRegex(ValueError,"per_share_currency"): investment_committee(self.input)
     def test_probability_reject(self):
         self.input["scenarios"][0]["probability"]=0.3
         with self.assertRaisesRegex(ValueError, "sum to one"): investment_committee(self.input)
