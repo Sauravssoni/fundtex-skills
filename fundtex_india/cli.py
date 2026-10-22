@@ -238,7 +238,6 @@ def execute(args):
                        "research_only": True})
         return result
     if args.command == "launchpad":
-        from .onboarding import doctor
         health = doctor()
         return create_launchpad(args.out,open_browser=args.open,
                                 installed_skills=health.get("autonomous_first_run_ready",False),
