@@ -17,6 +17,9 @@ class FundtexInstitutional(unittest.TestCase):
         self.assertEqual(r["scenario_model"]["hypothetical_probability_weighted_value_per_share"],120.0)
         self.assertEqual(r["verdict"],"HUMAN_VERIFICATION_REQUIRED")
         self.assertTrue(r["risk_flags"])
+    def test_synthetic_case_never_claims_real_fundamentals(self):
+        self.input["provenance"]="SYNTHETIC_FIXTURE_FOR_ARITHMETIC_ONLY"
+        self.assertEqual(investment_committee(self.input)["input_assurance"], "SYNTHETIC_FIXTURE")
     def test_share_currency_is_not_accounting_unit(self):
         self.input["issuer"].pop("per_share_currency")
         with self.assertRaisesRegex(ValueError,"per_share_currency"): investment_committee(self.input)
