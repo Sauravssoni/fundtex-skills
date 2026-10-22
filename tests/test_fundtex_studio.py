@@ -4,7 +4,7 @@ import sys
 import tempfile
 from pathlib import Path
 import unittest
-from fundtex_india.chart_studio import prices, chart_spec, annotations_from_file, svg
+from fundtex_india.chart_studio import prices, chart_spec, annotations_from_file, svg, rsi
 from fundtex_india.interactive_studio import document
 from fundtex_india.graphics_studio import pie, bars, heatmap, waterfall, histogram
 from fundtex_india.pack_studio import build_pack
@@ -23,6 +23,11 @@ class StudioTests(unittest.TestCase):
         self.assertTrue(self.spec["no_live_feed"])
         self.assertEqual(self.spec["data_quality"],"SYNTHETIC_FIXTURE")
         self.assertEqual(len(self.spec["source_sha256"]),64)
+
+    def test_flat_series_rsi_is_neutral_not_overbought(self):
+        self.assertEqual(rsi([100.0] * 40, 14)[-1], 50.0)
+        self.assertEqual(rsi([float(i + 100) for i in range(40)], 14)[-1], 100.0)
+        self.assertEqual(rsi([float(140 - i) for i in range(40)], 14)[-1], 0.0)
 
     def test_svg_and_html_work_offline(self):
         graphic=svg(self.spec)
