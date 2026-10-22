@@ -34,6 +34,17 @@ class OptionPayoffTests(unittest.TestCase):
         self.base["lot_size"]=75
         self.base["legs"][0]["premium"]=float("nan")
         with self.assertRaises(ValueError):evaluate(self.base)
+    def test_scenario_uncertainty_is_conditional_only(self):
+        report=evaluate(self.base)["scenario_simulation"]
+        confidence=report["monte_carlo_sampling_only_95pct_interval"]
+        p=report["probability_positive_model_pnl"]
+        self.assertLessEqual(confidence["positive_pnl_frequency_wilson"][0],p)
+        self.assertGreaterEqual(confidence["positive_pnl_frequency_wilson"][1],p)
+        self.assertTrue(confidence["does_not_account_for_model_misspecification"])
+        self.base["paths"]=1000001
+        with self.assertRaises(ValueError):
+            evaluate(self.base)
+
     def test_deterministic_scenario(self):
         one=evaluate(self.base)["scenario_simulation"]
         two=evaluate(self.base)["scenario_simulation"]

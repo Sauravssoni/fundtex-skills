@@ -76,6 +76,35 @@ class StudioTests(unittest.TestCase):
             self.assertIn("omitted_optional_outputs",report)
             with self.assertRaises(ValueError):build_pack(CSV,"RELIANCE.NS",out)
 
+    def test_close_only_report_round_trip_does_not_fake_candles(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output=Path(tmp)/"pack"
+            build_pack(CSV,"RELIANCE.NS",output)
+            exported=prices(output/"price-history.csv","RELIANCE.NS")
+            self.assertFalse(exported["ohlc"])
+            self.assertEqual(exported["rows"][0]["volume"],None)
+            self.assertNotIn("open",exported["rows"][0])
+            # Explicitly fail where genuine next-open executions are required.
+            from fundtex_india.strategy_lab import run
+            with self.assertRaisesRegex(ValueError,"Genuine open"):
+                run(output/"price-history.csv","RELIANCE.NS",
+                    {"candidates":[{"name":"sma_cross","fast":10,"slow":50}]})
+
+    def test_partial_or_mixed_ohlc_fails_closed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            file=Path(tmp)/"bad-ohlc.csv"
+            start="2025-01-01"
+            file.write_text("date,open,high,low,close\n"
+                +"\n".join(f"2025-01-{i:02d},100,102,,101" for i in range(1,20))+"\n")
+            with self.assertRaisesRegex(ValueError,"Partial OHLC"):
+                prices(file,"DEMO.NS")
+            file.write_text("date,open,high,low,close\n"
+                +"2025-01-01,,,,101\n"
+                +"2025-01-02,100,102,99,101\n"
+                +"".join(f"2025-01-{i:02d},,,,101\n" for i in range(3,20)))
+            with self.assertRaisesRegex(ValueError,"mix close-only"):
+                prices(file,"DEMO.NS")
+
     def test_bad_csv_or_future_data_fails_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
             f=Path(tmp)/"bad.csv"

@@ -38,13 +38,14 @@ from .options_builder import propose as propose_option_spreads
 from .strategy_lab import run as backtest_strategy
 from .integrations import catalog as integration_catalog
 from .launchpad import create as create_launchpad
+from .regime_bench import simulate_regimes as adversarial_regime_bench
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("research",help="One command: fetch approved India historical prices, optional authenticated broker LTP, charts + ZIP report")
     p.add_argument("--symbol",required=True)
-    p.add_argument("--source",choices=("public","fyers","csv"),default="public",help="public: unofficial delayed; fyers: authenticated daily OHLCV; csv: approved local historical data")
+    p.add_argument("--source",choices=("public","public-ohlc","fyers","csv"),default="public",help="public: unofficial adjusted close; public-ohlc: unofficial raw unadjusted candles; fyers: authorized OHLCV; csv: approved local")
     p.add_argument("--csv",default=None,help="Explicitly approved price CSV if --source csv")
     p.add_argument("--period",choices=("1mo","3mo","6mo","1y","2y","5y"),default="1y")
     p.add_argument("--quote",choices=("auto","off","fyers","kite","dhan"),default="auto",help="Read-only optional authenticated broker snapshot, NEVER an order")
@@ -98,6 +99,11 @@ def make_parser():
     p = sub.add_parser("launchpad", help="Optional offline welcome page in browser, only on explicit request")
     p.add_argument("--out", required=True, help="A NEW local HTML file in an existing approved directory")
     p.add_argument("--open", action="store_true", help="Open the page in a browser (explicitly opt in)")
+    p = sub.add_parser("regime-bench", help="Adversarial synthetic market regimes, train-only strategy search, independent holdout")
+    p.add_argument("--scenarios-per-regime", type=int, default=20)
+    p.add_argument("--sessions", type=int, default=540)
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--cost-bps", type=float, default=15)
     sub.add_parser("integrations", help="Real capabilities, available MCP/provider routes, no fake connections")
     p = sub.add_parser("options-build", help="Generate conservative defined-risk vertical candidates from APPROVED option bid/ask CSV")
     p.add_argument("--chain", required=True)
@@ -242,6 +248,9 @@ def execute(args):
         return create_launchpad(args.out,open_browser=args.open,
                                 installed_skills=health.get("autonomous_first_run_ready",False),
                                 source_status="NOT_AUTHENTICATED; broker login not checked")
+    if args.command == "regime-bench":
+        return adversarial_regime_bench(scenarios_per_regime=args.scenarios_per_regime,
+                                      sessions=args.sessions, seed=args.seed, cost_bps=args.cost_bps)
     if args.command == "integrations":
         return integration_catalog()
     if args.command == "options-build":

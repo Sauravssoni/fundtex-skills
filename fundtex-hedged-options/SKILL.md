@@ -23,3 +23,9 @@ Helpful source links:
 - https://www.nseindia.com/static/products-services/equity-derivatives-securities-transaction-tax
 - https://www.nseindia.com/static/invest/first-time-investor-sebi-turnover-fees-stt-other-levies
 - https://zerodha.com/charges
+
+## 2026-10-23 Monte Carlo convergence & sensitivity upgrade
+
+The `options-sim` model now permits **at most one million** seeded terminal-lognormal paths, explicitly bounded to avoid unapproved resource use. Agent can run 10k first, then up to 1m only when user requests a high-confidence numerical sensitivity check. The result includes **Wilson 95% sampling intervals** around the simulated positive-P&L frequency and approximate mean-P&L standard-error intervals. **Those are conditional on the specified model and premiums, NOT confidence intervals for market outcomes.** Show model uncertainty by recomputing at materially different implied/historical volatility assumptions; use actual chain source/IV only if authorized and separately observed. If a 60% simulated win rate accompanies negative mean P&L, prominently state the negative finding.
+
+User-approved premiums, lot size and expiry are never automatically marked broker-verified. This expiry-only engine omits exercise STT, broker margin, physical settlement, skew, basis/forward, exit fills, transaction costs after opening and portfolio correlation. Required operational risk checks remain separate from the theoretical capped-payoff geometry.

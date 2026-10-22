@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 import hashlib
 import math
 import statistics
+import random
 from .chart_studio import prices
 
 def _int(v, name, low, high):
@@ -102,8 +103,50 @@ def _simulate(rows, signals, *, first_signal, last_signal, cost_bps):
             "equity_curve": [round(x,6) for x in curve],
             "benchmark_curve": [round(x,6) for x in bench_curve]}
 
+def _block_bootstrap_holdout(holdout, *, repetitions, seed):
+    """Resample contiguous observed relative-return blocks for uncertainty only.
+
+    No assertion of statistical alpha: the sample is single-asset, potentially
+    adjusted incorrectly, possibly selected after seeing other assets, and
+    remains dependent on distribution/stationarity assumptions.
+    """
+    a=holdout["equity_curve"];b=holdout["benchmark_curve"]
+    if len(a)!=len(b) or len(a)<41:
+        raise ValueError("Need at least 40 synchronized held-out sessions")
+    logs=[math.log(a[i]/a[i-1])-math.log(b[i]/b[i-1])
+          for i in range(1,len(a))]
+    n=len(logs)
+    block=min(10,max(3,n//10))
+    rng=random.Random(seed)
+    endpoints=[]
+    for _ in range(repetitions):
+        total=0.0
+        remaining=n
+        while remaining>0:
+            start=rng.randrange(0,n-block+1)
+            take=min(block,remaining)
+            total+=sum(logs[start:start+take])
+            remaining-=take
+        endpoints.append(math.expm1(total))
+    endpoints.sort()
+    def q(p):
+        index=(repetitions-1)*p
+        k=int(index)
+        return endpoints[k]*(1-(index-k))+endpoints[min(k+1,repetitions-1)]*(index-k)
+    observed=math.expm1(sum(logs))
+    return {
+        "method":"Moving-block bootstrap of observed held-out DAILY LOG RELATIVE returns",
+        "unit":"strategy_ending_equity_divided_by_passive_ending_equity_minus_one",
+        "repetitions":repetitions,"seed":seed,"block_sessions":block,
+        "observed_relative_growth_ratio_minus_one":round(observed,6),
+        "exploratory_95pct_interval":[round(q(.025),6),round(q(.975),6)],
+        "fraction_resamples_positive":sum(x>0 for x in endpoints)/repetitions,
+        "not_a_significance_test_or_calibrated_alpha":True,
+        "warning":"Single held-out period; overlapping calendar/asset tests, serial dependence, changing regimes, transaction costs and corporate-action data quality can invalidate inference."
+    }
+
 def run(price_csv, symbol, spec):
-    if not isinstance(spec,dict) or set(spec)-{"candidates","split_fraction","cost_bps_per_position_change","minimum_train_sessions"}:
+    if not isinstance(spec,dict) or set(spec)-{"candidates","split_fraction","cost_bps_per_position_change","minimum_train_sessions","bootstrap_repetitions","bootstrap_seed"}:
         raise ValueError("Strategy research specification has unknown fields")
     history=prices(price_csv,symbol)
     if not history["ohlc"]:
@@ -120,6 +163,8 @@ def run(price_csv, symbol, spec):
     split=_float(spec.get("split_fraction",.7),"split_fraction",.6,.85)
     costs=_float(spec.get("cost_bps_per_position_change",15),"cost_bps_per_position_change",0,500)
     train_min=_int(spec.get("minimum_train_sessions",120),"minimum_train_sessions",100,1000)
+    bootstrap_reps=_int(spec.get("bootstrap_repetitions",0),"bootstrap_repetitions",0,2000)
+    bootstrap_seed=_int(spec.get("bootstrap_seed",42),"bootstrap_seed",0,2147483647)
     boundary=int(len(rows)*split)
     # Initial warmup is excluded from both training and held-out score.
     warmup=max(40,max((x["slow"] if x["name"]=="sma_cross" else 15) for x in rule_candidates))
@@ -159,6 +204,8 @@ def run(price_csv, symbol, spec):
         "candidate_train_scores":[{"rule":x["rule"],"net_excess":x["train_score"],
                                    "trades":x["train"]["number_of_position_changes"]} for x in trials],
         "train":chosen["train"],"holdout":holdout,
+        "holdout_sampling_uncertainty":_block_bootstrap_holdout(holdout,repetitions=bootstrap_reps,seed=bootstrap_seed) if bootstrap_reps>=100 else None,
+        "bootstrap_note":"Disabled below 100 requested repeats to avoid misleading narrow intervals",
         "holdout_cost_stress":stress,
         "cost_bps_per_change_assumed":costs,
         "status":observed,
