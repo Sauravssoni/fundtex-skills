@@ -30,6 +30,7 @@ from .graphics_studio import pie as graphic_pie, bars as graphic_bars, heatmap a
 from .broker_quotes import availability as broker_availability, quote as authenticated_quote
 from .research_auto import run as automatic_research
 from .broker_onboarding import guide as broker_connection_guide
+from .institutional import investment_committee, lunar_placebo
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -64,6 +65,13 @@ def make_parser():
     p.add_argument("--annotations",default=None);p.add_argument("--holdings",default=None);p.add_argument("--portfolio-prices",default=None)
     p=sub.add_parser("visual",help="Illustrative pie/bar/heatmap/histogram/waterfall from approved JSON")
     p.add_argument("--inputs",required=True);p.add_argument("--kind",required=True,choices=("pie","bar","heatmap","histogram","waterfall"));p.add_argument("--out",required=True)
+    p = sub.add_parser("investment-committee", help="Human-review investment committee math from documented, user-approved JSON")
+    p.add_argument("--inputs", required=True, help="JSON with issuer, filing references, financials and scenarios")
+    p = sub.add_parser("lunar-study", help="Exploratory phase hypothesis falsification, NOT a trading predictor")
+    p.add_argument("--csv", required=True)
+    p.add_argument("--symbol", required=True)
+    p.add_argument("--permutations", type=int, default=1000)
+    p.add_argument("--seed", type=int, default=42)
     sub.add_parser("sources", help="Approved official Indian data/source registry and licence gates")
     p = sub.add_parser("regulatory", help="Official RBI/SEBI RSS metadata discovery, no full-document verification")
     source = p.add_mutually_exclusive_group(required=True)
@@ -172,6 +180,19 @@ def execute(args):
         values=json.loads(open(args.inputs,encoding="utf-8").read())
         engine={"pie":graphic_pie,"bar":graphic_bars,"heatmap":graphic_heatmap,"histogram":graphic_histogram,"waterfall":graphic_waterfall}[args.kind]
         return {"file":write_new(args.out,engine(values)),"kind":args.kind}
+    if args.command == "investment-committee":
+        with open(args.inputs, encoding="utf-8") as handle:
+            return investment_committee(json.load(handle))
+    if args.command == "lunar-study":
+        data = csv_prices(args.csv, args.symbol)
+        rows = data["rows"]
+        returns = [{"date": b["date"], "return": float(b["close"]) / float(a["close"]) - 1.0}
+                   for a, b in zip(rows, rows[1:])]
+        result = lunar_placebo(returns, seed=args.seed, permutations=args.permutations)
+        result.update({"symbol": data["symbol"], "data_source": data["source"],
+                       "source_sha256": data.get("sha256"), "data_quality": data["quality"],
+                       "research_only": True})
+        return result
     if args.command == "sources":
         return source_catalog()
     if args.command == "regulatory":
