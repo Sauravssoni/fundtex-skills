@@ -1,3 +1,5 @@
+> **Strategy Lab experimental branch (23 Oct 2026):** Three new portable agent skills, a 2026-cost-aware multi-leg options payoff engine with optional theoretical Greeks, read-only bid/ask credit-spread scanner, training-only next-open SMA/RSI strategy backtests, and more read-only MCP tools. This code is **not public main** or a broker-connected trading system. See [research contracts](docs/STRATEGY_SIMULATOR_V1.md). The upgraded private ChatGPT plugin source is being staged separately; source branch version is not necessarily an installed release.
+
 <div align="center">
 
 ![Fundtex Financial Intelligence](assets/fundtex-hero.svg)

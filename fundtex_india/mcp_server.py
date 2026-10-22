@@ -5,12 +5,17 @@ Approved file access is sandboxed to explicit FUNDTEX_APPROVED_DATA_DIR.
 """
 from __future__ import annotations
 import os
+import json
 from pathlib import Path
 from .regulatory import catalog as source_catalog, from_file as parse_regulatory
 from .amfi import from_file as parse_amfi
 from .diligence import from_json as diligence
 from .pilot import from_file as pilot
 from .mission import mission
+from .options_lab import evaluate as option_strategy
+from .options_builder import propose as option_spread_builder
+from .strategy_lab import run as historical_strategy
+from .integrations import catalog as integration_catalog
 
 def approved_file(filename: str) -> str:
     base=os.environ.get("FUNDTEX_APPROVED_DATA_DIR")
@@ -36,6 +41,13 @@ def approved_file(filename: str) -> str:
         raise ValueError("Approved input must be a regular file")
     return str(path)
 
+def _approved_json(filename: str) -> dict:
+    path=Path(approved_file(filename))
+    if path.stat().st_size>64000:
+        raise ValueError("Approved strategy JSON exceeds 64 KiB")
+    with path.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
 def tools_logic():
     """Bounded pure functions for independent testing without MCP installed."""
     return {
@@ -44,7 +56,12 @@ def tools_logic():
         "amfi":lambda filename, query="":parse_amfi(approved_file(filename),query=query),
         "diligence":lambda filename:diligence(approved_file(filename)),
         "regulatory":lambda filename:parse_regulatory(approved_file(filename)),
-        "pilot":lambda filename:pilot(approved_file(filename))
+        "pilot":lambda filename:pilot(approved_file(filename)),
+        "options":lambda filename:option_strategy(_approved_json(filename)),
+        "option_builder":lambda chain_filename,json_filename:option_spread_builder(approved_file(chain_filename),_approved_json(json_filename)),
+        "strategy":lambda csv_filename,json_filename,symbol:historical_strategy(
+            approved_file(csv_filename),symbol,_approved_json(json_filename)),
+        "integrations":integration_catalog,
     }
 
 def build_server():
@@ -84,6 +101,26 @@ def build_server():
     def fundtex_analyst_pilot(filename: str) -> dict:
         """Score an approved, de-identified human-reviewed analyst-vs-baseline pilot."""
         return funcs["pilot"](filename)
+    @app.tool()
+    def fundtex_connector_status() -> dict:
+        """Catalog legitimate optional broker/MCP/data tools; presence never means authenticated."""
+        return funcs["integrations"]()
+
+    @app.tool()
+    def fundtex_options_expiry(filename: str) -> dict:
+        """Analyze user-approved bounded multi-leg options JSON, entry costs and expiry P&L; no orders."""
+        return funcs["options"](filename)
+
+    @app.tool()
+    def fundtex_options_spread_builder(chain_filename: str, json_filename: str) -> dict:
+        """Score bounded costed defined-risk spreads from a user-approved timestamped bid/ask chain file, no orders."""
+        return funcs["option_builder"](chain_filename,json_filename)
+
+    @app.tool()
+    def fundtex_strategy_backtest(csv_filename: str, json_filename: str, symbol: str) -> dict:
+        """Research closed-bar strategies on approved OHLC, training-only selection and held-out evaluation."""
+        return funcs["strategy"](csv_filename,json_filename,symbol)
+
     return app
 
 def main():

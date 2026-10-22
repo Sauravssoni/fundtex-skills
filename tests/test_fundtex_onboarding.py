@@ -43,7 +43,8 @@ class OnboardingTest(unittest.TestCase):
             for agent in (".claude",".codex",".agents"):
                 for name in ("fundtex-god-eye","fundtex-auto-analyst","fundtex-india-live-data","fundtex-chart-technician","fundtex-analyst-pack","fundtex-workbook-builder","fundtex-visuals-reporting","fundtex-analyst-council","fundtex-analyst-pilot","fundtex-india-regulatory","fundtex-india-diligence","fundtex-india-forecast","fundtex-india-market",
                              "fundtex-india-news","fundtex-india-risk","fundtex-india-portfolio",
-                             "fundtex-india-valuation","fundtex-india-brief"):
+                             "fundtex-india-valuation","fundtex-india-brief","fundtex-hedged-options",
+                             "fundtex-strategy-research","fundtex-connector-orchestrator"):
                     dest=Path(temp)/agent/"skills"/name
                     dest.mkdir(parents=True,exist_ok=True)
                     (dest/"SKILL.md").write_text("mock skill test")

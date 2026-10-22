@@ -1,0 +1,29 @@
+{
+  "underlying": "NIFTY",
+  "spot": 25000,
+  "lot_size": 75,
+  "valuation_date": "2026-10-23",
+  "expiry_date": "2026-10-29",
+  "data_quality": "SYNTHETIC_FIXTURE",
+  "require_defined_risk": true,
+  "max_risk_inr": 12000,
+  "annualized_volatility": 0.2,
+  "paths": 10000,
+  "seed": 42,
+  "legs": [
+    {
+      "kind": "put",
+      "side": "sell",
+      "strike": 25000,
+      "premium": 150,
+      "lots": 1
+    },
+    {
+      "kind": "put",
+      "side": "buy",
+      "strike": 24800,
+      "premium": 90,
+      "lots": 1
+    }
+  ]
+}
