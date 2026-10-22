@@ -23,6 +23,18 @@
 
 > **Positioning:** A research instrument, not an oracle. Reports must distinguish verifiable market facts, incomplete data, model hypotheses, simulated scenarios and human judgment. No assurance of returns, exchange data licence, SEBI registration, or auto-trading is claimed.
 
+
+> **Feature-branch audit note — 22 Oct 2026:** Institutional committee arithmetic, exploratory lunar-placebo lab and opt-in localhost agent activity viewer are under evaluation on `feature/institutional-evidence-harness-20261022`. These are **not part of public main v1.0.1** until clean CI, security and human validation pass. The updated personal ChatGPT research-skills plugin v0.4.0 lives independently in the private website repository. See [release audit](docs/INSTITUTIONAL_RELEASE_AUDIT_2026-10-22.md).
+
+### Feature-branch agent-native research extensions (not yet released)
+
+An approved analyst agent can call `fundtex investment-committee --inputs examples/investment_committee_SYNTHETIC.json` for a **clearly fictional arithmetic smoke example**. Replace with approved financial statements and verify original primary documents before publishing anything. Per-share currency and statement units must both be given. A scenario-weighted hypothesis is not an observed price or actionable target.
+
+`fundtex lunar-study --csv /approved/daily-prices.csv --symbol INFY.NS` runs an experimental, chronological-placebo falsification only; no lunar or astrology signal is used to recommend trades. `fundtex activity-view --events /approved/private/agent-events.jsonl --open` is an **optional** localhost display of actually emitted host-agent events; it cannot capture an agent by itself. Claude/Codex should invoke these commands directly for users who request the relevant capability, without requiring a dashboard. See [auto-analyst skill](fundtex-auto-analyst/SKILL.md).
+
+
+**Broker update (22 October 2026):** Zerodha currently advertises free Kite Connect APIs for qualifying mass-retail startups, subject to contacting Zerodha and agreeing terms. Its retail Personal tier has no data access; Connect is ₹500/month with possible earned developer credits for active traders starting October 2026. Official Zerodha Kite MCP remains broker-hosted and free in supported agent clients. FYERS advertises data APIs free to account holders; Dhan charges separately for Data APIs. No provider's personal credentials alone grants Fundtex permission to redistribute live quotes publicly. Sources: https://support.zerodha.com/category/trading-and-markets/general-kite/kite-api/articles/what-are-the-charges-for-kite-apis and https://support.fyers.in/portal/en/kb/articles/does-fyers-charge-any-subscription-fees-for-trading-api .
+
 ## Why this exists
 
 India's analysts navigate **NSE/BSE company announcements, exchange calendars, earnings statements, auditor notes, RBI macro context, shareholding, sector shocks, and imperfect market feeds**. AI becomes useful only when it can trace its claims back to evidence, compare alternatives and explicitly *abstain* rather than confidently fabricate. Fundtex aims to codify that discipline in portable, inspectable skills.

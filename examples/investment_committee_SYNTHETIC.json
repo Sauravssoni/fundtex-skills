@@ -1,0 +1,51 @@
+{
+  "provenance": "SYNTHETIC_FIXTURE_FOR_ARITHMETIC_ONLY_NOT_ISSUER_DATA",
+  "issuer": {
+    "symbol": "DEMO.NS",
+    "units": "INR_CRORE",
+    "per_share_currency": "INR",
+    "period": "FY2025",
+    "as_of": "2025-03-31"
+  },
+  "financials": {
+    "revenue": 1000,
+    "ebitda": 250,
+    "net_income": 100,
+    "cash_from_operations": 70,
+    "capital_expenditure": 20,
+    "total_debt": 180,
+    "cash_and_equivalents": 40,
+    "interest_expense": 10,
+    "ebit": 220
+  },
+  "references": [
+    {
+      "url": "https://example.org/synthetic-report-1",
+      "published": "2025-04-04"
+    },
+    {
+      "url": "https://example.org/synthetic-report-2",
+      "published": "2025-04-15"
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "Bear - hypothetical",
+      "probability": 0.3,
+      "value_per_share": 60,
+      "assumptions": "Invented demand slowdown, example only"
+    },
+    {
+      "name": "Base - hypothetical",
+      "probability": 0.5,
+      "value_per_share": 110,
+      "assumptions": "Invented baseline, example only"
+    },
+    {
+      "name": "Bull - hypothetical",
+      "probability": 0.2,
+      "value_per_share": 160,
+      "assumptions": "Invented upside, example only"
+    }
+  ]
+}

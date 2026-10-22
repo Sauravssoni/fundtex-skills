@@ -30,6 +30,9 @@ from .graphics_studio import pie as graphic_pie, bars as graphic_bars, heatmap a
 from .broker_quotes import availability as broker_availability, quote as authenticated_quote
 from .research_auto import run as automatic_research
 from .broker_onboarding import guide as broker_connection_guide
+from .institutional import investment_committee, lunar_placebo
+from .activity import emit as agent_activity_emit, view as agent_activity_view
+from .reconcile import reconcile as reconcile_prices
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -66,6 +69,29 @@ def make_parser():
     p.add_argument("--annotations",default=None);p.add_argument("--holdings",default=None);p.add_argument("--portfolio-prices",default=None)
     p=sub.add_parser("visual",help="Illustrative pie/bar/heatmap/histogram/waterfall from approved JSON")
     p.add_argument("--inputs",required=True);p.add_argument("--kind",required=True,choices=("pie","bar","heatmap","histogram","waterfall"));p.add_argument("--out",required=True)
+    p = sub.add_parser("activity-log", help="Append one true, sanitized agent lifecycle event (host instrumentation required)")
+    p.add_argument("--events", required=True, help="Approved local JSONL trace file")
+    p.add_argument("--agent", required=True, help="True agent name declared by the hosting runtime")
+    p.add_argument("--event", required=True, help="Short action ID")
+    p.add_argument("--status", required=True, choices=("start","progress","done","error","blocked"))
+    p.add_argument("--detail", default="")
+    p = sub.add_parser("activity-view", help="Optional 127.0.0.1-only agent activity dashboard")
+    p.add_argument("--events", required=True)
+    p.add_argument("--port", type=int, default=8736)
+    p.add_argument("--open", action="store_true", help="Open local browser only when approved")
+    p = sub.add_parser("reconcile", help="Compare two independently sourced dated closing-price CSVs before analyst use")
+    p.add_argument("--primary", required=True)
+    p.add_argument("--secondary", required=True)
+    p.add_argument("--symbol", required=True)
+    p.add_argument("--tolerance-bps", type=float, default=25.0)
+    p.add_argument("--min-overlap", type=int, default=12)
+    p = sub.add_parser("investment-committee", help="Human-review investment committee math from documented, user-approved JSON")
+    p.add_argument("--inputs", required=True, help="JSON with issuer, filing references, financials and scenarios")
+    p = sub.add_parser("lunar-study", help="Exploratory phase hypothesis falsification, NOT a trading predictor")
+    p.add_argument("--csv", required=True)
+    p.add_argument("--symbol", required=True)
+    p.add_argument("--permutations", type=int, default=1000)
+    p.add_argument("--seed", type=int, default=42)
     sub.add_parser("sources", help="Approved official Indian data/source registry and licence gates")
     p = sub.add_parser("regulatory", help="Official RBI/SEBI RSS metadata discovery, no full-document verification")
     source = p.add_mutually_exclusive_group(required=True)
@@ -175,6 +201,27 @@ def execute(args):
         values=json.loads(open(args.inputs,encoding="utf-8").read())
         engine={"pie":graphic_pie,"bar":graphic_bars,"heatmap":graphic_heatmap,"histogram":graphic_histogram,"waterfall":graphic_waterfall}[args.kind]
         return {"file":write_new(args.out,engine(values)),"kind":args.kind}
+    if args.command == "activity-log":
+        return agent_activity_emit(args.events, agent=args.agent, event=args.event,
+                                   status=args.status, detail=args.detail)
+    if args.command == "activity-view":
+        return agent_activity_view(args.events, port=args.port, open_browser=args.open)
+    if args.command == "reconcile":
+        return reconcile_prices(args.primary,args.secondary,args.symbol,
+                                tolerance_bps=args.tolerance_bps,min_overlap=args.min_overlap)
+    if args.command == "investment-committee":
+        with open(args.inputs, encoding="utf-8") as handle:
+            return investment_committee(json.load(handle))
+    if args.command == "lunar-study":
+        data = csv_prices(args.csv, args.symbol)
+        rows = data["rows"]
+        returns = [{"date": b["date"], "return": float(b["close"]) / float(a["close"]) - 1.0}
+                   for a, b in zip(rows, rows[1:])]
+        result = lunar_placebo(returns, seed=args.seed, permutations=args.permutations)
+        result.update({"symbol": data["symbol"], "data_source": data["source"],
+                       "source_sha256": data.get("sha256"), "data_quality": data["quality"],
+                       "research_only": True})
+        return result
     if args.command == "sources":
         return source_catalog()
     if args.command == "regulatory":
