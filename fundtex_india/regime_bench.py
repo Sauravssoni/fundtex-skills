@@ -24,7 +24,7 @@ RULES = [
 REGIMES = ("random_walk","bull_drift","bear_drift","mean_revert","volatility_shock")
 
 def simulate_regimes(*, scenarios_per_regime=20, seed=42, sessions=540,
-                     cost_bps=15, extra_cost_multiplier=4):
+                     cost_bps=15):
     if isinstance(scenarios_per_regime,bool) or not isinstance(scenarios_per_regime,int) or not 1<=scenarios_per_regime<=300:
         raise ValueError("scenarios_per_regime must be 1..300")
     if isinstance(seed,bool) or not isinstance(seed,int) or not 0<=seed<=2147483647:
@@ -33,8 +33,6 @@ def simulate_regimes(*, scenarios_per_regime=20, seed=42, sessions=540,
         raise ValueError("sessions must be 420..1200")
     if isinstance(cost_bps,bool) or not isinstance(cost_bps,(int,float)) or not math.isfinite(cost_bps) or not 0<=cost_bps<=500:
         raise ValueError("cost_bps must be finite in 0..500")
-    if isinstance(extra_cost_multiplier,bool) or not isinstance(extra_cost_multiplier,(int,float)) or not math.isfinite(extra_cost_multiplier) or not 1<=extra_cost_multiplier<=10:
-        raise ValueError("extra_cost_multiplier must be in 1..10")
     results={}
     with tempfile.TemporaryDirectory(prefix="fundtex-regime-") as root:
         sample=Path(root)/"synthetic.csv"
@@ -77,14 +75,14 @@ def simulate_regimes(*, scenarios_per_regime=20, seed=42, sessions=540,
                       "minimum_train_sessions":120}
                 report=run(sample,"SYNTHETIC.NS",spec)
                 hold=report["holdout"]
-                adverse=report["holdout_cost_stress"][-1]["holdout"] if extra_cost_multiplier==4 else None
+                adverse=report["holdout_cost_stress"][-1]["holdout"] 
                 records.append({"selected":report["optimized_rule"],"training_net_excess":report["train"]["net_excess_over_buy_hold"],
                                 "heldout_net_excess":hold["net_excess_over_buy_hold"],
                                 "heldout_model_return":hold["net_total_return"],
                                 "heldout_buyhold_return":hold["buy_hold_total_return"],
                                 "drawdown":hold["max_drawdown"],
                                 "trade_count":hold["number_of_position_changes"],
-                                "holdout_after_4x_cost_net_excess":adverse["net_excess_over_buy_hold"] if adverse else None})
+                                "holdout_after_4x_cost_net_excess":adverse["net_excess_over_buy_hold"]})
             vals=[x["heldout_net_excess"] for x in records]
             profitable=sum(x["heldout_net_excess"]>0 for x in records)
             p=profitable/len(records)
