@@ -33,6 +33,7 @@ class ReconcileTests(unittest.TestCase):
         self.assertEqual(r["mismatch_count"],1)
         self.assertGreater(r["max_symmetric_difference_bps"],25)
     def test_identical_file_rejected(self):
+        self.q.write_bytes(self.p.read_bytes())  # Different paths but literally identical feed bytes
         with self.assertRaisesRegex(ValueError,"identical bytes"):reconcile(self.p,self.q,"TEST.NS")
     def test_no_forward_date_and_parameter_validation(self):
         with self.assertRaises(ValueError):reconcile(self.p,self.q,"TEST.NS",tolerance_bps=float("nan"))
