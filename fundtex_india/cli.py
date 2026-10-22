@@ -37,6 +37,7 @@ from .options_lab import evaluate as options_payoff
 from .options_builder import propose as propose_option_spreads
 from .strategy_lab import run as backtest_strategy
 from .integrations import catalog as integration_catalog
+from .launchpad import create as create_launchpad
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -94,6 +95,9 @@ def make_parser():
     p.add_argument("--symbol", required=True)
     p.add_argument("--permutations", type=int, default=1000)
     p.add_argument("--seed", type=int, default=42)
+    p = sub.add_parser("launchpad", help="Optional offline welcome page in browser, only on explicit request")
+    p.add_argument("--out", required=True, help="A NEW local HTML file in an existing approved directory")
+    p.add_argument("--open", action="store_true", help="Open the page in a browser (explicitly opt in)")
     sub.add_parser("integrations", help="Real capabilities, available MCP/provider routes, no fake connections")
     p = sub.add_parser("options-build", help="Generate conservative defined-risk vertical candidates from APPROVED option bid/ask CSV")
     p.add_argument("--chain", required=True)
@@ -233,6 +237,12 @@ def execute(args):
                        "source_sha256": data.get("sha256"), "data_quality": data["quality"],
                        "research_only": True})
         return result
+    if args.command == "launchpad":
+        from .onboarding import doctor
+        health = doctor()
+        return create_launchpad(args.out,open_browser=args.open,
+                                installed_skills=health.get("autonomous_first_run_ready",False),
+                                source_status="NOT_AUTHENTICATED; broker login not checked")
     if args.command == "integrations":
         return integration_catalog()
     if args.command == "options-build":
