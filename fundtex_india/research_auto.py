@@ -15,7 +15,7 @@ import tempfile
 import zipfile
 
 from .broker_quotes import availability as broker_status, quote as broker_quote
-from .market import validate_symbol, yahoo_prices
+from .market import validate_symbol, yahoo_prices, yahoo_ohlcv_prices
 from .chart_studio import prices as audited_csv_prices
 from .mission import mission
 from .pack_studio import build_pack
@@ -38,11 +38,15 @@ def _history(symbol,*,source,csv_file=None,period="1y",public_fetch=None):
         from .fyers_data import history as fyers_history
         result=(public_fetch or fyers_history)(sym,range_=period,interval="1d")
         return result,result["rows"],"AUTHENTICATED_FYERS_HISTORY_NOT_TICK_STREAM","FYERS official authenticated daily historical OHLCV"
+    if source=="public-ohlc":
+        if csv_file:raise ValueError("--csv may only be supplied with --source csv")
+        result=(public_fetch or yahoo_ohlcv_prices)(sym,range_=period,interval="1d")
+        return result,result["rows"],"UNOFFICIAL_UNADJUSTED_OHLC_NOT_EXCHANGE_VERIFIED","Yahoo Finance actual raw unadjusted daily OHLC (unofficial; split, timestamp, rights and provider accuracy unverified)"
     if source=="public":
         if csv_file:raise ValueError("--csv may only be supplied with --source csv")
         result=(public_fetch or yahoo_prices)(sym,range_=period,interval="1d")
         return result,result["rows"],"UNOFFICIAL_BEST_EFFORT_DELAYED","Yahoo Finance chart history (unofficial best effort; timestamp and adjustments unverified)"
-    raise ValueError("Source must be public, fyers or csv; demo data is never a fallback")
+    raise ValueError("Source must be public, public-ohlc, fyers or csv; demo data is never a fallback")
 
 def _quote_result(symbol,provider,*,quote_fetch=None):
     if provider=="off":
@@ -75,7 +79,7 @@ def run(symbol,out,*,source="public",csv_file=None,period="1y",quote_provider="a
     observed=date.fromisoformat(rows[-1]["date"])
     age=(datetime.now(timezone.utc).date()-observed).days
     if age<0:raise ValueError("Historical feed contained future observation")
-    if source in ("public","fyers") and age>max_age_days:
+    if source in ("public","public-ohlc","fyers") and age>max_age_days:
         raise ValueError("Historical provider observation stale by "+str(age)+" days; refusing to present as current data")
     # Snapshot retrieval must complete before creation; failure cannot silently downgrade the response.
     status,snapshot=_quote_result(sym,quote_provider,quote_fetch=fetch_quote)
