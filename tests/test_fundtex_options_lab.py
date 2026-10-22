@@ -38,6 +38,16 @@ class OptionPayoffTests(unittest.TestCase):
         one=evaluate(self.base)["scenario_simulation"]
         two=evaluate(self.base)["scenario_simulation"]
         self.assertEqual(one,two)
+    def test_greeks_are_explicitly_theoretical(self):
+        report=evaluate(self.base)
+        g=report["illustrative_greeks"]
+        self.assertIn("NOT_MARKET_GREEKS",g["status"])
+        self.assertGreater(g["aggregate"]["delta_inr_per_underlying_point"],0)
+        self.assertEqual(g["assumptions"]["annual_dividend_yield"],0.0)
+    def test_greeks_zero_time_return_unavailable(self):
+        self.base["expiry_date"]=self.base["valuation_date"]
+        report=evaluate(self.base)
+        self.assertEqual(report["illustrative_greeks"]["status"],"NOT_COMPUTABLE_ZERO_TIME_OR_VOLATILITY")
     def test_zero_volatility_and_no_fake_live_quote(self):
         self.base["annualized_volatility"]=0
         result=evaluate(self.base)
