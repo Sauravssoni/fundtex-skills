@@ -43,7 +43,7 @@ PROVIDERS={
         "name":"Zerodha Kite Connect developer API",
         "url":"https://kite.trade/docs/connect/v3/user/",
         "mode":"Kite Connect API app; separate from free Kite MCP",
-        "pricing":"Market data via developer API may require eligible Connect entitlement; confirm current broker pricing",
+        "pricing":"Retail Personal: no market data; retail Connect ₹500/month, October 2026 active-trader credits may apply; qualifying mass-retail startups may request free developer APIs directly from Zerodha. Free Kite MCP remains separate.",
         "steps":[
             "If using Claude and only needing AI-assistant market data, consider official free Kite MCP instead of a paid developer app.",
             "Otherwise open Zerodha Kite Connect's official developer console, create/authorize an app and confirm market-data access.",
