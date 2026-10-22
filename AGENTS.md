@@ -1,3 +1,12 @@
+
+## New experimental Strategy Lab v1.1 (feature branch only)
+
+For historical strategy questions select `fundtex-strategy-research`, use only genuinely approved OHLC, and run `fundtex strategy-build` via the agent. It performs bounded SMA/RSI no-code hypotheses, next-open open-to-open simulation, train-only parameter selection and untouched chronological holdout with relative performance and 2x/4x friction stresses. It is not option-chain backtesting or certified profitability.
+
+For hedged derivatives select `fundtex-hedged-options`: user-approved underlying, expiry, **verified contract lot size**, actual attributable premiums/chain and explicitly bounded risk. `fundtex options-sim` computes theoretical multi-leg expiry intrinsic P&L, estimated 2026 opening fees and optional theoretical Black–Scholes Greeks / lognormal scenario; `fundtex options-build` scans user-supplied time-stamped bid/ask for defined-risk vertical candidates. Never imply broker margin is calculated, a theoretical payoff guarantees actual after-tax maximum loss, synthetic premiums are real, or a high reward/risk ratio predicts favorable odds. No orders, GTT, collateral or execution are enabled.
+
+For more connectors select `fundtex-connector-orchestrator`; `fundtex integrations` reports *available* and configured environment capability without falsely asserting authentication. Our own opt-in `fundtex_india.mcp_server` exposes local, read-only `fundtex_options_expiry`, `fundtex_options_spread_builder`, `fundtex_strategy_backtest` and `fundtex_connector_status` using an **explicit approved directory**, plus existing diligence, AMFI and regulation. Official Kite MCP, OpenBB MCP, and LEAN are external systems with independent installation, user authorization, data licences and execution restrictions; do not silently connect them. See docs/STRATEGY_SIMULATOR_V1.md.
+
 # Fundtex Financial Intelligence — Agent Operating Contract
 
 Company: Fundtex Financial Intelligence, an initiative within Syntheon Technology Private Limited.
