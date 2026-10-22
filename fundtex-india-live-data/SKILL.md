@@ -15,19 +15,15 @@ description: Fetch and verify Indian equity public historical OHLC/adjusted clos
 - DhanHQ instrument ID must correspond to an approved exchange symbol in FUNDTEX_DHAN_SYMBOL_MAP; no invented ID fallback. Kite uses NSE:TRADINGSYMBOL or BSE:TRADINGSYMBOL.
 - If no credential or source fails, report NO_AUTHENTICATED_PROVIDER or a clear source error; no fake price.
 
+## Easiest account connection: broker-hosted MCP, not pasted API tokens
 
+For a conversational first step, the coding agent can run `fundtex connect` (choice catalog, no account access). After locally approved FYERS, Kite Connect or Dhan setup, `fundtex connect --provider fyers --verify INFY.NS` (or kite/dhan) checks a real read-only quote before describing the provider as connected. Showing a link or finding environment variables alone is not authentication. Do not conflate this direct REST check with Zerodha's separate host-connected Kite MCP session.
 
-## First-run broker connection — must be conversational
+For a Zerodha user using Claude, follow docs/BROKER_CONNECTION_ASSISTANT.md: prefer the **official Kite MCP** remote endpoint https://mcp.kite.trade/mcp, via the host's supported MCP registration flow and the user's official browser consent. This broker-hosted connection is advertised FREE by Zerodha; it is not the same as a paid Kite Connect developer market-data API. Do not request Zerodha passwords or access tokens in the AI chat.
 
-Before asking a new analyst to supply an API token or run a script, call `fundtex connect` for the safe provider-choice catalog. Ask only: "Do you use Zerodha, FYERS, Dhan, or would you prefer public historical data for now?" Explain whether the selected data route is free, subscription-gated or account-specific.
+When already authorized, call the actual read-only Kite market-data tools, check symbol + published timestamps, and hand user-permitted historical OHLCV to Fundtex charting. Do NOT pretend Kite MCP populates the CLI's FUNDTEX_KITE_* credential environment. If the host does not support MCP, explain that limitation and offer existing approved CSV, FYERS or public delayed data rather than a fake live feed.
 
-- **Zerodha users in Claude:** Prefer Zerodha's official Kite MCP at https://zerodha.com/products/mcp/ for broker-hosted sign-in and read-only market information when available in that Claude client. Lead them through the official MCP install/authorize UI. Never request passwords or tokens. The Fundtex CLI cannot automatically consume a foreign MCP session; use verified MCP results in the host analyst workflow and keep data source attribution.
-- **FYERS users:** Guide them to the official individual-app authentication process (https://fyers.in/api-docs/v3/getting-started/authentication/). Browser approval and secure local token setup are required; never solicit codes/secrets in chat. Then run `fundtex connect --provider fyers --verify INFY.NS` to verify a read-only quote after the user has configured it, and use authorized FYERS OHLCV history.
-- **Dhan users:** Guide official Dhan Web Profile → DhanHQ Trading/Data APIs. Explain that market-data entitlement can require a paid subscription and a verified security ID mapping. Never subscribe, charge, or place trades for them.
-- **Kite Connect developers:** Direct the user to the official Kite Connect auth documentation and explain the difference from broker-hosted Kite MCP; verify eligible market-data API entitlement.
-- **No broker:** Continue with clearly labelled best-effort public dated history, and tell the user what cannot be claimed as live.
-
-Agent must show only ONE next action at a time when guiding authorization, verify a real tool/quote response after consent, and only then say connected. Never claim `broker-status` proves authentication: it checks local configuration presence only.
+DhanHQ data APIs require an active Data subscription (published ₹499 + applicable taxes/month), and Dhan individual access tokens commonly expire after 24 hours. The agent must guide setup on web.dhan.co, not auto-subscribe or handle secrets in chat. Its community agent-skill bundle includes order execution; use only Fundtex's read-only data connector unless user has separately authorized a trading integration. For FYERS use the permitted account/app authorization path. A real broker auth test needs the user's action and cannot be proven by parser unit tests.
 
 ## Provenance and financial integrity
 

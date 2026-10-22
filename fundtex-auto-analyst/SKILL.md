@@ -24,6 +24,16 @@ This creates a new folder and ZIP with interactive SVG/HTML chart, historical cl
 
 For a permitted customer CSV use --source csv --csv /approved/input.csv. An actual source marked SYNTHETIC_FIXTURE MUST remain fictional, even if named a famous ticker. Never fall back to synthetic prices when the network is unavailable.
 
+## Broker selection is part of the first analysis — not a separate onboarding project
+
+Read docs/BROKER_CONNECTION_ASSISTANT.md whenever a user asks for Indian market quotes/charts or a first end-to-end report. **Check existing MCP/data-source connections before asking any questions.** A previously sent introductory message is not a reason to ask the user to reinstall everything or send a second pitch.
+
+- If official Zerodha Kite MCP tools are already connected, use their read-only market data for the authorized request and feed permitted historical observations into Fundtex charts and reports. Kite MCP is FREE to connect according to Zerodha, distinct from Kite Connect paid API access.
+- If none are connected, ask one concise question: **"Do you use Zerodha, Dhan or FYERS, or should I proceed with public historical data?"** Then guide the user through official broker website authorization without pasting any credentials into the AI chat. For Zerodha, offer to configure the official https://mcp.kite.trade/mcp remote server in Claude Code (personal user scope) with explicit permission. Never automatically connect user accounts.
+- If the user prefers no brokerage connection, immediately use best-effort dated public history and label freshness and limitations.
+- Authenticate only the required READ-ONLY market-data operation. Never place orders or create/modify GTTs, regardless of whether the broker MCP exposes those tools.
+- Claude must run the Fundtex report commands and verify generated files on the user's behalf; the human should not hunt for scripts. Broker MCP and CLI environment variables are different connections, so do not claim an MCP login automatically initializes the CLI REST API keys.
+
 ## Real-time prices require a real provider
 
 - If authorized FYERS, Kite Connect or DhanHQ credentials are configured, --quote auto retrieves a read-only LTP snapshot without exposing credentials. Market streaming is NOT implemented by this skill or CLI.
