@@ -49,7 +49,7 @@ def prices(path, symbol):
             values={k:float(row[k]) for k in fields}
             if any(not math.isfinite(v) or v<=0 for v in values.values()):
                 raise ValueError("Nonfinite/nonpositive price")
-            if has_ohlc:
+            if has_ohlc and complete_ohlc_rows:
                 if values["low"]>min(values["open"],values["close"]) or values["high"]<max(values["open"],values["close"]) or values["high"]<values["low"]:
                     raise ValueError("OHLC constraints violated")
             vol=row.get("volume")
