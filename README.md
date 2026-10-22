@@ -4,7 +4,7 @@
 
 # FUNDTEX · FINANCIAL INTELLIGENCE
 
-**Public Skills Edition v1.0 — Agent-Native India Research Desk | One natural-language prompt · actual historical data · authorized broker snapshots · automatic analyst exports**
+**Public Skills Edition v1.0.1 — Agent-Native India Research Desk | One natural-language prompt · actual historical data · authorized broker snapshots · automatic analyst exports**
 
 **A source-aware, reproducible Indian financial analyst research desk with official RBI/SEBI regulatory discovery, approved mutual-fund NAV snapshots, verified-input fundamentals, evidence-led agent skills and human-reviewed productivity benchmarks.**
 
@@ -48,6 +48,10 @@ The installer copies **29 compatible skills** (18 India-first + 11 attributed or
 > Use the fundtex-god-eye skill. Investigate an NSE/BSE company's latest primary exchange filings and earnings, identify risks and contradictions, and compare any time-causal price hypothesis to buy-and-hold with explicit costs. Cite source dates. Say ABSTAIN when you cannot verify the evidence.
 
 No agent can obtain real NSE quotations just by reading a skill file. Its runtime still needs network permissions and legally obtained data. The plugin and CLI are separate: an agent may need to call the installed CLI through its authorized shell.
+
+## v1.0.1 — Conversational broker connection (no scripts for the end user)
+
+When a user requests live-data analysis, a terminal-enabled Claude or Codex agent calls `fundtex connect` itself, asks whether the user has Zerodha/FYERS/Dhan or wants best-effort public history, and walks through official broker-hosted authentication. In compatible Claude/MCP clients Zerodha offers its own Kite MCP authorization without handing credentials to Fundtex. The direct Fundtex FYERS/Kite/Dhan adapters require account-authorized local credentials and `fundtex connect --provider fyers --verify INFY.NS` (or respective developer API) to confirm **read-only** quote access. The agent never asks for passwords or OAuth tokens in chat; no automatic paid subscription or orders. Kite MCP session data is *not* magically accessible by the separate Fundtex CLI; the agent must use its host's actual MCP tools when connected. See [Broker connection guide](docs/BROKER_CONNECTION_GUIDE.md).
 
 ## v1.0 Agent-Native Research — No dashboard or scripts for the end user
 

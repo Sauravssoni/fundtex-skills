@@ -29,6 +29,7 @@ from .memo_studio import memo as studio_memo, pdf as studio_pdf
 from .graphics_studio import pie as graphic_pie, bars as graphic_bars, heatmap as graphic_heatmap, histogram as graphic_histogram, waterfall as graphic_waterfall
 from .broker_quotes import availability as broker_availability, quote as authenticated_quote
 from .research_auto import run as automatic_research
+from .broker_onboarding import guide as broker_connection_guide
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -41,6 +42,10 @@ def make_parser():
     p.add_argument("--quote",choices=("auto","off","fyers","kite","dhan"),default="auto",help="Read-only optional authenticated broker snapshot, NEVER an order")
     p.add_argument("--max-age-days",type=int,default=7)
     p.add_argument("--out",required=True,help="NEW output directory and ZIP, never overwritten")
+    p = sub.add_parser("connect",help="Step-by-step official broker authorization guide; never accepts tokens in chat")
+    p.add_argument("--provider",choices=("choose","zerodha-mcp","fyers","kite","dhan"),default="choose")
+    p.add_argument("--open",action="store_true",help="Open selected official broker page after user approval")
+    p.add_argument("--verify",default=None,metavar="SYMBOL",help="Read-only authenticated quote verification, if configured")
     p = sub.add_parser("broker-status",help="Configured Indian broker quote sources; never prints tokens")
     p = sub.add_parser("quote",help="Current authenticated broker quote snapshot, never trading")
     p.add_argument("--symbol",required=True);p.add_argument("--provider",choices=("fyers","kite","dhan"),required=True)
@@ -144,6 +149,8 @@ def execute(args):
                                   period=args.period,quote_provider=args.quote,max_age_days=args.max_age_days)
     if args.command == "quote":
         return authenticated_quote(args.symbol,args.provider)
+    if args.command == "connect":
+        return broker_connection_guide(args.provider,open_official=args.open,verify_symbol=args.verify)
     if args.command == "broker-status":
         return broker_availability()
     if args.command == "chart":

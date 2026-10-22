@@ -32,6 +32,20 @@ For a permitted customer CSV use --source csv --csv /approved/input.csv. An actu
 - Distinguish observation date, retrieval UTC, authenticated quote timestamp if published, potential delay and any exchange market-data rights.
 - A best-effort public Yahoo Finance chart request can return current-day historical closes but is NOT official or guaranteed real-time.
 
+
+
+## First-run broker connection — must be conversational
+
+Before asking a new analyst to supply an API token or run a script, call `fundtex connect` for the safe provider-choice catalog. Ask only: "Do you use Zerodha, FYERS, Dhan, or would you prefer public historical data for now?" Explain whether the selected data route is free, subscription-gated or account-specific.
+
+- **Zerodha users in Claude:** Prefer Zerodha's official Kite MCP at https://zerodha.com/products/mcp/ for broker-hosted sign-in and read-only market information when available in that Claude client. Lead them through the official MCP install/authorize UI. Never request passwords or tokens. The Fundtex CLI cannot automatically consume a foreign MCP session; use verified MCP results in the host analyst workflow and keep data source attribution.
+- **FYERS users:** Guide them to the official individual-app authentication process (https://fyers.in/api-docs/v3/getting-started/authentication/). Browser approval and secure local token setup are required; never solicit codes/secrets in chat. Then run `fundtex connect --provider fyers --verify INFY.NS` to verify a read-only quote after the user has configured it, and use authorized FYERS OHLCV history.
+- **Dhan users:** Guide official Dhan Web Profile → DhanHQ Trading/Data APIs. Explain that market-data entitlement can require a paid subscription and a verified security ID mapping. Never subscribe, charge, or place trades for them.
+- **Kite Connect developers:** Direct the user to the official Kite Connect auth documentation and explain the difference from broker-hosted Kite MCP; verify eligible market-data API entitlement.
+- **No broker:** Continue with clearly labelled best-effort public dated history, and tell the user what cannot be claimed as live.
+
+Agent must show only ONE next action at a time when guiding authorization, verify a real tool/quote response after consent, and only then say connected. Never claim `broker-status` proves authentication: it checks local configuration presence only.
+
 ## Professional review
 
 Use any permitted exchange/issuer/RBI/SEBI official tools to open actual dated source documents, reconcile original filings, assess financial quality and company-specific risks. The CLI pack cannot extract or verify company financial statements automatically. Independent skeptic pass must challenge data timing, assumptions and meaningful contrary evidence before claiming any thesis. Specialized subagents are optional and require real host support; sequential reviewer passes are the default.

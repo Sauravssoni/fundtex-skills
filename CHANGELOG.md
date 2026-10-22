@@ -1,5 +1,10 @@
 # Release history — Fundtex Financial Intelligence
 
+## v1.0.1 — 22 October 2026
+- Added agent-guided brokerage connection discovery for official Zerodha Kite MCP, FYERS, Kite Connect and DhanHQ, including broker-owned authentication steps, fee/entitlement boundaries and no token collection in chat.
+- Added `fundtex connect` with optional user-approved official site opening and real read-only quote verification (when direct credentials are already user-configured). Configuration alone never proves an authenticated account. Zerodha MCP remains hosted in an authorized Claude/MCP client rather than magically bridged into the Fundtex Python process.
+- Added eight contract tests covering provider choice, secret protection, connection failure, successful verified mocked read-only quote, and consent-before-opening. Full suite **92/92 passed**, including the million-draw computational test. Real client broker authorization and WebSocket tick streaming remain untested.
+
 ## v1.0 — 21 October 2026
 - Reprioritized user experience as natural-language agent-native financial research; removed the unfinished dashboard from release rather than forcing a second interface.
 - Added fundtex research automatic source-aware daily-price fetching, evidence ledger, historical chart, indicators, separate optional authenticated Kite/Dhan last-price snapshots, report folder and ZIP.

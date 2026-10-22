@@ -28,6 +28,10 @@ Use --source fyers with a permitted FYERS account to fetch actual historical OHL
 
 --quote auto only uses a broker previously configured through authorized local environment. Without one, it reports NO_CONFIGURED_BROKER; it does not fabricate a live price. Explicit --quote kite or dhan is strict and fails closed on missing/invalid auth. A broker snapshot shows retrieval UTC and original trade timestamp only if the source supplies it; a quote retrieved at night can contain the exchange's LAST previous trade.
 
+## Guided broker connection
+
+An authorized Claude/Codex agent first runs `fundtex connect` and asks the analyst for an existing broker, rather than requesting access tokens or sending manual scripts. It offers official Zerodha Kite MCP for supported Claude clients (broker-hosted authorization, no password sharing), FYERS individual-app setup with token expiry, DhanHQ's paid market-data entitlement and Kite Connect developer authorization. It calls `fundtex connect --provider fyers --verify INFY.NS` (or kite/dhan) only after the owner configures approved local credentials. Read-only quote verification must actually return authenticated data before the agent says connected. Broker-status alone reports configuration presence, not entitlement or token validity. Fundtex itself does not implement end-to-end OAuth, retain tokens or automatically consume a third-party Kite MCP session. Official links: https://zerodha.com/products/mcp/ , https://fyers.in/api-docs/v3/getting-started/authentication/ , https://dhan.co/support/platforms/dhanhq-api/how-to-access-dhan-api/ .
+
 ## Credential handling
 
 Never paste broker credentials, OAuth secrets, account statements or client records into the chat or public source repo. The authorized local environment may supply:

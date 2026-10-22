@@ -2,6 +2,10 @@
 
 Environment: MacBook Pro, macOS, Python 3.11, isolated QA clone. No broker credentials, production trading or private institutional portfolios accessed.
 
+## v1.0.1 broker onboarding verification — 22 October 2026
+
+The broker connection experience is a conversational **guide**, not an OAuth app or a magical session bridge. It returns approved Zerodha Kite MCP, FYERS, Kite Connect and DhanHQ connection options with official URLs, access/fee caveats and clear privacy prompts; user consent and actual broker login remain required. `fundtex connect --provider FYERS|kite|dhan --verify INFY.NS` attempts a read-only quote only when local approved credentials exist; a mere env-variable presence is never displayed as authenticated. Zerodha Kite MCP is verified in the host Claude/MCP client, not the Fundtex CLI. Contract tests cover no-secret output, provider selection, no auto-open, unconfigured, quote successful, quote failed and third-party MCP detection. The final release suite on the authorized Mac PASSED **92/92 Python tests**, including the million seeded numerical draws (3.92 seconds for the draw portion) and agent-skill installation/backup contracts. User-credentialed broker login and true real-time WebSocket ingestion remain unverified and not claimed.
+
 ## v1.0 final free-data adapter and agent-native release gate — 22 October 2026
 
 **84/84 full Python regression tests passed**, including the million-seeded-Gaussian-draw numerical suite (3.98 s for the draw itself) and 29-skill isolated agent installer/upgrade contracts. Additional FYERS official v3 REST API schema tests cover current LTP quote, dated OHLCV candle parsing, fail-closed missing authentication, wrong instrument, invalid candle bounds and no unsafe endpoint redirects. All FYERS tests used MOCK DATA and NO real client token; the provider connector is ready for a user-authorized free-tier account but a real FYERS quote was not claimed.
