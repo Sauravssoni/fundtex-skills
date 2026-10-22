@@ -72,7 +72,15 @@ def doctor(home: str | None = None, *, repo_root: str | None = None) -> dict:
         origin_hash=hashlib.sha256(checkout_cli.read_bytes()).digest()
         snapshot_hash=hashlib.sha256(installed_cli.read_bytes()).digest()
         engine_stale=origin_hash!=snapshot_hash
+    bundled=homepath/".local/share/fundtex-intelligence"
+    required_refs=("docs/AGENT_NATIVE_V1.md","docs/BROKER_CONNECTION_ASSISTANT.md",
+                   "docs/CLAUDE_FIRST_RUN.md","examples/india_prices.csv",
+                   "AGENTS.md","CLAUDE.md","GEMINI.md","README.md")
+    reference_missing=[x for x in required_refs if not (bundled/x).is_file()]
     return {
+        "installed_reference_bundle_present":not reference_missing,
+        "missing_reference_paths":reference_missing,
+        "reference_library_dir":str(bundled),
         "product":"Fundtex Financial Intelligence","python":sys.version.split()[0],
         "installed_engine_stale_relative_to_checkout":engine_stale,
         "upgrade_policy":"Never overwrite installed engine without explicit user approval",
@@ -81,6 +89,7 @@ def doctor(home: str | None = None, *, repo_root: str | None = None) -> dict:
         "engine_origin":str(Path(__file__).resolve().parent),
         "installation":manifest,
         "all_india_skills_installed":all(len(item["missing"])==0 for item in manifest.values()),
+        "autonomous_first_run_ready":not reference_missing and all(len(item["missing"])==0 for item in manifest.values()),
         "fundtex_launcher_present":(homepath/".local/bin/fundtex").is_file(),
         "readme_available":(root/"README.md").is_file(),
         "checks_are_offline":True,
