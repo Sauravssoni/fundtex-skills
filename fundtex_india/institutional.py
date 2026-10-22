@@ -94,8 +94,10 @@ def investment_committee(data):
         warnings.append("Weak CFO/NI cash conversion; inspect working capital and accruals")
     if v["revenue"] == 0:
         warnings.append("Zero revenue; standard operating margins unavailable")
+    raw_origin = data.get("provenance", "")
+    assurance = "SYNTHETIC_FIXTURE" if isinstance(raw_origin, str) and raw_origin.startswith("SYNTHETIC_FIXTURE") else "USER_SUPPLIED_UNVERIFIED"
     return {"engine": "FUNDTEX_INVESTMENT_COMMITTEE_v1", "issuer": issuer,
-            "input_assurance": "USER_SUPPLIED_UNVERIFIED", "ratios": computed,
+            "input_assurance": assurance, "ratios": computed,
             "scenario_model": expectation, "source_register": registry,
             "risk_flags": warnings, "review_blockers": blockers,
             "verdict": "HUMAN_VERIFICATION_REQUIRED", "research_only": True}
