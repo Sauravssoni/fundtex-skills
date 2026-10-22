@@ -29,6 +29,14 @@ India's analysts navigate **NSE/BSE company announcements, exchange calendars, e
 
 **Not a replacement for existing professional terminals.** The current edition is a transparent Python research preview with data quality labels, deterministic portfolio analytics, a reproducible walk-forward strategy lab, and agent workflows. Commercial exchange feeds, point-in-time security master and financial statement adapters are upcoming gates.
 
+## Ask once. Secure broker data when authorized.
+
+The analyst's normal Claude/Codex conversation is the interface. The agent should check connected sources first, and—only if needed—offer to connect Zerodha, Dhan or FYERS, or proceed immediately with best-effort historical data. **No scripts, credentials or manual CLI steps should be required of the analyst.**
+
+**Easiest Zerodha route:** the broker publishes a free **Kite MCP** at https://mcp.kite.trade/mcp for AI assistants. Claude Code can register the official remote MCP for the user after explicit approval; the user signs in through the official Zerodha browser consent. This is distinct from the ₹500/month developer-oriented Kite Connect market-data API. Read-only data tools can supply quotes and permitted historical prices to Fundtex chart/report generation. No password/token enters Fundtex or chat, and no trades/GTT operations are allowed in Fundtex research.
+
+**Dhan:** requires the user's own Data API entitlement (currently advertised ₹499 plus taxes/month) and short-lived local API authorization. **FYERS:** may provide account-authorized data to eligible clients. The agent guides setup but cannot complete account consent itself. Details and exact host instructions: [Broker Connection Assistant](docs/BROKER_CONNECTION_ASSISTANT.md). Broker MCP login does NOT automatically initialize REST API token variables.
+
 ## Quickstart
 
 **End-user prompt (paste once into a terminal-enabled agent):** “Analyze Infosys's latest available Indian-market data using Fundtex. Verify the ticker and sources, fetch authorized current information, use my connected broker only if available, produce chart images, Excel/PDF/CSV and a research ZIP, challenge the conclusions, and give me actual download links. Follow docs/AGENT_NATIVE_V1.md.” The agent performs installation/checks, data fetch and report commands. Ordinary browser chats with no shell cannot execute an installer.
