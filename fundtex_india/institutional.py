@@ -33,6 +33,8 @@ def investment_committee(data):
     if not isinstance(symbol, str) or not (1 <= len(symbol) <= 32) or not all(c.isascii() and (c.isalnum() or c in "-_.") for c in symbol):
         raise ValueError("Short unambiguous exchange symbol required")
     _date(issuer.get("as_of"), "issuer.as_of")
+    if issuer.get("per_share_currency") not in ("INR", "USD"):
+        raise ValueError("Explicit per_share_currency INR or USD required: accounting units differ from per-share valuations")
     if not isinstance(issuer.get("period"), str) or not issuer["period"].strip():
         raise ValueError("Financial statement period required")
     allowed = ("revenue", "ebitda", "net_income", "cash_from_operations", "capital_expenditure",
