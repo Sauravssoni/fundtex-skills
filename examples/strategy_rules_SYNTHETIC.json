@@ -1,0 +1,22 @@
+{
+  "candidates": [
+    {
+      "name": "sma_cross",
+      "fast": 10,
+      "slow": 50
+    },
+    {
+      "name": "sma_cross",
+      "fast": 20,
+      "slow": 80
+    },
+    {
+      "name": "rsi_reversion",
+      "entry": 30,
+      "exit": 70
+    }
+  ],
+  "split_fraction": 0.7,
+  "cost_bps_per_position_change": 15,
+  "minimum_train_sessions": 120
+}
