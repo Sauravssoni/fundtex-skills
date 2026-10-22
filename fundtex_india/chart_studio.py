@@ -83,7 +83,7 @@ def rsi(values,n=14):
             diff=values[i]-values[i-1]
             avg_up=(avg_up*(n-1)+max(diff,0))/n
             avg_down=(avg_down*(n-1)+max(-diff,0))/n
-        out[i]=100 if avg_down==0 else round(100-100/(1+avg_up/avg_down),3)
+        out[i]=(50.0 if avg_up==0 else 100.0) if avg_down==0 else round(100-100/(1+avg_up/avg_down),3)
     return out
 
 def indicators(data):
