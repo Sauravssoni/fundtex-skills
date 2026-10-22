@@ -15,8 +15,8 @@ class ReconcileTests(unittest.TestCase):
         self._write(self.q,[100+i*0.2 for i in range(35)])
     def _write(self,path,values):
         start=date(2025,1,1)
-        path.write_text("date,symbol,close,source\n"+"".join(
-            f"{(start+timedelta(days=i)).isoformat()},TEST.NS,{v},SYNTHETIC_FIXTURE\n" for i,v in enumerate(values)),encoding="utf-8")
+        path.write_text("date,symbol,close,source,feed\n"+"".join(
+            f"{(start+timedelta(days=i)).isoformat()},TEST.NS,{v},SYNTHETIC_FIXTURE,{path.name}\n" for i,v in enumerate(values)),encoding="utf-8")
     def test_agreement_is_not_certification(self):
         r=reconcile(self.p,self.q,"TEST.NS")
         self.assertEqual(r["status"],"NUMERICAL_AGREEMENT_ONLY")
