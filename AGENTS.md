@@ -1,4 +1,6 @@
 
+
+**Optional real host activity:** If the user asks for a live local agent viewer, read `docs/AGENT_ACTIVITY_HOOKS.md` and ask the authorized host to instrument actual `Claude Code`/`Codex` lifecycle hooks using `python3 -m fundtex_india.hook_bridge`. Only after explicit owner opt-in `FUNDTEX_EVENT_OPT_IN=1` and approved absolute `FUNDTEX_EVENT_LOG` should any event be emitted. The bridge ignores all hook stdin/prompt/transcript, includes only static lifecycle events and host labels, and does not install user/global hooks. A manually configured hook is not proof of actual execution; verify live emitted event entries. No dashboard dependency for standard analysis.
 ## New experimental Strategy Lab v1.1 (feature branch only)
 
 For historical strategy questions select `fundtex-strategy-research`, use only genuinely approved OHLC, and run `fundtex strategy-build` via the agent. It performs bounded SMA/RSI no-code hypotheses, next-open open-to-open simulation, train-only parameter selection and untouched chronological holdout with relative performance and 2x/4x friction stresses. It is not option-chain backtesting or certified profitability.
