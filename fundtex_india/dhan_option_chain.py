@@ -96,10 +96,12 @@ def read_only_fetch(config, *, transport=None):
         raise ValueError("Dhan read-only fetch failed; no data or quote inferred") from None
     return payload
 
-def normalize(payload,config,*,captured_utc=None):
+def normalize(payload,config,*,captured_utc,authenticated_fetch=False):
     """Strict normalization from ONE saved Dhan response; no network access."""
     expiry=verify_config(config)
-    captured= captured_utc or datetime.now(timezone.utc)
+    captured=captured_utc
+    if not isinstance(authenticated_fetch,bool):
+        raise ValueError("authenticated_fetch must be boolean")
     if not isinstance(captured,datetime) or captured.tzinfo is None:
         raise ValueError("Use timezone-aware UTC capture timestamp")
     captured=captured.astimezone(timezone.utc)
@@ -159,7 +161,7 @@ def normalize(payload,config,*,captured_utc=None):
                 "kind":kind,"strike":strike,
                 "bid":bid,"ask":ask,"lot_size":config["lot_size"],
                 "as_of":captured.astimezone(ZoneInfo("Asia/Kolkata")).date().isoformat(),
-                "source":"DHAN_AUTHENTICATED_FETCH_TIME_ONLY" if payload.get("_fundtex_capture_origin")=="authenticated" else "DHAN_USER_APPROVED_JSON_SNAPSHOT",
+                "source":"DHAN_AUTHENTICATED_FETCH_TIME_ONLY" if authenticated_fetch else "DHAN_USER_APPROVED_JSON_SNAPSHOT_CAPTURE_TIME_USER_DECLARED",
                 "snapshot_id":snapshot_sha[:20],"quote_captured_utc":captured.isoformat(),
                 "security_id":contract_id,"bid_qty":bq,"ask_qty":aq,
                 "volume":volume,"open_interest":oi,"spread_bps":round(spread_bps,5)
@@ -181,7 +183,7 @@ def normalize(payload,config,*,captured_utc=None):
                    "capture_utc":captured.isoformat(),"source_snapshot_sha256":snapshot_sha,
                    "quoted_contracts_accepted":len(fields),"omitted_contracts":skipped,
                    "contract_snapshot_exchange_timestamp":"NOT_PUBLISHED_IN_DOCUMENTED_PAYLOAD",
-                   "provider_authentication_verified":payload.get("_fundtex_capture_origin")=="authenticated",
+                   "provider_authentication_verified":authenticated_fetch,
                    "broker_trade_margin_verified":False,"licensed_market_data_redistribution_allowed":False,
                    "expiry_and_lot_verified_against_nse_master":False,
                    "one_market_snapshot_not_trade_fills":True,"trading_authority":False,
@@ -190,7 +192,7 @@ def normalize(payload,config,*,captured_utc=None):
                    "documentation":OFFICIAL_DOC}
     }
 
-def capture_to_files(config, *, out_csv, payload=None, captured_utc=None):
+def capture_to_files(config, *, out_csv, payload=None, captured_utc=None,authenticated_fetch=False):
     """Create two new files atomically with no overwrite or token logging.
 
     Live only when caller explicitly invokes read_only_fetch and passes its data.
@@ -203,13 +205,17 @@ def capture_to_files(config, *, out_csv, payload=None, captured_utc=None):
         raise ValueError("Existing quote snapshot file cannot be overwritten")
     if payload is None:
         raise ValueError("No option chain payload supplied; no fake fallback")
-    normalized=normalize(payload,config,captured_utc=captured_utc)
+    if not isinstance(captured_utc,datetime) or captured_utc.tzinfo is None:
+        raise ValueError("Provide real UTC capture time for local broker payload")
+    normalized=normalize(payload,config,captured_utc=captured_utc,authenticated_fetch=authenticated_fetch)
     created=[]
     try:
-        out.write_text(normalized["csv"],encoding="utf-8")
+        with out.open("x",encoding="utf-8") as file:
+            file.write(normalized["csv"])
         created.append(out)
         normalized["receipt"]["csv_sha256"]=sha256(out.read_bytes()).hexdigest()
-        receipt_path.write_text(json.dumps(normalized["receipt"],sort_keys=True,indent=2),encoding="utf-8")
+        with receipt_path.open("x",encoding="utf-8") as file:
+            file.write(json.dumps(normalized["receipt"],sort_keys=True,indent=2))
         created.append(receipt_path)
     except Exception:
         for p in created:
