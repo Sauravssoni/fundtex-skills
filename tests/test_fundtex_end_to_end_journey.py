@@ -86,7 +86,7 @@ class FundTexCompleteJourney(unittest.TestCase):
         self.assertEqual(option["data_quality"],"SYNTHETIC_FIXTURE")
         self.assertFalse(option["observed_options_chain"])
         self.assertFalse(option["trading_authority"])
-        self.assertIn("max_loss",json.dumps(option))
+        self.assertGreater(option["geometry"]["max_model_loss_inr"],0)
         # Step 7: never overwrite an existing rendered report.
         err=self.cli("chart","--csv",self.history,"--symbol","DEMO.NS",
                      "--out",chart,"--format","html",expected=2)
