@@ -106,6 +106,21 @@ for reference in AGENTS.md CLAUDE.md GEMINI.md README.md; do
 done
 printf 'References available for any working directory at %s\n' "$DATA"
 
+# Store the exact Git commit of this checkout for read-only update ancestry.
+# Never poll online, overwrite unknown sources or auto-install downloaded code.
+source_sha=""
+if command -v git >/dev/null 2>&1; then
+  source_sha="$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || true)"
+fi
+if [[ "$source_sha" =~ ^[0-9a-fA-F]{40}$ ]]; then
+  marker="$DATA/.installed_source_commit"
+  if [[ -e "$marker" && "$UPGRADE" -eq 1 ]]; then
+    cp "$marker" "$backup/installed_source_commit.previous"
+    printf '%s\n' "$source_sha" > "$marker"
+  elif [[ ! -e "$marker" ]]; then
+    printf '%s\n' "$source_sha" > "$marker"
+  fi
+fi
 if [[ ! -e "$BIN/fundtex" ]]; then
   cat > "$BIN/fundtex" <<'EOF'
 #!/usr/bin/env bash
