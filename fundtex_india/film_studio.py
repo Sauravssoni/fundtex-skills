@@ -89,6 +89,22 @@ def storyboard(csv_path, symbol, *, reference_chart=None, seconds=10, fps=12):
 def _hex(c):
     return tuple(int(c[i:i+2],16) for i in (1,3,5))
 
+def frame_state(story, rows, inds, i):
+    """Chronologically visible indicators only; never overlay end-of-window signals."""
+    if not rows or isinstance(i,bool) or not isinstance(i,int) or not 0<=i<story["frames"]:
+        raise ValueError("Invalid frame or price window")
+    progress=(i+1)/story["frames"]
+    visible=max(2,min(len(rows),int(len(rows)*max(0,(progress-.12)/.69))))
+    if progress>.84:visible=len(rows)
+    current=rows[visible-1]
+    index=len(inds["rsi14"])-len(rows)+visible-1
+    if index<0 or index>=len(inds["rsi14"]):
+        raise ValueError("Misaligned historical indicators")
+    change_pct=(current["close"]/rows[0]["close"]-1)*100
+    return {"progress":progress,"visible":visible,"date":current["date"],
+            "close":current["close"],"window_return_pct_to_date":round(change_pct,3),
+            "rsi14_as_of_frame":inds["rsi14"][index],"full_history_available":visible==len(rows)}
+
 def render_frame(canvas, story, rows, inds, i, *, font_file=None):
     from PIL import Image, ImageDraw, ImageFont
     W,H=canvas
@@ -105,7 +121,8 @@ def render_frame(canvas, story, rows, inds, i, *, font_file=None):
                 try:font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",size)
                 except OSError:font=ImageFont.load_default()
         d.text((int(x),int(y)),str(t),fill=_hex(PALETTE.get(color,color)),font=font)
-    progress=(i+1)/story["frames"]
+    frame=frame_state(story, rows, inds, i)
+    progress=frame["progress"]
     wmargin=int(W*.065)
     d.rounded_rectangle((wmargin,int(H*.19),W-wmargin,int(H*.76)),radius=18,fill=_hex(PALETTE["panel"]),outline=_hex(PALETTE["line"]),width=2)
     text(wmargin,int(H*.045),"FUNDTEX   /   INTELLIGENCE MOTION",20,"cyan",True)
@@ -125,8 +142,7 @@ def render_frame(canvas, story, rows, inds, i, *, font_file=None):
         y=yt+(yb-yt)*k/4
         d.line((xl,y,xr,y),fill=_hex(PALETTE["line"]),width=1)
         text(xr-105,y+5,f"{hi-(hi-lo)*k/4:,.1f}",12,"muted")
-    visible=max(2,min(n,int(n*max(0,(progress-.12)/.69))))
-    if progress>.84:visible=n
+    visible=frame["visible"]
     if story["ohlc_available"]:
         for k,r in enumerate(rows[:visible]):
             x=xx(k);up=r["close"]>=r["open"];col=_hex(PALETTE["green" if up else "red"])
@@ -150,9 +166,10 @@ def render_frame(canvas, story, rows, inds, i, *, font_file=None):
     text(xl,int(H*.71),"AS OF "+current["date"],14,"muted")
     text(xr-210,int(H*.71),f"CLOSE  {current['close']:,.2f}",17,"ink",True)
     bottom=int(H*.81)
-    text(wmargin,bottom,f"WINDOW {story['historical_window_return_pct']:+.2f}% (HISTORICAL)",18,"cyan",True)
-    text(int(W*.61),bottom,f"RSI14  {story['rsi14_last'] if story['rsi14_last'] is not None else 'N/A'}",17,"gold")
-    text(wmargin,int(H*.89),"NOT LIVE / NOT A TRADE SIGNAL • "+story["observed_through"],14,"red",True)
+    text(wmargin,bottom,f"TO DATE {frame['window_return_pct_to_date']:+.2f}% (HIST.)",18,"cyan",True)
+    rsi=frame["rsi14_as_of_frame"]
+    text(int(W*.61),bottom,f"RSI14  {rsi if rsi is not None else 'N/A'}",17,"gold")
+    text(wmargin,int(H*.89),"NOT LIVE / NOT A TRADE SIGNAL • "+frame["date"],14,"red",True)
     quality=story["source_quality"][:100]
     text(wmargin,int(H*.94),quality+"  •  SHA256 "+story["source_sha256"][:12],11,"muted")
     # Native progress indicator, precise and deterministic across identical data.
