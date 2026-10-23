@@ -46,3 +46,21 @@ Only after actual dated candles pass reconciliation: run the predefined SMA/RSI 
 - For a production signup, separately verify tool-level schema, user-consent/revocation, minimal scopes, expiration/reconnect, logging, rate limiting, market holiday behavior, corporate-action adjustments, source timestamps, secrets isolation, and read-only security testing.
 
 This receipt documents the safe acceptance protocol, NOT an already authenticated data feed.
+
+## Verified 2026-10-23 browser acceptance failure — NO broker data accessed
+
+**Anonymized direct developer-test evidence** (no credentials, account identifier, session URLs or personal market data stored):
+
+1. A user-created ChatGPT web custom MCP app successfully registered the hosted Zerodha Kite server at `https://mcp.kite.trade/mcp`.
+2. The broker's official login tool issued an authorization URL. The account holder opened Zerodha's interstitial, approved the broker's permission screen, and received `Login Successful / Authentication Complete`.
+3. Immediately afterward, read-only `get_ltp(["NSE:INFY","NSE:RELIANCE","NSE:ICICIBANK"])` failed with `Please log in first using the login tool`.
+4. A separate read-only `get_ohlc(["NSE:INFY"])` failed identically. Neither a market price nor a historical candle was verified. No order, GTT, margin, balance, holdings, profile or other account-data tool was invoked.
+5. This matches **public open** upstream issue [#82](https://github.com/zerodha/kite-mcp-server/issues/82) and similar issues [#83](https://github.com/zerodha/kite-mcp-server/issues/83), [#90](https://github.com/zerodha/kite-mcp-server/issues/90). Upstream open [PR #92](https://github.com/zerodha/kite-mcp-server/pull/92) addresses premature HTTP session deletion, but states that it **does not attach authentication to a newly created MCP session ID**. An upstream maintainer/community workaround uses a long-lived `mcp-remote` transport for some desktop coding clients; that is NOT verified for ChatGPT web.
+
+**Disposition:** `BROKER_BROWSER_LOGIN_SUCCESS_SESSION_NOT_BOUND`, `LIVE_QUOTE_VERIFIED=false`, `LIVE_OHLC_VERIFIED=false`, `BROKER_LIVE_BACKTEST_RUN=false`.
+
+### Non-negotiable multi-user release test
+
+Before any FundTex web user is promised one-click brokerage connection, the hosting gateway must (a) authenticate the end user against an independent securely bound principal, (b) preserve upstream per-user MCP session identity across the login redirect and subsequent calls, (c) never substitute a token from the previous global session or another account, (d) expose no order/GTT tools at its server boundary, and (e) fetch two independent approved read-only data tools after login with explicit source timestamps. Fail closed when any step fails. A successful browser login page or successful unauthenticated MCP initialize request is not proof of data-access continuity.
+
+Because Zerodha's broker consent screen itself requested **place/modify/cancel order** permissions, zero cash or client-side denylist is NOT an adequate production security boundary. Recommend the test account holder review/revoke hosted Kite MCP broker authorization when testing is finished. Do not repeatedly generate expired links without diagnosing the connection.
