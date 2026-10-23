@@ -112,7 +112,7 @@ def render_frame(canvas, story, rows, inds, i, *, font_file=None):
     text(W-wmargin-240,int(H*.05),story["symbol"],19,"ink",True)
     stage=next((s for s in story["scenes"] if s["from"]<=progress<s["to"]),story["scenes"][-1])
     text(wmargin,int(H*.12),stage["scene"],16,"gold",True)
-    n=len(rows);start=n-story["window_bars"]
+    n=len(rows);start=len(inds["sma20"])-n
     closing=[r["close"] for r in rows]
     lo=min((r.get("low",r["close"]) for r in rows))*.985
     hi=max((r.get("high",r["close"]) for r in rows))*1.015
