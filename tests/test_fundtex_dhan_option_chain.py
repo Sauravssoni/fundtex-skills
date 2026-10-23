@@ -100,7 +100,7 @@ class DhanChainResearchTests(unittest.TestCase):
             self.assertTrue(result["single_snapshot_id"])
             self.assertFalse(result["trading_authority"])
             self.assertEqual(result["captured_quote_timestamps_count"],8)
-            with self.assertRaisesRegex(ValueError,"overwrite"):
+            with self.assertRaisesRegex(ValueError,"overwritten"):
                 capture_to_files(CONFIG,out_csv=folder/"chain.csv",payload=mock_payload(),captured_utc=STAMP)
             spread["analysis_at_utc"]=(STAMP+timedelta(seconds=181)).isoformat()
             with self.assertRaisesRegex(ValueError,"too old"):propose(folder/"chain.csv",spread)
