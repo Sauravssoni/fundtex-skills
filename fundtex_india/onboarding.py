@@ -58,7 +58,7 @@ def doctor(home: str | None = None, *, repo_root: str | None = None) -> dict:
     expected=("fundtex-god-eye","fundtex-auto-analyst","fundtex-india-live-data","fundtex-chart-technician","fundtex-analyst-pack","fundtex-workbook-builder","fundtex-visuals-reporting","fundtex-analyst-council","fundtex-analyst-pilot","fundtex-india-regulatory","fundtex-india-diligence","fundtex-india-forecast","fundtex-india-market",
               "fundtex-india-news","fundtex-india-risk","fundtex-india-portfolio",
               "fundtex-india-valuation","fundtex-india-brief",
-              "fundtex-hedged-options","fundtex-strategy-research","fundtex-connector-orchestrator")
+              "fundtex-hedged-options","fundtex-strategy-research","fundtex-connector-orchestrator","fundtex-motion-intelligence")
     manifest={}
     for rel in targets:
         folder=homepath/rel
@@ -84,6 +84,7 @@ def doctor(home: str | None = None, *, repo_root: str | None = None) -> dict:
         "product":"Fundtex Financial Intelligence","python":sys.version.split()[0],
         "installed_engine_stale_relative_to_checkout":engine_stale,
         "upgrade_policy":"Never overwrite installed engine without explicit user approval",
+        "update_discovery":"fundtex updates --check explicitly checks GitHub ancestry; never auto-installs",
         "python_supported":sys.version_info >= (3,9),
         "engine_importable":True,
         "engine_origin":str(Path(__file__).resolve().parent),
