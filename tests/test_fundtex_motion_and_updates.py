@@ -10,7 +10,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from fundtex_india.film_studio import storyboard,create,render_frame
+from fundtex_india.film_studio import storyboard,create,render_frame,frame_state
 from fundtex_india.update_recon import check
 
 class MotionTests(unittest.TestCase):
@@ -37,6 +37,18 @@ class MotionTests(unittest.TestCase):
         self.assertEqual(story["frames"],120)
         self.assertFalse(story["calibrated_prediction"])
         self.assertEqual(story["trade_recommendation"],"NONE")
+    def test_animation_does_not_show_future_rsi_or_full_return_early(self):
+        story,rows,inds=storyboard(self.csv,"DEMO.NS")
+        first=frame_state(story,rows,inds,0)
+        last=frame_state(story,rows,inds,story["frames"]-1)
+        self.assertLess(first["visible"],len(rows))
+        self.assertEqual(first["date"],rows[first["visible"]-1]["date"])
+        self.assertEqual(first["close"],rows[first["visible"]-1]["close"])
+        self.assertEqual(first["rsi14_as_of_frame"],inds["rsi14"][len(inds["rsi14"])-len(rows)+first["visible"]-1])
+        self.assertNotEqual(first["window_return_pct_to_date"],story["historical_window_return_pct"])
+        self.assertEqual(last["date"],story["window_end"])
+        self.assertAlmostEqual(last["window_return_pct_to_date"],story["historical_window_return_pct"],places=3)
+
     def test_storyboard_only_safe_and_no_files_overwritten(self):
         directory=self.home/"new-film"
         result=create(self.csv,"DEMO.NS",directory,make_mp4=False,seconds=6,fps=6)
