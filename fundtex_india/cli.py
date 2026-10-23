@@ -40,6 +40,7 @@ from .dhan_option_chain import (read_only_fetch as dhan_read_only_option_chain,
 from .strategy_lab import run as backtest_strategy
 from .integrations import catalog as integration_catalog
 from .launchpad import create as create_launchpad
+from .codex_kite_setup import inspect as inspect_kite_mcp, configure as configure_kite_mcp
 from .film_studio import create as create_financial_film
 from .update_recon import check as check_updates
 from .regime_bench import simulate_regimes as adversarial_regime_bench
@@ -59,6 +60,8 @@ def make_parser():
     p.add_argument("--provider",choices=("choose","zerodha-mcp","fyers","kite","dhan"),default="choose")
     p.add_argument("--open",action="store_true",help="Open selected official broker page after user approval")
     p.add_argument("--verify",default=None,metavar="SYMBOL",help="Read-only authenticated quote verification, if configured")
+    p.add_argument("--setup",action="store_true",help="EXPLICITLY approve safe official Kite MCP config for Codex/ChatGPT desktop, no authentication performed")
+    p.add_argument("--client",choices=("auto","codex"),default="auto",help="Existing shared Codex/ChatGPT desktop MCP config; no Claude prerequisite")
     p = sub.add_parser("broker-status",help="Configured Indian broker quote sources; never prints tokens")
     p = sub.add_parser("quote",help="Current authenticated broker quote snapshot, never trading")
     p.add_argument("--symbol",required=True);p.add_argument("--provider",choices=("fyers","kite","dhan"),required=True)
@@ -222,6 +225,16 @@ def execute(args):
     if args.command == "quote":
         return authenticated_quote(args.symbol,args.provider)
     if args.command == "connect":
+        if args.setup:
+            if args.provider != "zerodha-mcp" or args.verify:
+                raise ValueError("--setup supports only official Zerodha MCP registration, not placing trades or quote verification")
+            return configure_kite_mcp(approved=True)
+        if args.provider == "zerodha-mcp" and not args.verify:
+            result=broker_connection_guide(args.provider,open_official=args.open)
+            result["local_mcp_configuration"]=inspect_kite_mcp()
+            result["simplest_setup"]="fundtex connect --provider zerodha-mcp --setup"
+            result["recommended_client"]="Codex / ChatGPT Desktop; Claude NOT required"
+            return result
         return broker_connection_guide(args.provider,open_official=args.open,verify_symbol=args.verify)
     if args.command == "broker-status":
         return broker_availability()

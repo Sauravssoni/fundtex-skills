@@ -106,3 +106,21 @@ Official Zerodha references:
 https://zerodha.com/products/mcp/
 https://support.zerodha.com/category/trading-and-markets/general-kite/others-kite/articles/connect-zerodha-ai-assistant
 https://support.zerodha.com/category/trading-and-markets/general-kite/kite-api/articles/what-are-the-charges-for-kite-apis
+
+## One-command Codex / ChatGPT Desktop Zerodha onboarding (2026-10-23)
+
+For an account holder who has completed Zerodha's account reactivation, the **preferred first-party local setup** is now:
+
+```bash
+fundtex connect --provider zerodha-mcp --setup
+```
+
+This explicitly requests to configure the *official* hosted endpoint `https://mcp.kite.trade/mcp` in `~/.codex/config.toml`, shared by Codex CLI and ChatGPT Desktop, with market-data-only tool allowlist, order/GTT denylist and prompt-based permission approval. **No Codex binary is required to register the config**, and **no Claude installation is involved**. The existing config is parsed before editing, a private backup is taken, a restrictive temporary config is atomically installed, existing Kite entries are never overwritten, and a repeat is idempotent.
+
+On a fresh interactive `bash install.sh`, Fundtex now offers the optional broker connection prompt. It does NOT register anything in CI or noninteractive installs. If someone declines, zero-key historical research continues normally.
+
+**After setup:** Open ChatGPT Desktop or Codex → Settings → MCP servers → `fundtex_kite` → **Authenticate** if prompted. Authorize only via Zerodha's actual Kite account portal. Then ask the agent to verify the timestamp of one `NSE:INFY` read-only market quote and one historical candle series. **`MCP_REGISTERED_NOT_AUTHENTICATED` is NOT a verified connection.** Do not claim true quote freshness from the computer's fetch time alone; use the quote's provider timestamp if available and clearly label absence.
+
+Some official Zerodha MCP repository docs enumerate `place_order` and `place_gtt_order` even though the marketing page says read-only. Therefore only the allowlisted hosted tools should be visible to the Codex client, with explicit denylist in defense in depth. No autonomous orders or trading credentials in chat. User can independently revoke access in Zerodha/host settings.
+
+ChatGPT **web** plugin connections are distinct from local `~/.codex/config.toml`. A skills-only personal plugin cannot reuse local OAuth silently. An independently published plugin MCP connection may help, but requires supported service authorization and separate live testing.
