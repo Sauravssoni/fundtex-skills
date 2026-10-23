@@ -1,6 +1,7 @@
 """Offline E2E user-journey regression: real engine composition, no broker/network."""
 from pathlib import Path
 import json
+from hashlib import sha256
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -25,6 +26,13 @@ class WholeProductOfflineTest(unittest.TestCase):
             self.assertTrue((folder/"chart.svg").is_file())
             self.assertTrue((folder/"film/storyboard.json").is_file())
             self.assertFalse((folder/"film/analysis.mp4").exists())
+            self.assertTrue((folder/"README.txt").is_file())
+            self.assertIn("SYNTHETIC", (folder/"README.txt").read_text())
+            artifact_hashes=result["artifact_digests_sha256"]
+            self.assertGreaterEqual(len(artifact_hashes),8)
+            for relative,digest in artifact_hashes.items():
+                self.assertEqual(sha256((folder/relative).read_bytes()).hexdigest(),digest)
+
             history=json.loads((folder/"strategy.json").read_text())
             paper=json.loads((folder/"paper-cost-placebo.json").read_text())
             forecast=json.loads((folder/"forecast-baselines.json").read_text())
