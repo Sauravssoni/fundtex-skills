@@ -54,3 +54,26 @@ Output from `kronos-eval` is JSON, including all historical origin dates, observ
 `fundtex-india-market` + source verification → broker-approved Kite history if genuinely session bound → `fundtex-kronos-intelligence` → challenger/naive evaluation → `fundtex-strategy-research` adversarial research (separate from forecasting) → `fundtex-motion-intelligence` evidence-linked scene, forecast separate from observed → analyst report with strong bear case, invalidation conditions and ABSTAIN when edge cannot be substantiated.
 
 Nothing here deploys a multiuser broker gateway or modifies the personal Zerodha connection. FundTex gateway security changes remain in separate private review PRs.
+
+## Expanded real model falsification (completed)
+
+On the same unverified 495-bar INFY.NS source and model checkpoints, Kronos-mini was evaluated on a **larger, predeclared 12-cutoff / 5-session horizon** (60 forecasted close outcomes, stride 5, past 128 bars), using Apple-Silicon MPS acceleration. Model weights actually loaded once; elapsed wall runtime **172.72 seconds**. Results from source-hashed private local JSON:
+| Scorer | MAE (price points, ₹) | RMSE | Direction vs origin close |
+|:--|--:|--:|--:|
+| Kronos-mini | 39.1168 | 50.4351 | 60.0% |
+| Persistence | **35.4550** | **46.8240** | 43.3% |
+| Bounded 10-bar drift | 40.0094 | 50.8275 | 45.0% |
+
+**Major falsification:** Kronos **underperforms simple persistence on absolute error by 10.33%** despite better directional accuracy in this tiny, correlated sample. It is **not permitted to become the default FundTex price forecaster or automatically trade**. The first 8-outcome 9.89% gain was an unstable smoke-test artefact, not a validated edge. Reporting both tests is mandatory.
+
+### Independent long-or-cash paper test (not model retraining)
+
+`fundtex kronos-paper` consumes the immutable original benchmark JSON and original exact source SHA. It separately simulates **12 non-overlapping historical hypothetical windows**, signal made at the model's original prior close, next OPEN as an optimistic fill and horizon exit at observed closing price. A forecast direction above the origin close produces LONG exposure, otherwise flat CASH. No shorting, leverage, trading/broker calls, portfolio access or F&O positions. Threshold fixed at zero; no post-test optimization.
+
+On this retrospectively observed and **unverified** sample Kronos signalled LONG in 7 of 12 windows. Under arbitrarily chosen **20 bps total round-trip cost** (NOT verified actual Indian costs), the arithmetic strategy path compounded to **+14.58%** over the 12 selected windows, versus +2.95% always-long on every sampled window. At hypothetical 0 bps: +16.17% versus +5.44%; at 50 bps: +12.24% versus −0.69%. These are **non-executable hindsight paper figures** and must not be advertised as achieved portfolio returns: optimistic fills, arbitrary friction, small sample, equal-notional assumptions, noncontinuous window selection, possible model pretraining leakage.
+
+Shuffling the same number of signals across the 12 windows for 2,000 seeded placebo permutations yielded a gross figure at least as large in **6.95%** of permutations. This does **not** establish predictive statistical significance, particularly with autocorrelated prices and known model-pretraining overlap uncertainty.
+
+**Decision gate: FAIL / unvalidated alpha.** Robust cross-sectional and later-dated tests with transaction logs, bid/ask, pricing sources and licensed market data must precede any trading claims. Price MAE, price direction and paper P&L answer *different questions* and must remain separate.
+
+Commands: `fundtex kronos-eval` generates the audit report; `fundtex kronos-paper --report /approved/eval.json --csv /approved/exact.csv --symbol INFY.NS --permutations 2000` runs the source-matched falsifier. Both are read-only.
