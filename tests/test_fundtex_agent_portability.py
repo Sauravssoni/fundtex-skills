@@ -38,6 +38,11 @@ class AgentPortabilityTests(unittest.TestCase):
         for forbidden in (".claude-plugin/plugin.json",".codex-plugin/plugin.json"):
             self.assertFalse((ROOT/forbidden).exists())
 
+    def test_bundle_upgrade_stage_uses_unique_process_suffix(self):
+        installer=(ROOT/"install.sh").read_text(encoding="utf-8")
+        self.assertIn('stage="$DATA/.$component.fundtex-next.$"',installer)
+        self.assertNotIn('stage="$DATA/.$component.fundtex-next.$"',installer)
+
     def test_clean_install_and_doctor_fallback(self):
         with tempfile.TemporaryDirectory() as temp:
             env=os.environ.copy()
