@@ -75,7 +75,7 @@ for component in docs examples; do
   target="$DATA/$component"
   [[ -d "$source_dir" ]] || { printf 'Missing required bundle: %s\n' "$component" >&2; exit 1; }
   if [[ -e "$target" && "$UPGRADE" -eq 1 ]]; then
-    stage="$DATA/.$component.fundtex-next.$"
+    stage="$DATA/.$component.fundtex-next.$$"
     cp -R "$source_dir" "$stage"
     mv "$target" "$backup/$component"
     if ! mv "$stage" "$target"; then
@@ -97,7 +97,7 @@ for reference in AGENTS.md CLAUDE.md GEMINI.md README.md; do
   [[ -f "$source_file" ]] || { printf 'Missing required agent reference: %s\n' "$reference" >&2; exit 1; }
   if [[ -e "$target" && "$UPGRADE" -eq 1 ]]; then
     cp "$target" "$backup/$reference"
-    stage="$DATA/.$reference.fundtex-next.$"
+    stage="$DATA/.$reference.fundtex-next.$$"
     cp "$source_file" "$stage"
     mv "$stage" "$target"
   elif [[ ! -e "$target" ]]; then
