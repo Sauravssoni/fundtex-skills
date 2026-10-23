@@ -5,6 +5,9 @@ import datetime as dt
 import json
 import sys
 from .market import csv_prices, yahoo_prices
+from .kronos_lab import evaluate as kronos_walkforward
+from .kronos_paper import assess as kronos_paper_assess
+from .kronos_runtime import doctor as kronos_local_doctor, load_offline as kronos_local_model
 from .stats import report
 from .simulate import simulate
 from .valuation import dcf
@@ -72,6 +75,31 @@ def make_parser():
     p.add_argument("--from-date",help="Historical request start YYYY-MM-DD")
     p.add_argument("--through-date",help="Historical request end YYYY-MM-DD")
     p.add_argument("--out",help="NEW CSV output path for historical candles, never overwrite")
+    p = sub.add_parser("kronos-doctor",help="Offline Kronos original-model readiness; never fetches weights")
+    p.add_argument("--checkout",help="Explicit audited pristine upstream Kronos checkout")
+    p.add_argument("--weights",help="Inspected local Kronos checkpoint directory with safetensors")
+    p.add_argument("--tokenizer",help="Inspected local tokenizer directory with safetensors")
+    p.add_argument("--size",choices=("mini","small","base"),default="mini")
+    p = sub.add_parser("kronos-eval",help="Chronological research-only Kronos challenge vs naive baselines, never trades")
+    p.add_argument("--csv",required=True,help="Approved actual daily dated OHLC CSV with symbol identity")
+    p.add_argument("--symbol",required=True)
+    p.add_argument("--backend",choices=("persistence","drift","kronos"),default="persistence")
+    p.add_argument("--lookback",type=int,default=128)
+    p.add_argument("--horizon",type=int,default=5)
+    p.add_argument("--origins",type=int,default=12)
+    p.add_argument("--stride",type=int,default=5)
+    p.add_argument("--size",choices=("mini","small","base"),default="mini")
+    p.add_argument("--checkout",help="Official pinned local source; required only for --backend kronos")
+    p.add_argument("--weights",help="Offline safetensors path; required only for --backend kronos")
+    p.add_argument("--tokenizer",help="Offline tokenizer safetensors; required only for --backend kronos")
+    p.add_argument("--device",choices=("cpu","mps","cuda:0"),default="cpu")
+    p = sub.add_parser("kronos-paper",help="No-orders long/cash next-open historical placebo and illustrative cost sensitivity")
+    p.add_argument("--report",required=True,help="Authorized Kronos walkforward JSON source receipt")
+    p.add_argument("--csv",required=True,help="The EXACT verified source CSV used in the walkforward")
+    p.add_argument("--symbol",required=True)
+    p.add_argument("--threshold-bps",type=int,default=0)
+    p.add_argument("--permutations",type=int,default=1000)
+    p.add_argument("--seed",type=int,default=42)
     p = sub.add_parser("broker-status",help="Configured Indian broker quote sources; never prints tokens")
     p = sub.add_parser("quote",help="Current authenticated broker quote snapshot, never trading")
     p.add_argument("--symbol",required=True);p.add_argument("--provider",choices=("fyers","kite","dhan"),required=True)
@@ -263,6 +291,30 @@ def execute(args):
         result=mcp_import_history(document,args.symbol,instrument_token=args.instrument_token,
                                   requested_from=args.from_date,requested_through=args.through_date)
         return mcp_export_history(result,out_csv=args.out)
+    if args.command == "kronos-doctor":
+        return kronos_local_doctor(checkout=args.checkout,weights=args.weights,
+                                   tokenizer=args.tokenizer,model_size=args.size)
+    if args.command == "kronos-eval":
+        backend=args.backend
+        if backend=="kronos":
+            if not (args.checkout and args.weights and args.tokenizer):
+                raise ValueError("Offline Kronos inference requires approved checkout, weights and tokenizer; never auto-download")
+            backend=kronos_local_model(checkout=args.checkout,weights=args.weights,
+              tokenizer=args.tokenizer,model_size=args.size,device=args.device)
+        elif any((args.checkout,args.weights,args.tokenizer)):
+            raise ValueError("Baseline mode must not load model paths or remote weights")
+        result=kronos_walkforward(args.csv,args.symbol,backend=backend,
+                   lookback=args.lookback,horizon=args.horizon,origins=args.origins,stride=args.stride)
+        result["model_weights_loaded"]=args.backend=="kronos"
+        return result
+    if args.command == "kronos-paper":
+        from pathlib import Path
+        file=Path(args.report)
+        if not file.is_file() or file.is_symlink() or file.stat().st_size>5_000_000:
+            raise ValueError("Explicit bounded approved Kronos JSON report required")
+        paper_input=json.loads(file.read_text(encoding="utf-8"))
+        return kronos_paper_assess(paper_input,args.csv,args.symbol,
+             threshold_bps=args.threshold_bps,permutations=args.permutations,seed=args.seed)
     if args.command == "broker-status":
         return broker_availability()
     if args.command == "chart":
