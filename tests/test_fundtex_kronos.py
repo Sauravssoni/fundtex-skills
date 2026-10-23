@@ -55,7 +55,7 @@ class KronosResearchTests(unittest.TestCase):
        w=csv.writer(f);w.writerow(("date","symbol","open","high","low","close","volume","source"))
        for i,record in enumerate(self.rows):
           new=list(record)
-          if i>=188:
+          if i>=191:
              new[2],new[3],new[4],new[5]=1000+i,1002+i,999+i,1001+i
           w.writerow(new)
     observations.clear()
