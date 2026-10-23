@@ -6,6 +6,7 @@ Quotes are conservative sell-at-bid, buy-at-ask and explicitly UNVERIFIED input.
 from __future__ import annotations
 from datetime import date,datetime,timezone
 import csv
+import json
 from hashlib import sha256
 import math
 from pathlib import Path
@@ -82,6 +83,7 @@ def propose(chain_csv, config):
     sources=set()
     ids=set()
     quote_timestamp_count=0
+    captured_timestamps=set()
     needed={"symbol","expiry","kind","strike","bid","ask","lot_size","as_of"}
     with source.open(newline="",encoding="utf-8-sig") as handle:
         reader=csv.DictReader(handle)
@@ -109,6 +111,7 @@ def propose(chain_csv, config):
                 snapshots.add(snapshot)
             if captured:
                 quote_timestamp_count+=1
+                captured_timestamps.add(captured)
                 try:quote_dt=datetime.fromisoformat(captured.replace("Z","+00:00"))
                 except ValueError:raise ValueError("Invalid timestamp in option-chain observation") from None
                 if quote_dt.tzinfo is None:raise ValueError("Provider capture timestamp must carry timezone")
@@ -146,8 +149,23 @@ def propose(chain_csv, config):
                          "volume":liquidity["volume"],"open_interest":liquidity["open_interest"]})
             if len(rows)>100:
                 raise ValueError("Limit chain to 100 valid contracts per expiry")
-    if len(snapshots)>1 or len(sources)>1:
-        raise ValueError("Mixed option-chain snapshots or sources; cannot infer simultaneous fills")
+    if len(snapshots)>1 or len(sources)>1 or len(captured_timestamps)>1:
+        raise ValueError("Mixed option-chain snapshots, capture timestamps or sources; cannot infer simultaneous fills")
+    receipt_verified=False
+    if any(src.startswith("DHAN_") for src in sources):
+        sidecar=source.with_suffix(".receipt.json")
+        if not sidecar.is_file() or sidecar.stat().st_size>16_384:
+            raise ValueError("Dhan option chain requires its paired approved capture receipt")
+        with sidecar.open(encoding="utf-8") as file:receipt=json.load(file)
+        if not isinstance(receipt,dict) or (
+                receipt.get("csv_sha256")!=sha256(source.read_bytes()).hexdigest() or
+                receipt.get("source_snapshot_sha256","")[:20] not in snapshots or
+                receipt.get("capture_utc") not in captured_timestamps or
+                receipt.get("underlying")!=symbol or
+                receipt.get("expiry")!=expiry.isoformat() or
+                receipt.get("user_supplied_lot_size")!=lot):
+            raise ValueError("Dhan quote chain and capture receipt do not agree; refuse altered quote file")
+        receipt_verified=True
     if len(rows)<2:raise ValueError("Insufficient matching approved chain observations after liquidity gates")
     if len({(x["kind"],x["strike"]) for x in rows})!=len(rows):
         raise ValueError("Duplicate strike/kind quotes; no arbitrary first-row selection")
@@ -214,6 +232,8 @@ def propose(chain_csv, config):
             "input_file_sha256":sha256(source.read_bytes()).hexdigest(),
             "chain_matches":len(candidates),"evaluated_positive_credit_pairs":len(variants),
             "source_provenance":sorted(sources),
+            "local_snapshot_receipt_sha256_consistent":receipt_verified,
+            "receipt_is_cryptographically_signed_by_broker":False,
             "single_snapshot_id":next(iter(snapshots)) if len(snapshots)==1 else None,
             "captured_quote_timestamps_count":quote_timestamp_count,
             "research_analysis_timestamp_utc":analysis_at.isoformat() if analysis_at else None,
