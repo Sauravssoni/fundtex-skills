@@ -106,6 +106,23 @@ class DhanChainResearchTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"too old"):propose(folder/"chain.csv",spread)
             del spread["analysis_at_utc"]
             with self.assertRaisesRegex(ValueError,"analysis_at_utc"):propose(folder/"chain.csv",spread)
+    def test_broker_receipt_hash_detects_tampered_quoted_prices(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder=Path(d)
+            chain=folder/"snapshot.csv"
+            capture_to_files(CONFIG,out_csv=chain,payload=mock_payload(),captured_utc=STAMP)
+            cfg={"underlying":"NIFTY","spot":25000,"lot_size":65,
+                 "valuation_date":"2026-10-23","expiry_date":"2026-10-29",
+                 "structure":"bull_put_credit","min_width":150,"max_width":400,
+                 "max_risk_inr":40000,"analysis_at_utc":STAMP.isoformat()}
+            original=propose(chain,cfg)
+            self.assertTrue(original["local_snapshot_receipt_sha256_consistent"])
+            self.assertFalse(original["receipt_is_cryptographically_signed_by_broker"])
+            text=chain.read_text(encoding="utf-8")
+            chain.write_text(text.replace(",40.0,45.0,",",41.0,45.0,",1),encoding="utf-8")
+            with self.assertRaisesRegex(ValueError,"do not agree"):
+                propose(chain,cfg)
+
     def test_illiquid_and_mixed_snapshot_fail_or_filter(self):
         with tempfile.TemporaryDirectory() as d:
             folder=Path(d)
