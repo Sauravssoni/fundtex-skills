@@ -35,6 +35,8 @@ from .activity import emit as agent_activity_emit, view as agent_activity_view
 from .reconcile import reconcile as reconcile_prices
 from .options_lab import evaluate as options_payoff
 from .options_builder import propose as propose_option_spreads
+from .dhan_option_chain import (read_only_fetch as dhan_read_only_option_chain,
+    capture_to_files as capture_dhan_option_chain)
 from .strategy_lab import run as backtest_strategy
 from .integrations import catalog as integration_catalog
 from .launchpad import create as create_launchpad
@@ -105,6 +107,13 @@ def make_parser():
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--cost-bps", type=float, default=15)
     sub.add_parser("integrations", help="Real capabilities, available MCP/provider routes, no fake connections")
+    p = sub.add_parser("dhan-chain-capture", help="Authorized read-only Dhan option snapshot or saved response -> audited local CSV, no orders")
+    p.add_argument("--inputs", required=True, help="User-approved JSON: exact Dhan underlying scrip/segment, expiry and verified lot size")
+    p.add_argument("--out", required=True, help="NEW local output CSV and metadata receipt (never overwrite)")
+    mode=p.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--live", action="store_true", help="EXPLICIT authorized Dhan data-only POST; credentials stay in local env")
+    mode.add_argument("--saved-json", help="Approved captured Dhan response, never automatically certified authenticated")
+    p.add_argument("--captured-utc", help="MANDATORY for saved JSON: user-attested original snapshot capture time, UTC ISO timestamp")
     p = sub.add_parser("options-build", help="Generate conservative defined-risk vertical candidates from APPROVED option bid/ask CSV")
     p.add_argument("--chain", required=True)
     p.add_argument("--inputs", required=True, help="Validated underlying, dates, width, lot-size and risk budget JSON")
@@ -253,6 +262,27 @@ def execute(args):
                                       sessions=args.sessions, seed=args.seed, cost_bps=args.cost_bps)
     if args.command == "integrations":
         return integration_catalog()
+    if args.command == "dhan-chain-capture":
+        from datetime import datetime, timezone
+        from pathlib import Path
+        with open(args.inputs, encoding="utf-8") as handle:
+            config=json.load(handle)
+        if args.live:
+            if args.captured_utc:raise ValueError("Live capture records actual local fetch time, do not override")
+            payload=dhan_read_only_option_chain(config)
+            when=datetime.now(timezone.utc)
+            authenticated=True
+        else:
+            if not args.captured_utc:
+                raise ValueError("Saved JSON requires an explicitly attested original UTC capture timestamp; cannot infer freshness")
+            when=datetime.fromisoformat(args.captured_utc.replace("Z","+00:00"))
+            src=Path(args.saved_json)
+            if not src.is_file() or src.stat().st_size>2_000_000:
+                raise ValueError("Saved broker JSON absent or exceeds 2MB")
+            with src.open(encoding="utf-8") as handle:payload=json.load(handle)
+            authenticated=False
+        return capture_dhan_option_chain(config,out_csv=args.out,payload=payload,
+                                         captured_utc=when,authenticated_fetch=authenticated)
     if args.command == "options-build":
         with open(args.inputs, encoding="utf-8") as handle:
             return propose_option_spreads(args.chain,json.load(handle))

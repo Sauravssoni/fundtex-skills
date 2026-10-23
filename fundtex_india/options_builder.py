@@ -4,8 +4,9 @@ Candidate ranking is model payoff arithmetic, NOT advice/alpha or broker margin.
 Quotes are conservative sell-at-bid, buy-at-ask and explicitly UNVERIFIED input.
 """
 from __future__ import annotations
-from datetime import date
+from datetime import date,datetime,timezone
 import csv
+import json
 from hashlib import sha256
 import math
 from pathlib import Path
@@ -28,7 +29,9 @@ def propose(chain_csv, config):
         raise ValueError("Options builder config must be a JSON object")
     required={"underlying","spot","lot_size","valuation_date","expiry_date","structure",
               "min_width","max_width","max_risk_inr"}
-    allowed=required|{"top_n","max_age_days","rates","annualized_volatility","annual_risk_free","seed","paths"}
+    allowed=required|{"top_n","max_age_days","rates","annualized_volatility","annual_risk_free","seed","paths",
+              "analysis_at_utc","max_snapshot_age_seconds","max_quote_spread_bps",
+              "min_top_quantity","min_day_volume","min_open_interest"}
     if not required<=set(config) or set(config)-allowed:
         raise ValueError("Explicit underlying, spot, lot size, valuation/expiry, structure, widths and risk budget required")
     if config["structure"] not in ("bull_put_credit","bear_call_credit"):
@@ -53,10 +56,34 @@ def propose(chain_csv, config):
     max_age=config.get("max_age_days",3)
     if isinstance(max_age,bool) or not isinstance(max_age,int) or not 0<=max_age<=7:
         raise ValueError("max_age_days range is 0..7")
+    def positive_integer_setting(key, default, maximum):
+        v=config.get(key,default)
+        if isinstance(v,bool) or not isinstance(v,int) or not 0<=v<=maximum:
+            raise ValueError(key+" must be a bounded non-negative integer")
+        return v
+    max_snap_age=positive_integer_setting("max_snapshot_age_seconds",180,86400)
+    max_spread=_num(config.get("max_quote_spread_bps",10000),"max_quote_spread_bps")
+    if max_spread>100000:raise ValueError("Spread bps outside approved bounds")
+    min_qty=positive_integer_setting("min_top_quantity",0,10000000)
+    min_volume=positive_integer_setting("min_day_volume",0,2000000000)
+    min_oi=positive_integer_setting("min_open_interest",0,2000000000)
+    analysis_at=None
+    if "analysis_at_utc" in config:
+        try:analysis_at=datetime.fromisoformat(config["analysis_at_utc"].replace("Z","+00:00"))
+        except (ValueError,TypeError,AttributeError):raise ValueError("Invalid analysis_at_utc") from None
+        if analysis_at.tzinfo is None:
+            raise ValueError("analysis_at_utc must include UTC offset")
+        analysis_at=analysis_at.astimezone(timezone.utc)
     source=Path(chain_csv)
     if not source.is_file() or source.stat().st_size>1_000_000:
         raise ValueError("Approved chain CSV absent or too large")
     rows=[]
+    filtered={"spread":0,"liquidity":0}
+    snapshots=set()
+    sources=set()
+    ids=set()
+    quote_timestamp_count=0
+    captured_timestamps=set()
     needed={"symbol","expiry","kind","strike","bid","ask","lot_size","as_of"}
     with source.open(newline="",encoding="utf-8-sig") as handle:
         reader=csv.DictReader(handle)
@@ -73,10 +100,73 @@ def propose(chain_csv, config):
             bid=_num(row["bid"],"bid",0.0)
             ask=_num(row["ask"],"ask",0.001)
             if bid>ask:raise ValueError("Impossible bid/ask spread")
-            rows.append({"kind":row["kind"],"strike":strike,"bid":bid,"ask":ask,"as_of":row["as_of"]})
+            origin=(row.get("source") or "UNATTRIBUTED_APPROVED_CSV").strip()
+            snapshot=(row.get("snapshot_id") or "").strip()
+            captured=(row.get("quote_captured_utc") or "").strip()
+            sources.add(origin)
+            if origin.startswith("DHAN_"):
+                if not snapshot or not captured or analysis_at is None:
+                    raise ValueError("Dhan snapshot must have a unique receipt hash, capture timestamp and research analysis_at_utc")
+            if snapshot:
+                snapshots.add(snapshot)
+            if captured:
+                quote_timestamp_count+=1
+                captured_timestamps.add(captured)
+                try:quote_dt=datetime.fromisoformat(captured.replace("Z","+00:00"))
+                except ValueError:raise ValueError("Invalid timestamp in option-chain observation") from None
+                if quote_dt.tzinfo is None:raise ValueError("Provider capture timestamp must carry timezone")
+                if analysis_at is not None:
+                    age=(analysis_at-quote_dt.astimezone(timezone.utc)).total_seconds()
+                    if age<0 or age>max_snap_age:
+                        raise ValueError("Options snapshot is future-dated or too old for this research")
+            if row.get("security_id"):
+                contract_id=row["security_id"].strip()
+                if not contract_id.isdecimal() or int(contract_id)<=0 or contract_id in ids:
+                    raise ValueError("Invalid or duplicated provider contract security_id")
+                ids.add(contract_id)
+            spread_bps=10000*(ask-bid)/((bid+ask)/2)
+            if spread_bps>max_spread:
+                filtered["spread"]+=1
+                continue
+            liquidity={}
+            for attr,name in (("bid_qty","bid displayed size"),("ask_qty","ask displayed size"),
+                              ("volume","day volume"),("open_interest","open interest")):
+                raw=row.get(attr)
+                if raw is None or raw=="":
+                    if (attr in ("bid_qty","ask_qty") and min_qty>0) or (attr=="volume" and min_volume>0) or (attr=="open_interest" and min_oi>0):
+                        raise ValueError("Required provider liquidity field missing: "+name)
+                    liquidity[attr]=None
+                    continue
+                number=_num(raw,name)
+                liquidity[attr]=number
+            if (min_qty>0 and (liquidity["bid_qty"]<min_qty or liquidity["ask_qty"]<min_qty)) or (
+                min_volume>0 and liquidity["volume"]<min_volume) or (min_oi>0 and liquidity["open_interest"]<min_oi):
+                filtered["liquidity"]+=1
+                continue
+            rows.append({"kind":row["kind"],"strike":strike,"bid":bid,"ask":ask,
+                         "as_of":row["as_of"],"spread_bps":round(spread_bps,5),
+                         "bid_qty":liquidity["bid_qty"],"ask_qty":liquidity["ask_qty"],
+                         "volume":liquidity["volume"],"open_interest":liquidity["open_interest"]})
             if len(rows)>100:
                 raise ValueError("Limit chain to 100 valid contracts per expiry")
-    if len(rows)<2:raise ValueError("Insufficient matching approved chain observations")
+    if len(snapshots)>1 or len(sources)>1 or len(captured_timestamps)>1:
+        raise ValueError("Mixed option-chain snapshots, capture timestamps or sources; cannot infer simultaneous fills")
+    receipt_verified=False
+    if any(src.startswith("DHAN_") for src in sources):
+        sidecar=source.with_suffix(".receipt.json")
+        if not sidecar.is_file() or sidecar.stat().st_size>16_384:
+            raise ValueError("Dhan option chain requires its paired approved capture receipt")
+        with sidecar.open(encoding="utf-8") as file:receipt=json.load(file)
+        if not isinstance(receipt,dict) or (
+                receipt.get("csv_sha256")!=sha256(source.read_bytes()).hexdigest() or
+                receipt.get("source_snapshot_sha256","")[:20] not in snapshots or
+                receipt.get("capture_utc") not in captured_timestamps or
+                receipt.get("underlying")!=symbol or
+                receipt.get("expiry")!=expiry.isoformat() or
+                receipt.get("user_supplied_lot_size")!=lot):
+            raise ValueError("Dhan quote chain and capture receipt do not agree; refuse altered quote file")
+        receipt_verified=True
+    if len(rows)<2:raise ValueError("Insufficient matching approved chain observations after liquidity gates")
     if len({(x["kind"],x["strike"]) for x in rows})!=len(rows):
         raise ValueError("Duplicate strike/kind quotes; no arbitrary first-row selection")
     kind="put" if config["structure"]=="bull_put_credit" else "call"
@@ -128,6 +218,8 @@ def propose(chain_csv, config):
             "max_model_profit_inr":trial["geometry"]["max_model_profit_inr"],
             "max_model_loss_inr":trial["geometry"]["max_model_loss_inr"],
             "opening_costs_inr":trial["opening_total_cost_inr"],
+            "bid_ask_entry_is_only_a_quote_not_an_executable_fill":True,
+            "simultaneous_leg_execution_verified":False,
             "break_even":trial["geometry"]["break_even_underlying_prices"],
             "stress_examples":stress,
             "scenario_simulation":trial.get("scenario_simulation"),
@@ -139,6 +231,17 @@ def propose(chain_csv, config):
             "user_supplied_lot_size":lot,"spot_user_supplied":spot,
             "input_file_sha256":sha256(source.read_bytes()).hexdigest(),
             "chain_matches":len(candidates),"evaluated_positive_credit_pairs":len(variants),
+            "source_provenance":sorted(sources),
+            "local_snapshot_receipt_sha256_consistent":receipt_verified,
+            "receipt_is_cryptographically_signed_by_broker":False,
+            "single_snapshot_id":next(iter(snapshots)) if len(snapshots)==1 else None,
+            "captured_quote_timestamps_count":quote_timestamp_count,
+            "research_analysis_timestamp_utc":analysis_at.isoformat() if analysis_at else None,
+            "liquidity_filters":{"maximum_individual_quote_spread_bps":max_spread,
+                                 "minimum_displayed_top_quantity":min_qty,
+                                 "minimum_day_volume":min_volume,
+                                 "minimum_open_interest":min_oi,
+                                 "excluded":filtered},
             "eligible_candidates":selected,
             "candidate_ordering":"THEORETICAL_ENTRY_COST_ADJUSTED_GAIN_TO_MAX_INTRINSIC_LOSS_NOT_PREDICTIVE",
             "quote_data_quality":"USER_SUPPLIED_OPTIONS_CHAIN_UNVERIFIED",
