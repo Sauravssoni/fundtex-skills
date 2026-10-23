@@ -265,7 +265,6 @@ def execute(args):
     if args.command == "dhan-chain-capture":
         from datetime import datetime, timezone
         from pathlib import Path
-        import json
         with open(args.inputs, encoding="utf-8") as handle:
             config=json.load(handle)
         if args.live:
