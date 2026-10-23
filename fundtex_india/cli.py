@@ -7,6 +7,7 @@ import sys
 from .market import csv_prices, yahoo_prices
 from .kronos_lab import evaluate as kronos_walkforward
 from .kronos_paper import assess as kronos_paper_assess
+from .acceptance import run as offline_acceptance
 from .kronos_runtime import doctor as kronos_local_doctor, load_offline as kronos_local_model
 from .stats import report
 from .simulate import simulate
@@ -174,6 +175,10 @@ def make_parser():
     p.add_argument("--csv", required=True, help="Real approved OHLC price file; no close-to-open fabrication")
     p.add_argument("--symbol", required=True, help="Exchange ticker, checked against approved price CSV")
     p.add_argument("--inputs", required=True, help="JSON array of bounded rule candidates and experiment settings")
+    p = sub.add_parser("acceptance",help="Local source-hashed synthetic E2E research acceptance; no broker/order access")
+    p.add_argument("--out",required=True,help="NEW local output directory for synthetic receipts")
+    p.add_argument("--render-video",action="store_true",help="Require actual local FFmpeg+Pillow MP4")
+    p.add_argument("--million-paths",action="store_true",help="Stress defined-risk terminal simulations with one million synthetic paths")
     sub.add_parser("sources", help="Approved official Indian data/source registry and licence gates")
     p = sub.add_parser("regulatory", help="Official RBI/SEBI RSS metadata discovery, no full-document verification")
     source = p.add_mutually_exclusive_group(required=True)
@@ -400,6 +405,8 @@ def execute(args):
     if args.command == "strategy-build":
         with open(args.inputs, encoding="utf-8") as handle:
             return backtest_strategy(args.csv,args.symbol,json.load(handle))
+    if args.command == "acceptance":
+        return offline_acceptance(args.out,render_video=args.render_video,million_paths=args.million_paths)
     if args.command == "sources":
         return source_catalog()
     if args.command == "regulatory":
