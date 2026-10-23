@@ -103,8 +103,8 @@ def load_offline(*,checkout,weights,tokenizer,model_size="mini",device="cpu",see
         if not history or not destination_dates:raise ValueError("Past OHLC and future session dates required")
         df=pd.DataFrame([{"open":r["open"],"high":r["high"],"low":r["low"],"close":r["close"],
                           "volume":r["volume"] if r["volume"] is not None else 0.0} for r in history])
-        x_timestamp=pd.to_datetime([r["date"] for r in history])
-        y_timestamp=pd.to_datetime(list(destination_dates))
+        x_timestamp=pd.Series(pd.to_datetime([r["date"] for r in history]))
+        y_timestamp=pd.Series(pd.to_datetime(list(destination_dates)))
         # Preceding model call only sees the history slice, no future prices or account data.
         with torch.inference_mode():
             result=predictor.predict(df=df,x_timestamp=x_timestamp,y_timestamp=y_timestamp,
