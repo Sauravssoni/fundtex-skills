@@ -40,8 +40,10 @@ class AgentPortabilityTests(unittest.TestCase):
 
     def test_bundle_upgrade_stage_uses_unique_process_suffix(self):
         installer=(ROOT/"install.sh").read_text(encoding="utf-8")
-        self.assertIn('stage="$DATA/.$component.fundtex-next.$"',installer)
+        self.assertIn('stage="$DATA/.$component.fundtex-next.$$"',installer)
+        self.assertIn('stage="$DATA/.$reference.fundtex-next.$$"',installer)
         self.assertNotIn('stage="$DATA/.$component.fundtex-next.$"',installer)
+        self.assertNotIn('stage="$DATA/.$reference.fundtex-next.$"',installer)
 
     def test_clean_install_and_doctor_fallback(self):
         with tempfile.TemporaryDirectory() as temp:
