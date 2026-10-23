@@ -312,8 +312,8 @@ def execute(args):
         file=Path(args.report)
         if not file.is_file() or file.is_symlink() or file.stat().st_size>5_000_000:
             raise ValueError("Explicit bounded approved Kronos JSON report required")
-        report=json.loads(file.read_text(encoding="utf-8"))
-        return kronos_paper_assess(report,args.csv,args.symbol,
+        paper_input=json.loads(file.read_text(encoding="utf-8"))
+        return kronos_paper_assess(paper_input,args.csv,args.symbol,
              threshold_bps=args.threshold_bps,permutations=args.permutations,seed=args.seed)
     if args.command == "broker-status":
         return broker_availability()
