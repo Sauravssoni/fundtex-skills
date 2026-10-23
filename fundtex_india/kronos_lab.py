@@ -136,9 +136,8 @@ def evaluate(csv_path,symbol,*,backend="persistence",lookback=128,horizon=5,orig
                 "models":{}}
         for name,model in names.items():
             predictions=_forecast(model,history,observed)
-            anchors=[history[-1]["close"]]+actual[:-1]
-            # Compare each predicted future close direction against previous
-            # actual close - this is descriptive, not an executable strategy.
+            anchors=[history[-1]["close"]]*len(observed)
+            # Compare each future predicted close to the last KNOWN origin close.\n            # Never use future actual prices as direction anchors for a decision at origin.
             total[name]["pred"].extend(predictions)
             total[name]["actual"].extend(actual)
             total[name]["anchor"].extend(anchors)
