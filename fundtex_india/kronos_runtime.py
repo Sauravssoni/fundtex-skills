@@ -78,9 +78,12 @@ def load_offline(*,checkout,weights,tokenizer,model_size="mini",device="cpu",see
     d=doctor(checkout=root,weights=wp,tokenizer=tp,model_size=model_size)
     if not d["ready_for_approved_offline_inference"]:
         raise ValueError("Missing runtime dependencies or checkpoint source gate")
-    import numpy as np
-    import pandas as pd
-    import torch
+    try:
+        import numpy as np
+        import pandas as pd
+        import torch
+    except (ImportError,RuntimeError) as exc:
+        raise ValueError("Kronos runtime dependencies unavailable/incompatible in isolated environment; no model prediction was produced") from None
     # Intentional local import from a fully pinned, clean upstream checkout.
     if "model" in sys.modules:
         existing=getattr(sys.modules["model"],"__file__","")
