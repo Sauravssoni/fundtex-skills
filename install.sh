@@ -138,3 +138,22 @@ PYTHONPATH="$ROOT" python3 -m fundtex_india.onboarding
 printf 'Agent-ready: ask Claude/Codex to analyze an Indian company; Fundtex will handle commands and exports.\n'
 printf 'Agent-side one-shot: "%s/fundtex" research --symbol INFY.NS --source public --out /new/report-directory\n' "$BIN"
 if [[ "$UPGRADE" -eq 1 ]]; then printf 'Previous versions preserved: %s\n' "$backup"; fi
+# Invite new interactive users to connect their broker immediately.
+# Never modify Codex config in unattended CI/non-TTY sessions.
+# The account holder must opt in explicitly; sign-in takes place at Zerodha.
+if [[ -t 0 && -t 1 && "${FUNDTEX_SKIP_BROKER_PROMPT:-0}" != "1" ]]; then
+  printf '\nOptional broker setup (no funds, orders or passwords required):\n'
+  printf '  1) Zerodha Kite -> Codex/ChatGPT Desktop, official read-only market-data MCP\n'
+  printf '  2) Another broker / review options\n'
+  printf '  3) Later (historical research works without account connection)\n'
+  selection=""
+  read -r -p "Choose [1/2/3, default 3]: " selection || selection="3"
+  case "$selection" in
+    1)
+      printf 'Registering official Zerodha market-data MCP only; you will approve broker login in your AI client.\n'
+      "$BIN/fundtex" connect --provider zerodha-mcp --setup || printf 'Not connected: safe setup failed. Run fundtex connect --provider zerodha-mcp for guidance.\n' ;;
+    2) "$BIN/fundtex" connect ;;
+    *) printf 'Skipped. Use fundtex connect --provider zerodha-mcp --setup whenever you are ready.\n' ;;
+  esac
+fi
+
