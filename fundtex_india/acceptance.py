@@ -104,10 +104,20 @@ def run(output_dir, *,render_video=False,million_paths=False):
               (not render_video or Path(film["video"]).stat().st_size>10000),
               {"frames":film["frames"],"actual_mp4":render_video,
                "video_file":"film/analysis.mp4" if render_video else None})
+        (out/"README.txt").write_text(
+          "FUNDTEX OFFLINE END-TO-END ACCEPTANCE\\n"
+          "All input candles and option premiums are SYNTHETIC FIXTURES.\\n"
+          "This run did NOT connect a broker, verify exchange data, execute Kronos weights or place any orders.\\n"
+          "An MP4, if present, is synthetic chart research, not a live trading signal.\\n"
+          "The production release gate remains BLOCKED until OAuth, live quotes, licensing and security verification.\\n",
+          encoding="utf-8")
+        digests={str(p.relative_to(out)):sha256(p.read_bytes()).hexdigest()
+                 for p in sorted(out.rglob("*")) if p.is_file() and not p.is_symlink()}
         result={"engine":"FUNDTEX_END_TO_END_OFFLINE_RESEARCH_ACCEPTANCE_V1",
           "status":"PASS_OFFLINE_SYNTHETIC_COMPONENTS_ONLY",
           "checked_components":len(records),"checks":records,
           "source_sha256":fingerprint,
+          "artifact_digests_sha256":digests,
           "real_market_data_verified":False,"broker_session_authenticated":False,
           "broker_gateway_production_ready":False,"real_kronos_model_executed":False,
           "derivatives_chain_verified":False,"licensed_exchange_feed_verified":False,
