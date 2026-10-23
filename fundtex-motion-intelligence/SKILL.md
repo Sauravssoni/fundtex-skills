@@ -31,3 +31,7 @@ Use `fundtex broker-status` and authorized read-only data connectors if truly av
 At first authorized CLI use, optionally run `fundtex updates --check` (one GitHub HTTPS read, consent to network required). It reports commit ancestry, not merely a different source SHA. **Never auto-install** new versions or quietly overwrite a customized skill; `bash install.sh --upgrade` is an explicitly approved reviewed-checkout operation with backup. If network disabled, continue with local skills and show that update status is unverified.
 
 Video outputs are for research/education, not SEBI-registered advice, professional forecasts or trading instructions. Even a beautiful film must faithfully show adverse cases and missing evidence.
+
+## Broker-led videos
+
+After approved local MCP setup and the broker-hosted login, ask for the read-only quote/historical-data tools in the host. The agent may use an authorized source for dated chart films only after validating schema, source, instrument, timestamps and data-use terms; the screenshot remains **visual style only**, never numeric evidence. Never claim a market feed is connected solely because the local MCP server appears. If the host does not expose Kite data, use dated public OHLC with an accurate provenance label and create the research film without blocking the user.
