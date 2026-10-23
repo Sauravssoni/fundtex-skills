@@ -72,6 +72,29 @@ class KiteMCPImportTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"40..3000"):
             normalize_daily_history(fixture(20),"INFY.NS",instrument_token=408065,
                                     requested_from="2026-06-01",requested_through="2026-09-01")
+    def test_cli_requires_real_approved_output_files(self):
+        import subprocess,sys
+        root=Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as folder:
+            data=Path(folder)/"history.json"
+            data.write_text(json.dumps(fixture()),encoding="utf-8")
+            dest=Path(folder)/"kite.csv"
+            cmd=[sys.executable,"-m","fundtex_india.cli","kite-mcp-import",
+                 "--mode","history","--file",str(data),"--symbol","INFY.NS",
+                 "--instrument-token","408065","--from-date","2026-06-01",
+                 "--through-date","2026-09-01","--out",str(dest)]
+            p=subprocess.run(cmd,cwd=root,capture_output=True,text=True,timeout=15)
+            self.assertEqual(p.returncode,0,p.stderr)
+            receipt=json.loads(p.stdout)
+            self.assertEqual(receipt["observations"],80)
+            self.assertTrue(dest.with_suffix(".receipt.json").is_file())
+            self.assertFalse(receipt["trading_authority"])
+            again=subprocess.run(cmd,cwd=root,capture_output=True,text=True,timeout=15)
+            self.assertNotEqual(again.returncode,0)
+            self.assertIn("NEW CSV",again.stderr)
+            untrusted=subprocess.run(cmd[:-2],cwd=root,capture_output=True,text=True,timeout=15)
+            self.assertNotEqual(untrusted.returncode,0)
+
     def test_pascal_case_historical_fields(self):
         hist={"candles":[{"Date":(date(2026,6,1)+timedelta(days=i)).isoformat(),
              "Open":100+i,"High":102+i,"Low":99+i,"Close":101+i,"Volume":10000+i} for i in range(80)]}
