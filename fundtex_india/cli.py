@@ -41,6 +41,7 @@ from .strategy_lab import run as backtest_strategy
 from .integrations import catalog as integration_catalog
 from .launchpad import create as create_launchpad
 from .codex_kite_setup import inspect as inspect_kite_mcp, configure as configure_kite_mcp
+from .kite_mcp_research import normalize_ltp as mcp_import_ltp, normalize_daily_history as mcp_import_history, export_historical_csv as mcp_export_history
 from .film_studio import create as create_financial_film
 from .update_recon import check as check_updates
 from .regime_bench import simulate_regimes as adversarial_regime_bench
@@ -62,6 +63,15 @@ def make_parser():
     p.add_argument("--verify",default=None,metavar="SYMBOL",help="Read-only authenticated quote verification, if configured")
     p.add_argument("--setup",action="store_true",help="EXPLICITLY approve safe official Kite MCP config for Codex/ChatGPT desktop, no authentication performed")
     p.add_argument("--client",choices=("auto","codex"),default="auto",help="Existing shared Codex/ChatGPT desktop MCP config; no Claude prerequisite")
+    p = sub.add_parser("kite-mcp-import",help="Import ONLY approved Kite market-data tool output, no login/account/orders")
+    p.add_argument("--file",required=True,help="Explicitly approved bounded Kite MCP data JSON file")
+    p.add_argument("--symbol",required=True,help="Exact NSE/BSE symbol in FundTex notation")
+    p.add_argument("--mode",choices=("quote","history"),required=True)
+    p.add_argument("--captured-utc",help="Actual captured UTC timestamp for quote, ISO8601 with offset")
+    p.add_argument("--instrument-token",type=int,help="Independently verified token for daily historical candles")
+    p.add_argument("--from-date",help="Historical request start YYYY-MM-DD")
+    p.add_argument("--through-date",help="Historical request end YYYY-MM-DD")
+    p.add_argument("--out",help="NEW CSV output path for historical candles, never overwrite")
     p = sub.add_parser("broker-status",help="Configured Indian broker quote sources; never prints tokens")
     p = sub.add_parser("quote",help="Current authenticated broker quote snapshot, never trading")
     p.add_argument("--symbol",required=True);p.add_argument("--provider",choices=("fyers","kite","dhan"),required=True)
@@ -236,6 +246,23 @@ def execute(args):
             result["recommended_client"]="Codex / ChatGPT Desktop; Claude NOT required"
             return result
         return broker_connection_guide(args.provider,open_official=args.open,verify_symbol=args.verify)
+    if args.command == "kite-mcp-import":
+        from pathlib import Path
+        from datetime import datetime
+        raw=Path(args.file)
+        if not raw.is_file() or raw.is_symlink() or raw.stat().st_size>6_000_000:
+            raise ValueError("Kite MCP tool JSON must be an approved bounded local file")
+        with raw.open(encoding="utf-8") as file:document=json.load(file)
+        if args.mode=="quote":
+            if not args.captured_utc or args.out:
+                raise ValueError("Quote import requires capture timestamp and does not write output")
+            captured=datetime.fromisoformat(args.captured_utc.replace("Z","+00:00"))
+            return mcp_import_ltp(document,args.symbol,collected_utc=captured)
+        if not (args.instrument_token and args.from_date and args.through_date and args.out):
+            raise ValueError("Historical Kite MCP import needs independently verified instrument token, date range and NEW output CSV")
+        result=mcp_import_history(document,args.symbol,instrument_token=args.instrument_token,
+                                  requested_from=args.from_date,requested_through=args.through_date)
+        return mcp_export_history(result,out_csv=args.out)
     if args.command == "broker-status":
         return broker_availability()
     if args.command == "chart":
