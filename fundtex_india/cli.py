@@ -40,6 +40,8 @@ from .dhan_option_chain import (read_only_fetch as dhan_read_only_option_chain,
 from .strategy_lab import run as backtest_strategy
 from .integrations import catalog as integration_catalog
 from .launchpad import create as create_launchpad
+from .film_studio import create as create_financial_film
+from .update_recon import check as check_updates
 from .regime_bench import simulate_regimes as adversarial_regime_bench
 
 def make_parser():
@@ -64,6 +66,14 @@ def make_parser():
     p.add_argument("--csv",required=True);p.add_argument("--symbol",required=True)
     p.add_argument("--out",required=True);p.add_argument("--format",choices=("html","svg"),default="html")
     p.add_argument("--annotations",default=None)
+    p = sub.add_parser("film",help="Source-checked history -> scripted financial motion research, optional MP4; no live-price assumption")
+    p.add_argument("--csv",required=True,help="Approved dated price history; do not infer prices from reference chart")
+    p.add_argument("--symbol",required=True)
+    p.add_argument("--out",required=True,help="NEW empty film output directory, no overwrite")
+    p.add_argument("--reference-chart",help="Optional image STYLE reference: never OCR or infer prices")
+    p.add_argument("--seconds",type=int,default=10)
+    p.add_argument("--fps",type=int,default=12)
+    p.add_argument("--storyboard-only",action="store_true",help="Generate editable story and script without Pillow/FFmpeg")
     p = sub.add_parser("chart-screenshot",help="PNG screenshot of local chart via installed Playwright Chromium")
     p.add_argument("--html",required=True);p.add_argument("--out",required=True)
     p = sub.add_parser("chart-serve",help="127.0.0.1 viewer refreshing ONE approved local CSV (not live exchange)")
@@ -152,6 +162,9 @@ def make_parser():
     p.add_argument("--mode", choices=("QUICK","DEEP","QUANT"),default="DEEP")
     p.add_argument("--max-workers",type=int,default=5)
     p.add_argument("--parallel",action="store_true",help="Recommend parallel workers where authorized, not spawn them")
+    p = sub.add_parser("updates",help="Read-only GitHub source ancestry check; no installation or broker network")
+    p.add_argument("--check",action="store_true",help="Explicitly permit a single GitHub HTTPS check")
+    p.add_argument("--ref",default="main",help="Official repository branch to compare against installed commit")
     p = sub.add_parser("doctor", help="Offline install-health audit; never reads private records")
     p.add_argument("--repo-root",default=None,help="Fresh checkout path for version drift comparison; no personal data scanned")
     p = sub.add_parser("onboard", help="Suggest 3 first research prompts from explicit task context only")
@@ -216,6 +229,9 @@ def execute(args):
         spec=studio_spec(studio_prices(args.csv,args.symbol),annotations_from_file(args.annotations))
         dest=write_new(args.out,studio_svg(spec) if args.format=="svg" else studio_html(spec))
         return {"file":dest,"chart_type":spec["price_type"],"quality":spec["data_quality"],"exchange_live":False}
+    if args.command == "film":
+        return create_financial_film(args.csv,args.symbol,args.out,reference_chart=args.reference_chart,
+                                     seconds=args.seconds,fps=args.fps,make_mp4=not args.storyboard_only)
     if args.command == "chart-screenshot":
         return {"file":studio_screenshot(args.html,args.out),"source_kind":"LOCAL_HTML"}
     if args.command == "chart-serve":
@@ -308,6 +324,8 @@ def execute(args):
         return company_diligence(args.inputs)
     if args.command == "council":
         return council_plan(scope=args.scope,max_workers=args.max_workers,parallel=args.parallel,mode=args.mode)
+    if args.command == "updates":
+        return check_updates(ref=args.ref,online=args.check)
     if args.command == "doctor":
         return doctor(repo_root=args.repo_root)
     if args.command == "onboard":
