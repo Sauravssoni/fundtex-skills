@@ -35,3 +35,11 @@ Kronos was pretrained before this FundTex benchmark: its hidden training members
 - `fundtex-connector-orchestrator`: discover actual permitted tool access; never invent broker sessions.
 
 Reference source and third-party licences remain separate from FundTex's new adapter. Research/education only; no promised profit, no orders, and no investment advice.
+
+## Paper-only risk falsification (expanded v0.10)
+
+After generating an actual historical Kronos walkforward report, when approved CLI execution is available, use `fundtex kronos-paper --report /approved/eval.json --csv /approved/exact-source.csv --symbol INFY.NS --permutations 2000`. This command verifies the **exact source SHA** and only simulates historical **long-or-cash** direction decisions at previous close, hypothetical next-open entry, final close exit, 0/20/50 **illustrative** bps round-trip costs, worst-window returns, drawdown and a fixed-number-of-signals shuffle placebo. No execution, short selling, leverage or account data. Never pass the file to trading/order tools. Never turn this into a model selection optimizer on held-out dates.
+
+**Mandatory negative benchmark:** In a real 60-outcome unverified historical INFY.NS experiment on 2026-10-23, official Kronos-mini scored MAE **39.1168** vs persistence **35.4550** (10.33% *worse*). Its directional accuracy was 60%, but that cannot repair the price-error failure. A separate 12-window paper-only long/cash illustration showed +14.58% at an **assumed** 20 bps (not achieved/verified Indian fills); 2,000 shuffled signal placements equalled/exceeded its gross result **6.95%** of the time. The model remains **ABSTAIN / UNVALIDATED** for alpha, derivatives and real trading, irrespective of attractive charts or small initial smoke tests. Report this tension prominently.
+
+`fundtex kronos-eval` output must be archived as a source-hashed research receipt if the user requests reproducible evidence; the plugin alone cannot read local files or install model weights without a genuine terminal capability.
