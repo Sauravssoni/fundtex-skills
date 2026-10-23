@@ -10,16 +10,16 @@ from .market import validate_symbol
 
 PROVIDERS={
     "zerodha-mcp":{
-        "name":"Zerodha Kite MCP (Claude and supported MCP hosts)",
+        "name":"Zerodha Kite MCP (Codex, ChatGPT Desktop and supported hosts)",
         "url":"https://zerodha.com/products/mcp/",
-        "mode":"Official broker-hosted connection through user's Claude/MCP client",
+        "mode":"Official hosted read-only research MCP, permissioned by Codex/ChatGPT Desktop",
         "pricing":"Broker advertises no extra charge for Kite MCP; confirm current terms",
         "steps":[
-            "Open the official Kite MCP page on the user's own device.",
-            "Choose their supported Claude/MCP client and follow its displayed connection steps.",
+            "Approve official hosted Kite setup by running fundtex connect --provider zerodha-mcp --setup.",
+            "Restart Codex/ChatGPT Desktop and open MCP settings; the official Kite server appears for user authentication.",
             "The account holder signs in and consents through Zerodha's official authentication page, not through Fundtex or chat.",
-            "Back in the AI client, confirm its authorized Zerodha market-data tools exist, then request a read-only quote for a verified instrument.",
-            "Use the MCP quotes in the agent's research; the Fundtex Python CLI does not automatically ingest an MCP session."
+            "The host allows only instrument lookup, OHLC/LTP/quotes/historical data; block GTT/order tools and require user consent for login.",
+            "Verify a real read-only quote in the host before declaring authenticated. The Python CLI does not inherit broker OAuth without an authorized bridge."
         ],
         "credential_handling":"No credentials in Fundtex; broker handles login and consent.",
         "cli_quote_supported":False
@@ -83,7 +83,7 @@ def guide(provider="choose",*,open_official=False,verify_symbol=None):
                        for key,val in PROVIDERS.items()],
             "existing_configuration":{key:bool(status.get(key)) for key in ("fyers","kite","dhan")},
             "privacy":"Never paste passwords, OAuth codes or access tokens into chat. Authentication remains with the broker.",
-            "note":"No connection is made by showing this guide; use the official account flow with user permission."
+            "note":"Showing instructions does not authenticate an account; --setup configures a protected MCP entry only."
         }
     if provider not in PROVIDERS:raise ValueError("Unknown broker. Choose fyers, kite, dhan or zerodha-mcp")
     info=PROVIDERS[provider]
