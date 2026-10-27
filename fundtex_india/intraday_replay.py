@@ -22,6 +22,8 @@ def _read_bars(path,symbol):
     if not f.is_file() or f.is_symlink() or f.stat().st_size>5_000_000:
         raise ValueError("Approved bounded observed intraday CSV required")
     sessions=defaultdict(list)
+    total_bars=0
+    current_time=datetime.now(IST)
     with f.open("r",newline="",encoding="utf-8-sig") as stream:
         reader=csv.DictReader(stream)
         required={"timestamp","symbol","open","high","low","close","volume"}
@@ -36,6 +38,8 @@ def _read_bars(path,symbol):
             local=dt.astimezone(IST)
             if local.utcoffset()!=timedelta(hours=5,minutes=30):
                 raise ValueError("Unexpected India timezone")
+            if local+timedelta(minutes=5)>current_time:
+                raise ValueError("Future/incomplete intraday candle cannot be replayed")
             if local.second or local.microsecond or local.minute%5!=0:
                 raise ValueError("Only completed regular-grid 5-minute candle start timestamps")
             nums={}
@@ -48,7 +52,8 @@ def _read_bars(path,symbol):
             if not nums["low"]<=min(nums["open"],nums["close"])<=max(nums["open"],nums["close"])<=nums["high"]:
                 raise ValueError("Impossible intraday candle")
             sessions[local.date().isoformat()].append({"time":local,"values":nums})
-            if sum(map(len,sessions.values()))>25000:raise ValueError("Too many intraday bars")
+            total_bars+=1
+            if total_bars>25000:raise ValueError("Too many intraday bars")
     if not sessions:raise ValueError("No actual intraday candles provided")
     return sessions,hashlib.sha256(f.read_bytes()).hexdigest()
 
