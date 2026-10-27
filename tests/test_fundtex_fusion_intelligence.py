@@ -73,7 +73,8 @@ class FusionTest(unittest.TestCase):
     self.assertEqual(out,replay(self.intraday,"INFY.NS",bootstrap_paths=1000,seed=7))
     self.assertTrue(all("paper_net_pnl_inr" in t for t in out["trades"]))
  def test_missing_bar_excluded_and_no_optimistic_backfill(self):
-    rows=list(csv.DictReader(self.intraday.open(newline="")))
+    with self.intraday.open(newline="") as stream:
+      rows=list(csv.DictReader(stream))
     with self.intraday.open("w",newline="") as f:
       w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader()
       w.writerows([row for i,row in enumerate(rows) if i!=30])
