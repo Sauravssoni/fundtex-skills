@@ -48,6 +48,8 @@ from .kite_mcp_research import normalize_ltp as mcp_import_ltp, normalize_daily_
 from .film_studio import create as create_financial_film
 from .update_recon import check as check_updates
 from .regime_bench import simulate_regimes as adversarial_regime_bench
+from .fusion_intelligence import from_file as fusion_events_from_file, fuse as fusion_reconcile
+from .intraday_replay import replay as intraday_replay
 
 def make_parser():
     parser = argparse.ArgumentParser(prog="fundtex", description="Fundtex Financial Intelligence | India analyst toolkit")
@@ -99,6 +101,24 @@ def make_parser():
     p.add_argument("--symbol",required=True)
     p.add_argument("--threshold-bps",type=int,default=0)
     p.add_argument("--permutations",type=int,default=1000)
+    p.add_argument("--seed",type=int,default=42)
+    p = sub.add_parser("fusion-desk",help="Unified God Eye intelligence plus optional India-only historical intraday paper replay")
+    p.add_argument("--events",required=True,help="Explicitly approved source-labelled intelligence JSON; never auto-connect accounts")
+    p.add_argument("--symbol",help="Optional NSE/BSE ticker, required if intraday bars supplied")
+    p.add_argument("--as-of",help="True observed as-of timestamp with timezone (ISO8601), deterministic audit")
+    p.add_argument("--intraday",help="Optional genuine 5m IST OHLCV CSV of complete Indian market sessions")
+    p.add_argument("--max-loss-inr",type=float,default=1500)
+    p.add_argument("--capital-inr",type=float,default=100000)
+    p.add_argument("--friction-bps",type=float,default=16)
+    p.add_argument("--paths",type=int,default=10000)
+    p.add_argument("--seed",type=int,default=42)
+    p = sub.add_parser("daytrader-replay",help="Strict NSE/BSE 5m 15min-ORB historical paper simulation; NO order API")
+    p.add_argument("--csv",required=True)
+    p.add_argument("--symbol",required=True)
+    p.add_argument("--max-loss-inr",type=float,default=1500)
+    p.add_argument("--capital-inr",type=float,default=100000)
+    p.add_argument("--friction-bps",type=float,default=16)
+    p.add_argument("--paths",type=int,default=10000)
     p.add_argument("--seed",type=int,default=42)
     p = sub.add_parser("broker-status",help="Configured Indian broker quote sources; never prints tokens")
     p = sub.add_parser("quote",help="Current authenticated broker quote snapshot, never trading")
@@ -315,6 +335,18 @@ def execute(args):
         paper_input=json.loads(file.read_text(encoding="utf-8"))
         return kronos_paper_assess(paper_input,args.csv,args.symbol,
              threshold_bps=args.threshold_bps,permutations=args.permutations,seed=args.seed)
+    if args.command == "daytrader-replay":
+        return intraday_replay(args.csv,args.symbol,
+             max_loss_inr=args.max_loss_inr,capital_inr=args.capital_inr,
+             friction_bps=args.friction_bps,bootstrap_paths=args.paths,seed=args.seed)
+    if args.command == "fusion-desk":
+        evidence=fusion_events_from_file(args.events,as_of=args.as_of)
+        if args.intraday and not args.symbol:
+            raise ValueError("Explicit market symbol required for intraday paper replay")
+        replay=intraday_replay(args.intraday,args.symbol,
+             max_loss_inr=args.max_loss_inr,capital_inr=args.capital_inr,
+             friction_bps=args.friction_bps,bootstrap_paths=args.paths,seed=args.seed) if args.intraday else None
+        return fusion_reconcile(evidence=evidence,tradereplay=replay,symbol=args.symbol)
     if args.command == "broker-status":
         return broker_availability()
     if args.command == "chart":
