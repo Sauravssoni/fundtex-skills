@@ -67,7 +67,8 @@ def _event(item, now):
       "observed_at_utc":observed.isoformat(),"age_hours":round(age_hours,2),
       "freshness":"CURRENT_LE_48H" if age_hours<=48 else "STALE_HISTORICAL",
       "regions":sorted(set(raw_regions)),"symbols":sorted(set(raw_symbols)),
-      "summary":note.strip(),"verified_primary":src in {"NSE_PRIMARY","BSE_PRIMARY","RBI_PRIMARY","SEBI_PRIMARY"},
+      "summary":note.strip(),"source_claims_primary":src in {"NSE_PRIMARY","BSE_PRIMARY","RBI_PRIMARY","SEBI_PRIMARY"},
+      "verified_primary":False, # An imported JSON source tag cannot authenticate the provider.
       "causality_verified":False,"trade_signal":False}
 
 def from_file(path,*,as_of=None):
@@ -91,8 +92,10 @@ def from_file(path,*,as_of=None):
       "exchange_live_price_verified":False,"news_prediction_verified":False,
       "no_trade_authority":True,"licence_to_redistribute":False,
       "source_sha256":hashlib.sha256(raw).hexdigest(),"as_of_utc":now.isoformat(),
+      "source_verified_by_signed_provider":False,
       "event_count":len(out),"deduplicated":duplicates,
-      "primary_events":sum(e["verified_primary"] for e in out),
+      "primary_events":0, # Only a trusted direct source connector can establish verified provenance.
+      "claimed_primary_events":sum(e["source_claims_primary"] for e in out),
       "stale_events":sum(e["freshness"]=="STALE_HISTORICAL" for e in out),
       "events":out,
       "interpretation":"Independent evidence leads, never mathematical proof that an event will move a given market."}
