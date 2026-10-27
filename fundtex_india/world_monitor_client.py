@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 import json
 import os
+import ssl
 from pathlib import Path
 import urllib.request
 import urllib.error
@@ -25,6 +26,17 @@ FIELDS={
 }
 class _RejectRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,*args,**kwargs):raise ValueError("Unexpected World Monitor endpoint redirect")
+def _verified_tls_opener():
+    # Some python.org macOS installs lack system CA integration; use the
+    # bundled, independently verified Mozilla CA bundle if available.
+    # NEVER create an unverified TLS context or disable hostname checks.
+    try:
+        import certifi
+        context=ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        context=ssl.create_default_context()
+    return urllib.request.build_opener(urllib.request.HTTPSHandler(context=context),_RejectRedirect)
+
 def _args(tool,args):
     if tool not in TOOLS:raise ValueError("Only six approved read-only World Monitor MCP tools")
     if not isinstance(args,dict) or set(args)-FIELDS[tool]:
@@ -65,11 +77,11 @@ def read_only(tool="get_sources",*,args=None,out=None,approved=False,key_env="WO
         raise ValueError("Choose a NEW private JSON output in an existing approved directory")
     request_body=json.dumps({"jsonrpc":"2.0","id":1,"method":"tools/call",
         "params":{"name":tool,"arguments":args}},separators=(",",":")).encode()
-    headers={"content-type":"application/json","accept":"application/json",
+    headers={"content-type":"application/json","accept":"application/json, text/event-stream",
              "mcp-protocol-version":"2025-03-26","user-agent":"FundTex-Research-Only/1"}
     if token and tool!="get_sources":headers["X-WorldMonitor-Key"]=token
     request=urllib.request.Request(URL,data=request_body,headers=headers,method="POST")
-    handler=opener or urllib.request.build_opener(_RejectRedirect)
+    handler=opener or _verified_tls_opener()
     try:
         with handler.open(request,timeout=12) as response:
             content_type=response.headers.get("Content-Type","")
