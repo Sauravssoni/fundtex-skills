@@ -1,0 +1,382 @@
+"""FundTex India Intraday Research Desk: causal ORB and non-executable session replay.
+
+Original engineering inspiration: Jake Schincariol, day-trader-skill (MIT, 2026)
+https://github.com/Jakeschincariol/day-trader-skill
+This implementation is original, India/IST-specific, offline-only and paper-only.
+Market holidays / special sessions require a verified official calendar; no
+network/broker/account/order calls or claimed executable fills.
+"""
+from __future__ import annotations
+from collections import defaultdict
+from datetime import date, datetime, time, timedelta, timezone
+from hashlib import sha256
+from pathlib import Path
+from zoneinfo import ZoneInfo
+import csv, json, math, random, statistics
+from .market import validate_symbol
+
+IST=ZoneInfo("Asia/Kolkata")
+OPEN=time(9,15)
+CLOSE=time(15,30)
+BARS=75
+MAX_BYTES=9_000_000
+FIELDS=("timestamp","symbol","open","high","low","close","volume")
+def _number(v,field,positive=True):
+    if isinstance(v,bool):raise ValueError("Invalid "+field)
+    try:n=float(v)
+    except (TypeError,ValueError):raise ValueError("Invalid "+field) from None
+    if not math.isfinite(n) or (n<=0 if positive else n<0):
+        raise ValueError("Invalid "+field)
+    return n
+def _bar(raw,expected_symbol):
+    if raw["symbol"].strip().upper()!=expected_symbol:
+        raise ValueError("Mixed symbols in intraday feed")
+    stamp=raw["timestamp"].strip()
+    try:t=datetime.fromisoformat(stamp.replace("Z","+00:00"))
+    except ValueError:raise ValueError("Timestamp not ISO8601") from None
+    if t.tzinfo is None:
+        raise ValueError("Intraday timestamp requires exchange timezone offset")
+    if t.utcoffset() is None:raise ValueError("Invalid timezone")
+    local=t.astimezone(IST)
+    if local.utcoffset()!=timedelta(hours=5,minutes=30):
+        raise ValueError("Exchange timezone mismatch")
+    minute=local.hour*60+local.minute
+    start=9*60+15
+    if not start<=minute<15*60+30 or (minute-start)%5!=0 or local.second or local.microsecond:
+        raise ValueError("Only exchange-grid 5m candle START times supported")
+    o,h,l,c=[_number(raw[k],k) for k in ("open","high","low","close")]
+    v=_number(raw["volume"],"volume",positive=False)
+    if not (l<=min(o,c)<=max(o,c)<=h):
+        raise ValueError("Impossible OHLC candle")
+    return {"timestamp":local.isoformat(),"date":local.date().isoformat(),
+            "slot":(minute-start)//5,"open":o,"high":h,"low":l,"close":c,"volume":v}
+def load_sessions(path,symbol,*,require_full=True):
+    sym=validate_symbol(symbol)
+    file=Path(path).expanduser()
+    if not file.is_file() or file.is_symlink() or not 0<file.stat().st_size<=MAX_BYTES:
+        raise ValueError("Approved bounded 5m OHLCV CSV required")
+    with file.open("r",newline="",encoding="utf-8-sig") as fh:
+        r=csv.DictReader(fh)
+        if not r.fieldnames or not set(FIELDS).issubset(set(r.fieldnames)):
+            raise ValueError("Require timestamp,symbol,open,high,low,close,volume columns")
+        arr=[_bar(x,sym) for x in r]
+    if len(arr)<20*BARS or len(arr)>100*BARS:
+        raise ValueError("At least 20 complete historical trading sessions, max 100")
+    if [x["timestamp"] for x in arr]!=sorted(x["timestamp"] for x in arr):
+        raise ValueError("Unsorted timestamps")
+    groups=defaultdict(list)
+    for x in arr:groups[x["date"]].append(x)
+    # Refuse half sessions, duplicate slots, missing bars, special trading
+    # sessions and current incomplete day rather than fabricate bar history.
+    if require_full:
+        for d,bars in groups.items():
+            if len(bars)!=BARS or [b["slot"] for b in bars]!=list(range(BARS)):
+                raise ValueError("Incomplete/duplicate/nonstandard session "+d)
+            if date.fromisoformat(d).weekday()>=5:
+                raise ValueError("Weekend/special session needs verified calendar "+d)
+    today=datetime.now(IST).date()
+    if any(date.fromisoformat(d)>today for d in groups):
+        raise ValueError("Future observations not permitted")
+    # Date labels alone do not certify NSE operating day or data source.
+    return {"symbol":sym,"sessions":dict(groups),
+            "source_sha256":sha256(file.read_bytes()).hexdigest(),
+            "data_quality":"USER_SUPPLIED_NOT_EXCHANGE_VERIFIED",
+            "official_holiday_calendar_verified":False,
+            "completed_session_grid_verified":True,
+            "broker_connected":False}
+
+def opening_range(session,*,or_bars=3,until_slot=BARS):
+    if isinstance(or_bars,bool) or not isinstance(or_bars,int) or not 1<=or_bars<=6:
+        raise ValueError("Opening range must be 1..6 complete 5m bars")
+    if not or_bars<until_slot<=BARS:raise ValueError("Invalid as-of grid")
+    complete=session[:until_slot]
+    if len(complete)<until_slot or [x["slot"] for x in complete]!=list(range(until_slot)):
+        raise ValueError("Incomplete candle history")
+    high=max(x["high"] for x in complete[:or_bars])
+    low=min(x["low"] for x in complete[:or_bars])
+    # Trigger only after CLOSE of a bar beyond opening range; no entry on a wick.
+    trigger=next((x for x in complete[or_bars:] if x["close"]>high),None)
+    return {"status":"TRIGGERED" if trigger else "WAITING",
+            "opening_high":high,"opening_low":low,
+            "first_completed_trigger_slot":trigger["slot"] if trigger else None,
+            "trigger_close":trigger["close"] if trigger else None,
+            "trigger_candle_start_ist":trigger["timestamp"] if trigger else None,
+            "entry_is_next_candle_open_not_trigger_close":True,
+            "as_of_last_completed_bar":complete[-1]["timestamp"]}
+def _plan(*,entry,stop,target,quantity,risk_budget,fees_per_side=0.0005,slippage_per_side=0.0005):
+    entry,stop,target=[_number(x,k) for x,k in ((entry,"entry"),(stop,"stop"),(target,"target"))]
+    qty=int(quantity)
+    if isinstance(quantity,bool) or qty!=quantity or not 1<=qty<=100000:
+        raise ValueError("Quantity must be integer shares 1..100000")
+    risk_budget=_number(risk_budget,"risk_budget")
+    if not 0<=fees_per_side<=.05 or not 0<=slippage_per_side<=.05:
+        raise ValueError("Invalid explicit fee/slippage assumptions")
+    if not stop<entry<target:raise ValueError("Long-only defined stop and target geometry required")
+    friction=2*(fees_per_side+slippage_per_side)*entry*qty
+    estimated_stop_loss=(entry-stop)*qty+friction
+    # Not a guarantee: gap/slippage may exceed stop cost
+    return {"entry":entry,"stop":stop,"target":target,"quantity":qty,
+            "risk_budget_inr":risk_budget,"fees_per_side_rate_assumed":fees_per_side,
+            "slippage_per_side_rate_assumed":slippage_per_side,
+            "estimated_stop_loss_inr":round(estimated_stop_loss,2),
+            "max_loss_is_not_guaranteed":True,"defined_loss_approximation_only":True,
+            "risk_status":"PAPER_ELIGIBLE" if estimated_stop_loss<=risk_budget else "BLOCK_PAPER_RISK"}
+def paper_plan(data,*,session_date,quantity=1,risk_budget=1000,or_bars=3,as_of_slot=BARS):
+    if session_date not in data["sessions"]:raise ValueError("Session not in approved history")
+    dates=list(data["sessions"])
+    idx=dates.index(session_date)
+    if idx<20:raise ValueError("20 prior full sessions required; never sample future sessions")
+    bars=data["sessions"][session_date]
+    signal=opening_range(bars,or_bars=or_bars,until_slot=as_of_slot)
+    if signal["status"]!="TRIGGERED":
+        return {"signal":signal,"state":"NO_TRADE","orders_enabled":False}
+    slot=signal["first_completed_trigger_slot"]
+    if slot+1>=as_of_slot:
+        return {"signal":signal,"state":"NEXT_BAR_NOT_YET_CLOSED","orders_enabled":False}
+    # Historical execution modelling at the NEXT bar's open avoids same-bar fill.
+    entry=bars[slot+1]["open"]
+    stop=signal["opening_low"]
+    if entry<=stop:return {"signal":signal,"state":"INVALID_NEXT_OPEN","orders_enabled":False}
+    target=entry+2*(entry-stop)
+    plan=_plan(entry=entry,stop=stop,target=target,quantity=quantity,risk_budget=risk_budget)
+    return {"signal":signal,"plan":plan,"state":plan["risk_status"],
+            "historical_entry_slot":slot+1,
+            "source_sha256":data["source_sha256"],"source_quality":data["data_quality"],
+            "historical_date":session_date,"orders_enabled":False,"paper_only":True}
+
+def _run_path(prices,plan,*,start_slot,stop_conservative=True):
+    """Never imply actual order execution. Stop-before-target is pessimistic for same bar."""
+    price=plan["entry"];stop=plan["stop"];target=plan["target"]
+    end="close";exit_price=price
+    for b in prices[start_slot:]:
+        if b["open"]<=stop:
+            end="gap_stop";exit_price=b["open"];break
+        if b["open"]>=target:
+            end="gap_target";exit_price=b["open"];break
+        stop_hit=b["low"]<=stop
+        target_hit=b["high"]>=target
+        if stop_hit and target_hit:
+            end="both_hit_stop_first";exit_price=stop;break
+        if stop_hit:end="stop";exit_price=stop;break
+        if target_hit:end="target";exit_price=target;break
+        exit_price=b["close"]
+    qty=plan["quantity"]
+    fees=plan["fees_per_side_rate_assumed"]+plan["slippage_per_side_rate_assumed"]
+    net=(exit_price-price)*qty-(exit_price+price)*qty*fees
+    return {"exit_case":end,"exit_price":exit_price,"net_pnl_inr":net,"red":net<0}
+
+def _batch_replay_numpy(ratios,plan,*,paths,seed,window,start_slot):
+    """Opt-in bounded vectorized paper replay for 50k..1m paths.
+
+    Algorithm uses independent NumPy PCG64 random numbers; totals need NOT be
+    byte-identical to Python's Mersenne Twister because RNGs differ. All stop,
+    gap and cost semantics match the scalar engine.
+    """
+    try:
+        import numpy as np
+    except ImportError:
+        raise ValueError("NumPy required for >=50,000 path stress; standard-library 10k remains available") from None
+    if paths>1_000_000:raise ValueError("1m path maximum")
+    source=np.asarray([[(1,1,1,1) if v is None else v for v in day] for day in ratios],
+                      dtype=np.float64)
+    if source.ndim!=3 or source.shape[1:]!=(BARS,4):
+        raise ValueError("Historical OHLC ratio pool is not rectangular")
+    rng=np.random.default_rng(seed)
+    cases=np.zeros(6,dtype=np.int64)
+    all_pnls=[]
+    start_price=plan["entry"];stop=plan["stop"];target=plan["target"]
+    quantity=plan["quantity"]
+    friction=plan["fees_per_side_rate_assumed"]+plan["slippage_per_side_rate_assumed"]
+    slots=np.arange(start_slot,BARS,dtype=np.int16)
+    for offset in range(0,paths,8192):
+        count=min(8192,paths-offset)
+        ids=rng.integers(0,source.shape[0],size=(count,len(slots)),dtype=np.int32)
+        jitter=rng.integers(-window,window+1,size=(count,len(slots)),dtype=np.int16)
+        slot_idx=np.clip(slots[None,:]+jitter,1,BARS-1)
+        sampled=source[ids,slot_idx] # bounded memory: <25 MiB/batch.
+        prev=np.full(count,start_price,dtype=np.float64)
+        last_exit=prev.copy()
+        status=np.zeros(count,dtype=np.int8)
+        for i in range(len(slots)):
+            active=status==0
+            if not active.any():break
+            sr=sampled[:,i,:]
+            opening=prev*sr[:,0]
+            high=prev*sr[:,1]
+            low=prev*sr[:,2]
+            close=prev*sr[:,3]
+            gap_stop=active&(opening<=stop)
+            status[gap_stop]=1;last_exit[gap_stop]=opening[gap_stop]
+            active&=~gap_stop
+            gap_target=active&(opening>=target)
+            status[gap_target]=2;last_exit[gap_target]=opening[gap_target]
+            active&=~gap_target
+            both=active&(low<=stop)&(high>=target)
+            status[both]=3;last_exit[both]=stop
+            active&=~both
+            stop_hit=active&(low<=stop)
+            status[stop_hit]=4;last_exit[stop_hit]=stop
+            active&=~stop_hit
+            target_hit=active&(high>=target)
+            status[target_hit]=5;last_exit[target_hit]=target
+            active&=~target_hit
+            prev[active]=close[active]
+            last_exit[active]=close[active]
+        cases+=np.bincount(status,minlength=6)
+        all_pnls.append((last_exit-start_price)*quantity-
+                        (start_price+last_exit)*quantity*friction)
+    values=np.concatenate(all_pnls)
+    labels=("close","gap_stop","gap_target","both_hit_stop_first","stop","target")
+    return values.tolist(),{name:int(count) for name,count in zip(labels,cases) if count}
+
+def replay(data,plan_obj,*,paths=10000,seed=19,window=2):
+    if plan_obj.get("state")!="PAPER_ELIGIBLE":raise ValueError("A permitted paper risk verdict is required")
+    if any(isinstance(x,bool) or not isinstance(x,int) for x in (paths,seed,window)):
+        raise ValueError("Simulation controls must be bounded integers")
+    if not 100<=paths<=1000000 or not 0<=seed<=2**32-1 or not 0<=window<=3:
+        raise ValueError("Bounded paths 100..1,000,000, seed and resampling window required")
+    dates=list(data["sessions"])
+    d=plan_obj["historical_date"]
+    i=dates.index(d)
+    if i<20:raise ValueError("20 prior sessions required")
+    prior=[data["sessions"][x] for x in dates[:i]]
+    # Exclude target date and all later sessions by construction.
+    entry_slot=plan_obj["historical_entry_slot"]
+    plan=plan_obj["plan"]
+    # Once per evaluation, precompute source bar / previous close ratios.
+    # Each session remains completely prior to the evaluated trade date.
+    ratios=[]
+    for historic in prior:
+        day=[None]
+        for pos in range(1,BARS):
+            b=historic[pos];base=historic[pos-1]["close"]
+            if base<=0:raise ValueError("Unusable previous historical bar close")
+            day.append((b["open"]/base,b["high"]/base,b["low"]/base,b["close"]/base))
+        ratios.append(day)
+    n_history=len(ratios)
+    fees=plan["fees_per_side_rate_assumed"]+plan["slippage_per_side_rate_assumed"]
+    entry=plan["entry"];stop=plan["stop"];target=plan["target"];qty=plan["quantity"]
+    if paths>=50000:
+        results,cases=_batch_replay_numpy(ratios,plan,paths=paths,seed=seed,window=window,start_slot=entry_slot)
+        counts=defaultdict(int,cases)
+        sampling_backend="NUMPY_PCG64_VECTORIZED"
+    else:
+        rng=random.Random(seed)
+        results=[];counts=defaultdict(int)
+        sampling_backend="PYTHON_MT19937_STREAM"
+        for _ in range(paths):
+            # Streaming replay avoids generating hundreds of bars AFTER a stop/target
+            # would have already ended the historical paper scenario.
+            prev=entry;exit_price=entry;reason="close"
+            for slot in range(entry_slot,BARS):
+                sampled_slot=max(1,min(BARS-1,slot+rng.randint(-window,window)))
+                ro,rh,rl,rc=ratios[rng.randrange(n_history)][sampled_slot]
+                opening=prev*ro
+                if opening<=stop:
+                    exit_price=opening;reason="gap_stop";break
+                if opening>=target:
+                    exit_price=opening;reason="gap_target";break
+                if prev*rl<=stop:
+                    exit_price=stop
+                    reason="both_hit_stop_first" if prev*rh>=target else "stop"
+                    break
+                if prev*rh>=target:
+                    exit_price=target;reason="target";break
+                prev=prev*rc
+                exit_price=prev
+            counts[reason]+=1
+            results.append((exit_price-entry)*qty-(entry+exit_price)*qty*fees)
+    sorted_results=sorted(results)
+    def pct(q):return sorted_results[int((len(sorted_results)-1)*q)]
+    # Net outcome distribution is conditional on historical bar regimes,
+    # not actual forward odds, and cannot certify a stop's maximum loss.
+    return {"engine":"FUNDTEX_INDIA_INTRADAY_PAPER_REPLAY_V1",
+            "symbol":data["symbol"],"source_sha256":data["source_sha256"],
+            "source_quality":data["data_quality"],"historical_date":d,
+            "source_sessions_used":len(prior),"future_sessions_sampled":False,
+            "entry_date_excluded_from_pool":True,"exit_cases":dict(counts),
+            "paths":paths,"seed":seed,"window":window,
+            "sampling_backend":sampling_backend,
+            "probability_positive_net":sum(x>0 for x in results)/paths,
+            "probability_loss":sum(x<0 for x in results)/paths,
+            "mean_net_pnl_inr":statistics.mean(results),
+            "median_net_pnl_inr":pct(.5),"p05_net_pnl_inr":pct(.05),
+            "p95_net_pnl_inr":pct(.95),
+            "worst_simulated_net_pnl_inr":sorted_results[0],
+            "pessimistic_intrabar_stop_first":True,
+            "market_holidays_exchange_verified":False,
+            "model_quality":"RESAMPLED_HISTORICAL_BARS_NOT_PROBABILISTIC_FORECAST",
+            "real_orders":0,"broker_order_permissions_required":False,
+            "real_time_market_data_verified":False,
+            "release_gate":"RESEARCH_ONLY_NOT_LIVE_TRADE_VALIDATED",
+            "limitations":["Market holidays, auction gaps and corporate actions may break assumptions",
+             "Stop price is never guaranteed and real losses may exceed simulation",
+             "Fee/slippage assumptions are illustrative, not a current verified Indian fee schedule",
+             "Forward test, liquidity, latency, survivorship and data licensing not verified",
+             "Past bar resampling cannot represent every future path or news-driven jump"]}
+
+def run_csv(csv_file,symbol,*,session_date,quantity=1,risk_budget=1000,
+            as_of_slot=BARS,or_bars=3,paths=10000,seed=19):
+    data=load_sessions(csv_file,symbol)
+    plan=paper_plan(data,session_date=session_date,quantity=quantity,
+                    risk_budget=risk_budget,as_of_slot=as_of_slot,or_bars=or_bars)
+    return {"plan":plan,"replay":replay(data,plan,paths=paths,seed=seed)
+            if plan["state"]=="PAPER_ELIGIBLE" else None,
+            "orders_enabled":False,"real_trades":0}
+
+def scan_approved_folder(folder,*,session_date,as_of_slot=BARS,or_bars=3,max_files=250):
+    """Deterministic local multi-symbol historical scanner. No broker/scraping/orders.
+
+    Reads only explicitly approved directory CSV entries. Reports every rejected
+    instrument and never silently assumes a live quote or correct exchange holiday.
+    """
+    base=Path(folder).expanduser()
+    if not base.is_dir() or base.is_symlink():
+        raise ValueError("Approved local CSV folder required; symlinks prohibited")
+    try:date.fromisoformat(session_date)
+    except (TypeError,ValueError):
+        raise ValueError("Explicit historical scan date YYYY-MM-DD required") from None
+    if not isinstance(max_files,int) or isinstance(max_files,bool) or not 1<=max_files<=250:
+        raise ValueError("Scan limit 1..250 approved local files")
+    files=sorted(base.glob("*.csv"))
+    if not files or len(files)>max_files:
+        raise ValueError("No CSV files or approved scanner capacity exceeded")
+    output=[]
+    for file in files:
+        # Avoid following links or deriving instrument identity from filenames.
+        if file.is_symlink() or not file.is_file() or file.stat().st_size>MAX_BYTES:
+            output.append({"file":file.name,"status":"REJECTED_DATA","reason":"unsafe file"})
+            continue
+        try:
+            with file.open(newline="",encoding="utf-8-sig") as handle:
+                rec=next(csv.DictReader(handle),None)
+            if not rec or not isinstance(rec.get("symbol"),str):
+                raise ValueError("Explicit instrument column missing")
+            sym=validate_symbol(rec["symbol"].strip().upper())
+            data=load_sessions(file,sym)
+            if session_date not in data["sessions"]:
+                raise ValueError("Requested exchange date absent; not a live feed")
+            sessions=list(data["sessions"])
+            if sessions.index(session_date)<20:
+                raise ValueError("Need 20 preceding complete days")
+            signal=opening_range(data["sessions"][session_date],
+                                 or_bars=or_bars,until_slot=as_of_slot)
+            output.append({"file":file.name,"symbol":sym,
+                 "status":signal["status"],"trigger":signal["trigger_close"],
+                 "opening_high":signal["opening_high"],
+                 "opening_low":signal["opening_low"],
+                 "as_of_last_complete_bar":signal["as_of_last_completed_bar"],
+                 "historical_date":session_date,"source_sha256":data["source_sha256"]})
+        except (ValueError,OSError,StopIteration) as e:
+            output.append({"file":file.name,"status":"REJECTED_DATA",
+                           "reason":str(e)[:160]})
+    output.sort(key=lambda x:(x["status"]!="TRIGGERED",x.get("symbol",""),x["file"]))
+    return {"engine":"FUNDTEX_INDIA_HISTORICAL_ORB_SCANNER_V1",
+       "historical_date":session_date,"as_of_complete_bars":as_of_slot,
+       "symbols_checked":len(output),
+       "triggered":sum(x["status"]=="TRIGGERED" for x in output),
+       "rejected":sum(x["status"]=="REJECTED_DATA" for x in output),
+       "results":output,"network_calls":0,"live_feed_verified":False,
+       "broker_orders":0,"alerts_scheduled":False,
+       "official_holiday_calendar_verified":False,
+       "no_forward_data_used_for_signals":True}
