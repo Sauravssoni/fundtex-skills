@@ -231,3 +231,60 @@ def run_csv(csv_file,symbol,*,session_date,quantity=1,risk_budget=1000,
     return {"plan":plan,"replay":replay(data,plan,paths=paths,seed=seed)
             if plan["state"]=="PAPER_ELIGIBLE" else None,
             "orders_enabled":False,"real_trades":0}
+
+def scan_approved_folder(folder,*,session_date,as_of_slot=BARS,or_bars=3,max_files=250):
+    """Deterministic local multi-symbol historical scanner. No broker/scraping/orders.
+
+    Reads only explicitly approved directory CSV entries. Reports every rejected
+    instrument and never silently assumes a live quote or correct exchange holiday.
+    """
+    base=Path(folder).expanduser()
+    if not base.is_dir() or base.is_symlink():
+        raise ValueError("Approved local CSV folder required; symlinks prohibited")
+    try:date.fromisoformat(session_date)
+    except (TypeError,ValueError):
+        raise ValueError("Explicit historical scan date YYYY-MM-DD required") from None
+    if not isinstance(max_files,int) or isinstance(max_files,bool) or not 1<=max_files<=250:
+        raise ValueError("Scan limit 1..250 approved local files")
+    files=sorted(base.glob("*.csv"))
+    if not files or len(files)>max_files:
+        raise ValueError("No CSV files or approved scanner capacity exceeded")
+    output=[]
+    for file in files:
+        # Avoid following links or deriving instrument identity from filenames.
+        if file.is_symlink() or not file.is_file() or file.stat().st_size>MAX_BYTES:
+            output.append({"file":file.name,"status":"REJECTED_DATA","reason":"unsafe file"})
+            continue
+        try:
+            with file.open(newline="",encoding="utf-8-sig") as handle:
+                rec=next(csv.DictReader(handle),None)
+            if not rec or not isinstance(rec.get("symbol"),str):
+                raise ValueError("Explicit instrument column missing")
+            sym=validate_symbol(rec["symbol"].strip().upper())
+            data=load_sessions(file,sym)
+            if session_date not in data["sessions"]:
+                raise ValueError("Requested exchange date absent; not a live feed")
+            sessions=list(data["sessions"])
+            if sessions.index(session_date)<20:
+                raise ValueError("Need 20 preceding complete days")
+            signal=opening_range(data["sessions"][session_date],
+                                 or_bars=or_bars,until_slot=as_of_slot)
+            output.append({"file":file.name,"symbol":sym,
+                 "status":signal["status"],"trigger":signal["trigger_close"],
+                 "opening_high":signal["opening_high"],
+                 "opening_low":signal["opening_low"],
+                 "as_of_last_complete_bar":signal["as_of_last_completed_bar"],
+                 "historical_date":session_date,"source_sha256":data["source_sha256"]})
+        except (ValueError,OSError,StopIteration) as e:
+            output.append({"file":file.name,"status":"REJECTED_DATA",
+                           "reason":str(e)[:160]})
+    output.sort(key=lambda x:(x["status"]!="TRIGGERED",x.get("symbol",""),x["file"]))
+    return {"engine":"FUNDTEX_INDIA_HISTORICAL_ORB_SCANNER_V1",
+       "historical_date":session_date,"as_of_complete_bars":as_of_slot,
+       "symbols_checked":len(output),
+       "triggered":sum(x["status"]=="TRIGGERED" for x in output),
+       "rejected":sum(x["status"]=="REJECTED_DATA" for x in output),
+       "results":output,"network_calls":0,"live_feed_verified":False,
+       "broker_orders":0,"alerts_scheduled":False,
+       "official_holiday_calendar_verified":False,
+       "no_forward_data_used_for_signals":True}
