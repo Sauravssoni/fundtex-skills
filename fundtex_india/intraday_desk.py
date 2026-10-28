@@ -181,20 +181,41 @@ def replay(data,plan_obj,*,paths=10000,seed=19,window=2):
     plan=plan_obj["plan"]
     rng=random.Random(seed)
     results=[];counts=defaultdict(int)
+    # Once per evaluation, precompute source bar / previous close ratios.
+    # Each session remains completely prior to the evaluated trade date.
+    ratios=[]
+    for historic in prior:
+        day=[None]
+        for pos in range(1,BARS):
+            b=historic[pos];base=historic[pos-1]["close"]
+            if base<=0:raise ValueError("Unusable previous historical bar close")
+            day.append((b["open"]/base,b["high"]/base,b["low"]/base,b["close"]/base))
+        ratios.append(day)
+    n_history=len(ratios)
+    fees=plan["fees_per_side_rate_assumed"]+plan["slippage_per_side_rate_assumed"]
+    entry=plan["entry"];stop=plan["stop"];target=plan["target"];qty=plan["quantity"]
     for _ in range(paths):
-        prev=plan["entry"]
-        sample=[]
+        # Streaming replay avoids generating hundreds of bars AFTER a stop/target
+        # would have already ended the historical paper scenario.
+        prev=entry;exit_price=entry;reason="close"
         for slot in range(entry_slot,BARS):
-            pos=max(1,min(BARS-1,slot+rng.randint(-window,window)))
-            hist=rng.choice(prior)
-            past=hist[pos];base=hist[pos-1]["close"]
-            if base<=0:raise ValueError("Unusable previous bar close")
-            p={k:prev*past[k]/base for k in ("open","high","low","close")}
-            # Rebased bars preserve geometry only if previous close is positive.
-            sample.append(p);prev=p["close"]
-        case=_run_path(sample,plan,start_slot=0)
-        counts[case["exit_case"]]+=1
-        results.append(case["net_pnl_inr"])
+            sampled_slot=max(1,min(BARS-1,slot+rng.randint(-window,window)))
+            ro,rh,rl,rc=ratios[rng.randrange(n_history)][sampled_slot]
+            opening=prev*ro
+            if opening<=stop:
+                exit_price=opening;reason="gap_stop";break
+            if opening>=target:
+                exit_price=opening;reason="gap_target";break
+            if prev*rl<=stop:
+                exit_price=stop
+                reason="both_hit_stop_first" if prev*rh>=target else "stop"
+                break
+            if prev*rh>=target:
+                exit_price=target;reason="target";break
+            prev=prev*rc
+            exit_price=prev
+        counts[reason]+=1
+        results.append((exit_price-entry)*qty-(entry+exit_price)*qty*fees)
     sorted_results=sorted(results)
     def pct(q):return sorted_results[int((len(sorted_results)-1)*q)]
     # Net outcome distribution is conditional on historical bar regimes,
