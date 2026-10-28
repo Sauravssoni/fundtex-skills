@@ -6,6 +6,7 @@ import json
 import sys
 from .market import csv_prices, yahoo_prices
 from .kronos_lab import evaluate as kronos_walkforward
+from .intraday_desk import run_csv as run_intraday_paper, load_sessions as load_intraday_sessions, opening_range as opening_range_ist
 from .kronos_paper import assess as kronos_paper_assess
 from .kronos_runtime import doctor as kronos_local_doctor, load_offline as kronos_local_model
 from .stats import report
@@ -75,6 +76,16 @@ def make_parser():
     p.add_argument("--from-date",help="Historical request start YYYY-MM-DD")
     p.add_argument("--through-date",help="Historical request end YYYY-MM-DD")
     p.add_argument("--out",help="NEW CSV output path for historical candles, never overwrite")
+    p = sub.add_parser("india-daytrade",help="Causal NSE/BSE 5-minute opening-range paper plan plus prior-session 10k+ replays. Never trades.")
+    p.add_argument("--csv",required=True,help="Explicitly approved timezone-aware 5-minute OHLCV CSV")
+    p.add_argument("--symbol",required=True,help="Exact .NS / .BO symbol; no cross-source guesses")
+    p.add_argument("--session-date",required=True,help="Observed historical test session YYYY-MM-DD")
+    p.add_argument("--quantity",type=int,default=1)
+    p.add_argument("--risk-budget",type=float,default=1000.0,help="Paper INR risk budget")
+    p.add_argument("--as-of-slot",type=int,default=75,help="Number of COMPLETE 5min bars visible, max 75")
+    p.add_argument("--or-bars",type=int,default=3,help="Opening range bar count, 1..6")
+    p.add_argument("--paths",type=int,default=10000,help="Historical block resamplings (100..1,000,000)")
+    p.add_argument("--seed",type=int,default=19)
     p = sub.add_parser("kronos-doctor",help="Offline Kronos original-model readiness; never fetches weights")
     p.add_argument("--checkout",help="Explicit audited pristine upstream Kronos checkout")
     p.add_argument("--weights",help="Inspected local Kronos checkpoint directory with safetensors")
@@ -291,6 +302,11 @@ def execute(args):
         result=mcp_import_history(document,args.symbol,instrument_token=args.instrument_token,
                                   requested_from=args.from_date,requested_through=args.through_date)
         return mcp_export_history(result,out_csv=args.out)
+    if args.command == "india-daytrade":
+        return run_intraday_paper(args.csv,args.symbol,session_date=args.session_date,
+                 quantity=args.quantity,risk_budget=args.risk_budget,
+                 as_of_slot=args.as_of_slot,or_bars=args.or_bars,
+                 paths=args.paths,seed=args.seed)
     if args.command == "kronos-doctor":
         return kronos_local_doctor(checkout=args.checkout,weights=args.weights,
                                    tokenizer=args.tokenizer,model_size=args.size)
