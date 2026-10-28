@@ -6,7 +6,7 @@ import json
 import sys
 from .market import csv_prices, yahoo_prices
 from .kronos_lab import evaluate as kronos_walkforward
-from .intraday_desk import run_csv as run_intraday_paper, load_sessions as load_intraday_sessions, opening_range as opening_range_ist
+from .intraday_desk import run_csv as run_intraday_paper, scan_approved_folder
 from .kronos_paper import assess as kronos_paper_assess
 from .kronos_runtime import doctor as kronos_local_doctor, load_offline as kronos_local_model
 from .stats import report
@@ -76,6 +76,12 @@ def make_parser():
     p.add_argument("--from-date",help="Historical request start YYYY-MM-DD")
     p.add_argument("--through-date",help="Historical request end YYYY-MM-DD")
     p.add_argument("--out",help="NEW CSV output path for historical candles, never overwrite")
+    p = sub.add_parser("india-scan",help="Offline approved multi-symbol NSE/BSE 5minute ORB scan; no brokerage orders")
+    p.add_argument("--folder",required=True,help="Explicitly approved CSV folder, max 250 files")
+    p.add_argument("--session-date",required=True,help="Historical date, no live-feed assumption")
+    p.add_argument("--as-of-slot",type=int,default=75)
+    p.add_argument("--or-bars",type=int,default=3)
+    p.add_argument("--max-files",type=int,default=250)
     p = sub.add_parser("india-daytrade",help="Causal NSE/BSE 5-minute opening-range paper plan plus prior-session 10k+ replays. Never trades.")
     p.add_argument("--csv",required=True,help="Explicitly approved timezone-aware 5-minute OHLCV CSV")
     p.add_argument("--symbol",required=True,help="Exact .NS / .BO symbol; no cross-source guesses")
@@ -302,6 +308,9 @@ def execute(args):
         result=mcp_import_history(document,args.symbol,instrument_token=args.instrument_token,
                                   requested_from=args.from_date,requested_through=args.through_date)
         return mcp_export_history(result,out_csv=args.out)
+    if args.command == "india-scan":
+        return scan_approved_folder(args.folder,session_date=args.session_date,
+             as_of_slot=args.as_of_slot,or_bars=args.or_bars,max_files=args.max_files)
     if args.command == "india-daytrade":
         return run_intraday_paper(args.csv,args.symbol,session_date=args.session_date,
                  quantity=args.quantity,risk_budget=args.risk_budget,
