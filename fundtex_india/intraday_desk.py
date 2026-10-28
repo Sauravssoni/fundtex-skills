@@ -165,6 +165,70 @@ def _run_path(prices,plan,*,start_slot,stop_conservative=True):
     net=(exit_price-price)*qty-(exit_price+price)*qty*fees
     return {"exit_case":end,"exit_price":exit_price,"net_pnl_inr":net,"red":net<0}
 
+def _batch_replay_numpy(ratios,plan,*,paths,seed,window,start_slot):
+    """Opt-in bounded vectorized paper replay for 50k..1m paths.
+
+    Algorithm uses independent NumPy PCG64 random numbers; totals need NOT be
+    byte-identical to Python's Mersenne Twister because RNGs differ. All stop,
+    gap and cost semantics match the scalar engine.
+    """
+    try:
+        import numpy as np
+    except ImportError:
+        raise ValueError("NumPy required for >=50,000 path stress; standard-library 10k remains available") from None
+    if paths>1_000_000:raise ValueError("1m path maximum")
+    source=np.asarray([[(1,1,1,1) if v is None else v for v in day] for day in ratios],
+                      dtype=np.float64)
+    if source.ndim!=3 or source.shape[1:]!=(BARS,4):
+        raise ValueError("Historical OHLC ratio pool is not rectangular")
+    rng=np.random.default_rng(seed)
+    cases=np.zeros(6,dtype=np.int64)
+    all_pnls=[]
+    start_price=plan["entry"];stop=plan["stop"];target=plan["target"]
+    quantity=plan["quantity"]
+    friction=plan["fees_per_side_rate_assumed"]+plan["slippage_per_side_rate_assumed"]
+    slots=np.arange(start_slot,BARS,dtype=np.int16)
+    for offset in range(0,paths,8192):
+        count=min(8192,paths-offset)
+        ids=rng.integers(0,source.shape[0],size=(count,len(slots)),dtype=np.int32)
+        jitter=rng.integers(-window,window+1,size=(count,len(slots)),dtype=np.int16)
+        slot_idx=np.clip(slots[None,:]+jitter,1,BARS-1)
+        sampled=source[ids,slot_idx] # bounded memory: <25 MiB/batch.
+        prev=np.full(count,start_price,dtype=np.float64)
+        last_exit=prev.copy()
+        status=np.zeros(count,dtype=np.int8)
+        for i in range(len(slots)):
+            active=status==0
+            if not active.any():break
+            sr=sampled[:,i,:]
+            opening=prev*sr[:,0]
+            high=prev*sr[:,1]
+            low=prev*sr[:,2]
+            close=prev*sr[:,3]
+            gap_stop=active&(opening<=stop)
+            status[gap_stop]=1;last_exit[gap_stop]=opening[gap_stop]
+            active&=~gap_stop
+            gap_target=active&(opening>=target)
+            status[gap_target]=2;last_exit[gap_target]=opening[gap_target]
+            active&=~gap_target
+            both=active&(low<=stop)&(high>=target)
+            status[both]=3;last_exit[both]=stop
+            active&=~both
+            stop_hit=active&(low<=stop)
+            status[stop_hit]=4;last_exit[stop_hit]=stop
+            active&=~stop_hit
+            target_hit=active&(high>=target)
+            status[target_hit]=5;last_exit[target_hit]=target
+            active&=~target_hit
+            prev[active]=close[active]
+            last_exit[active]=close[active]
+        cases+=np.bincount(status,minlength=6)
+        all_pnls.append((last_exit-start_price)*quantity-
+                        (start_price+last_exit)*quantity*friction)
+    values=np.concatenate(all_pnls)
+    labels=("close","gap_stop","gap_target","both_hit_stop_first","stop","target")
+    return values.tolist(),{name:int(count) for name,count in zip(labels,cases) if count}
+
 def replay(data,plan_obj,*,paths=10000,seed=19,window=2):
     if plan_obj.get("state")!="PAPER_ELIGIBLE":raise ValueError("A permitted paper risk verdict is required")
     if any(isinstance(x,bool) or not isinstance(x,int) for x in (paths,seed,window)):
@@ -179,8 +243,6 @@ def replay(data,plan_obj,*,paths=10000,seed=19,window=2):
     # Exclude target date and all later sessions by construction.
     entry_slot=plan_obj["historical_entry_slot"]
     plan=plan_obj["plan"]
-    rng=random.Random(seed)
-    results=[];counts=defaultdict(int)
     # Once per evaluation, precompute source bar / previous close ratios.
     # Each session remains completely prior to the evaluated trade date.
     ratios=[]
@@ -194,28 +256,36 @@ def replay(data,plan_obj,*,paths=10000,seed=19,window=2):
     n_history=len(ratios)
     fees=plan["fees_per_side_rate_assumed"]+plan["slippage_per_side_rate_assumed"]
     entry=plan["entry"];stop=plan["stop"];target=plan["target"];qty=plan["quantity"]
-    for _ in range(paths):
-        # Streaming replay avoids generating hundreds of bars AFTER a stop/target
-        # would have already ended the historical paper scenario.
-        prev=entry;exit_price=entry;reason="close"
-        for slot in range(entry_slot,BARS):
-            sampled_slot=max(1,min(BARS-1,slot+rng.randint(-window,window)))
-            ro,rh,rl,rc=ratios[rng.randrange(n_history)][sampled_slot]
-            opening=prev*ro
-            if opening<=stop:
-                exit_price=opening;reason="gap_stop";break
-            if opening>=target:
-                exit_price=opening;reason="gap_target";break
-            if prev*rl<=stop:
-                exit_price=stop
-                reason="both_hit_stop_first" if prev*rh>=target else "stop"
-                break
-            if prev*rh>=target:
-                exit_price=target;reason="target";break
-            prev=prev*rc
-            exit_price=prev
-        counts[reason]+=1
-        results.append((exit_price-entry)*qty-(entry+exit_price)*qty*fees)
+    if paths>=50000:
+        results,cases=_batch_replay_numpy(ratios,plan,paths=paths,seed=seed,window=window,start_slot=entry_slot)
+        counts=defaultdict(int,cases)
+        sampling_backend="NUMPY_PCG64_VECTORIZED"
+    else:
+        rng=random.Random(seed)
+        results=[];counts=defaultdict(int)
+        sampling_backend="PYTHON_MT19937_STREAM"
+        for _ in range(paths):
+            # Streaming replay avoids generating hundreds of bars AFTER a stop/target
+            # would have already ended the historical paper scenario.
+            prev=entry;exit_price=entry;reason="close"
+            for slot in range(entry_slot,BARS):
+                sampled_slot=max(1,min(BARS-1,slot+rng.randint(-window,window)))
+                ro,rh,rl,rc=ratios[rng.randrange(n_history)][sampled_slot]
+                opening=prev*ro
+                if opening<=stop:
+                    exit_price=opening;reason="gap_stop";break
+                if opening>=target:
+                    exit_price=opening;reason="gap_target";break
+                if prev*rl<=stop:
+                    exit_price=stop
+                    reason="both_hit_stop_first" if prev*rh>=target else "stop"
+                    break
+                if prev*rh>=target:
+                    exit_price=target;reason="target";break
+                prev=prev*rc
+                exit_price=prev
+            counts[reason]+=1
+            results.append((exit_price-entry)*qty-(entry+exit_price)*qty*fees)
     sorted_results=sorted(results)
     def pct(q):return sorted_results[int((len(sorted_results)-1)*q)]
     # Net outcome distribution is conditional on historical bar regimes,
@@ -226,6 +296,7 @@ def replay(data,plan_obj,*,paths=10000,seed=19,window=2):
             "source_sessions_used":len(prior),"future_sessions_sampled":False,
             "entry_date_excluded_from_pool":True,"exit_cases":dict(counts),
             "paths":paths,"seed":seed,"window":window,
+            "sampling_backend":sampling_backend,
             "probability_positive_net":sum(x>0 for x in results)/paths,
             "probability_loss":sum(x<0 for x in results)/paths,
             "mean_net_pnl_inr":statistics.mean(results),
