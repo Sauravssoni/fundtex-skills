@@ -17,6 +17,8 @@ PLAYBOOK = (
      "Audit a portfolio CSV I authorize: assess sector concentration, correlations, drawdown, historical tail risk and risk contribution; compare against sensible benchmarks and flag missing corporate-action or transaction-cost information."),
     ("macro", ("macro", "rates", "rbi", "inflation", "currency", "sector", "economy", "fx", "oil", "policy"),
      "Prepare an India macro-to-sector briefing: verify relevant RBI, SEBI and company sources, connect plausible rate/FX/commodity drivers, give contrary explanations and a dated monitoring checklist."),
+    ("intraday", ("day trade", "daytrade", "intraday", "5minute", "5-minute", "opening range", "orb", "entry timing", "trade replay", "time machine", "trader skill"),
+     "Scan approved NSE/BSE five-minute OHLCV in the correct IST exchange session, confirm an opening-range breakout only on a completed candle, use next-bar paper entry, calculate INR stop/risk budget and simulate 10,000 prior-session paths, showing rejected data, gap losses and no live-order actions."),
     ("forecast", ("model", "forecast", "predict", "signal", "backtest", "quant", "simulation", "strategy", "alpha"),
      "Test a sourced Indian equity price history with Fundtex Forecast Lab and GOD EYE: compare chronological probabilities to naïve baselines, check intervals and model leakage, disclose actual costs and ABSTAIN if edge is not supported."),
     ("events", ("news", "filings", "merger", "event", "ipo", "corporate", "disclosure", "announcement"),
