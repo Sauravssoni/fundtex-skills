@@ -30,7 +30,7 @@
 1. Reconstructed exactly 31 synthetic complete weekday NSE-style sessions with **75 five-minute candles per day** and explicit +05:30 timezone, and a known ORB trigger at slot 3.
 2. Eight isolated tests passed: immutable causal cutoff, same-bar entry prevention, conservative gap/dual-trigger, paper risk block, invalid candle rejection, determinism/bounds, multi-symbol scanner and both CLI command outputs. No real trading.
 3. Original scalar 10k-path benchmark consumed ~30.0s on authorized Mac. Streaming early-exit optimization reduced it to ~11.35s (different deterministic PRNG draw sequence, therefore not identical resulting outcomes).
-4. NumPy PCG64 optional batch engine is gated at **≥50,000** paths and operates in bounded 8192-path chunks. Verified **50,000 paths**, no missing outcomes, ~12.27s on Mac. Supports up to 1m; independent 1m benchmark must be recorded before claiming executed million simulations.
+4. NumPy PCG64 optional batch engine is gated at **≥50,000** paths and operates in bounded 8192-path chunks. Verified **50,000 paths**, no missing outcomes, ~12.27s on Mac. Supports up to 1m. The million-path stress was executed on Mac with explicitly synthetic input; see figures below.
 5. Risk result sources explicitly say historical resampling is **not forward probability**. Simulated stop prices are not loss guarantees; gap losses can exceed stop. Assumed fee/slippage rate is intentionally not certified as current official NSE charges.
 6. Each report includes exact source SHA256, source-quality label, completed-bar timestamp, scenario count, seed, numerical P&L distribution, no-orders flags and explicit official-exchange-calendar limitation.
 
