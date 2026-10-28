@@ -58,7 +58,7 @@ def doctor(home: str | None = None, *, repo_root: str | None = None) -> dict:
     expected=("fundtex-god-eye","fundtex-auto-analyst","fundtex-india-live-data","fundtex-chart-technician","fundtex-analyst-pack","fundtex-workbook-builder","fundtex-visuals-reporting","fundtex-analyst-council","fundtex-analyst-pilot","fundtex-india-regulatory","fundtex-india-diligence","fundtex-india-forecast","fundtex-india-market",
               "fundtex-india-news","fundtex-india-risk","fundtex-india-portfolio",
               "fundtex-india-valuation","fundtex-india-brief",
-              "fundtex-hedged-options","fundtex-strategy-research","fundtex-connector-orchestrator","fundtex-motion-intelligence","fundtex-kronos-intelligence")
+              "fundtex-hedged-options","fundtex-strategy-research","fundtex-connector-orchestrator","fundtex-motion-intelligence","fundtex-kronos-intelligence","fundtex-india-daytrading")
     manifest={}
     for rel in targets:
         folder=homepath/rel
