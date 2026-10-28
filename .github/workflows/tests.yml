@@ -35,3 +35,16 @@ jobs:
         env:
           RUN_MILLION_TEST: '1'
         run: python -m unittest -v tests.test_fundtex_million
+
+  intraday-accelerated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install explicitly scoped numerical accelerator
+        run: python -m pip install numpy==2.2.2
+      - name: Verify 50k vectorized India paper replays, zero execution rights
+        run: python -m unittest -v tests.test_fundtex_india_intraday_desk.IntradayDeskTests.test_numpy_batch_50k_fully_accounted_paper_only
