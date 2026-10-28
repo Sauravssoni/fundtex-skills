@@ -3,7 +3,7 @@ from datetime import date,timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import csv,json,subprocess,sys,unittest
-from fundtex_india.intraday_desk import load_sessions,opening_range,paper_plan,replay,run_csv,_run_path
+from fundtex_india.intraday_desk import load_sessions,opening_range,paper_plan,replay,run_csv,scan_approved_folder,_run_path
 
 class IntradayDeskTests(unittest.TestCase):
  def setUp(self):
@@ -89,6 +89,34 @@ class IntradayDeskTests(unittest.TestCase):
        with self.assertRaises(ValueError):replay(data,plan,**kwargs)
     self.assertEqual(sum(a["exit_cases"].values()),500)
     self.assertEqual(a["model_quality"],"RESAMPLED_HISTORICAL_BARS_NOT_PROBABILISTIC_FORECAST")
+ def test_multisymbol_scanner_reports_rejections_and_causal_signals(self):
+    approved=Path(self.temp.name)/"approved"
+    approved.mkdir()
+    valid=approved/"a.csv"
+    valid.write_bytes(self.csv.read_bytes())
+    broken=approved/"b.csv"
+    broken.write_text("invalid,price\nAAA,123\n")
+    source=self._load()
+    day=list(source["sessions"])[25]
+    out=scan_approved_folder(approved,session_date=day,as_of_slot=5)
+    self.assertEqual(out["symbols_checked"],2)
+    self.assertEqual(out["triggered"],1)
+    self.assertEqual(out["rejected"],1)
+    self.assertFalse(out["live_feed_verified"])
+    self.assertEqual(out["broker_orders"],0)
+    self.assertEqual(out["results"][0]["symbol"],"DEMO.NS")
+    self.assertEqual(out["results"][0]["status"],"TRIGGERED")
+    with self.assertRaises(ValueError):
+       scan_approved_folder(approved,session_date=day,max_files=1)
+    cmd=[sys.executable,"-m","fundtex_india.cli","india-scan",
+         "--folder",str(approved),"--session-date",day,"--as-of-slot","5"]
+    import os
+    root=Path(__file__).resolve().parents[1]
+    p=subprocess.run(cmd,cwd=root,capture_output=True,text=True,timeout=30,env={**os.environ,"PYTHONPATH":str(root)})
+    self.assertEqual(p.returncode,0,p.stderr)
+    j=json.loads(p.stdout)
+    self.assertEqual(j["triggered"],1)
+    self.assertFalse(j["alerts_scheduled"])
  def test_cli_outputs_json_no_orders(self):
     import os
     root=Path(__file__).resolve().parents[1]
