@@ -117,6 +117,17 @@ class IntradayDeskTests(unittest.TestCase):
     j=json.loads(p.stdout)
     self.assertEqual(j["triggered"],1)
     self.assertFalse(j["alerts_scheduled"])
+ def test_numpy_batch_50k_fully_accounted_paper_only(self):
+    try:import numpy
+    except ImportError:self.skipTest("Optional NumPy accelerated stress runtime not installed")
+    data=self._load()
+    plan=paper_plan(data,session_date=list(data["sessions"])[25])
+    result=replay(data,plan,paths=50000,seed=14)
+    self.assertEqual(result["sampling_backend"],"NUMPY_PCG64_VECTORIZED")
+    self.assertEqual(sum(result["exit_cases"].values()),50000)
+    self.assertEqual(result["real_orders"],0)
+    self.assertEqual(result["source_quality"],"USER_SUPPLIED_NOT_EXCHANGE_VERIFIED")
+    self.assertTrue(0<=result["probability_loss"]<=1)
  def test_cli_outputs_json_no_orders(self):
     import os
     root=Path(__file__).resolve().parents[1]
